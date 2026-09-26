@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0288d1">
+  <meta name="description" content="KCT Plant App — Kakinada Coal Terminal work intimation and issue management">
+  <meta name="author" content="Saurab Upadhyay">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KCT Plant">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="KCT Plant">
+
+  <title>KCT Plant</title>
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #222; -webkit-tap-highlight-color: transparent; }
+    .hidden { display: none !important; }
+
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(160deg, #4fc3f7 0%, #0288d1 100%); }
+    .login-card { width: 100%; max-width: 400px; background: white; padding: 30px 25px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    .login-card .logo-wrap { text-align: center; margin-bottom: 15px; }
+    .login-card .logo-wrap img { width: 120px; height: 120px; border-radius: 24px; box-shadow: 0 4px 14px rgba(2,136,209,0.25); }
+    .login-card h1 { text-align: center; margin: 0 0 5px; font-size: 22px; color: #01579b; }
+    .login-card .sub { text-align: center; color: #666; font-size: 13px; margin-bottom: 25px; }
+    .login-card label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+    .login-card input { width: 100%; padding: 14px; margin-top: 6px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fafafa; }
+    .login-card input:focus { outline: none; border-color: #0288d1; background: white; }
+    .login-btn { width: 100%; padding: 16px; margin-top: 25px; font-size: 17px; font-weight: bold; border: 0; border-radius: 8px; background: #0288d1; color: white; cursor: pointer; }
+    .login-btn:disabled { opacity: 0.6; }
+    .login-error { margin-top: 15px; padding: 10px 12px; background: #fdecea; border: 1px solid #f5c2c0; border-radius: 6px; color: #842029; font-size: 14px; display: none; }
+    .login-error.visible { display: block; }
+
+    .home-header { background: linear-gradient(160deg, #4fc3f7 0%, #0288d1 100%); color: white; padding: 20px; padding-top: 25px; border-radius: 0 0 20px 20px; }
+    .home-header .greeting { font-size: 13px; opacity: 0.9; }
+    .home-header .name { font-size: 22px; font-weight: bold; margin-top: 3px; }
+    .home-header .role { font-size: 12px; margin-top: 4px; display: inline-block; background: rgba(255,255,255,0.25); padding: 3px 10px; border-radius: 12px; text-transform: capitalize; }
+    .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 20px; }
+    .home-tile { background: white; border-radius: 14px; padding: 22px 14px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; position: relative; min-height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.1s; }
+    .home-tile:active { transform: scale(0.97); }
+    .home-tile .icon { font-size: 40px; margin-bottom: 10px; }
+    .home-tile .label { font-size: 14px; font-weight: bold; color: #01579b; line-height: 1.2; }
+    .home-tile .sublabel { font-size: 11px; color: #777; margin-top: 4px; }
+    .home-tile .badge { position: absolute; top: 10px; right: 10px; background: #d32f2f; color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; display: none; }
+    .home-tile .badge.visible { display: block; }
+    .home-footer { text-align: center; padding: 10px 20px 30px; }
+    .logout-btn { background: transparent; border: 1px solid #bbb; color: #555; padding: 10px 20px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .credit { margin-top: 16px; font-size: 11px; color: #999; line-height: 1.5; }
+    .credit b { color: #0288d1; }
+
+    .page-header { background: linear-gradient(160deg, #4fc3f7 0%, #0288d1 100%); color: white; padding: 18px 20px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 10; }
+    .page-header .back { font-size: 22px; cursor: pointer; padding: 5px 10px; border-radius: 8px; }
+    .page-header .back:active { background: rgba(255,255,255,0.2); }
+    .page-header .title { font-size: 17px; font-weight: bold; }
+    .page-header .subtitle { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+    .page-body { padding: 20px; padding-bottom: 40px; }
+
+    .form-label { display: block; margin-top: 15px; font-weight: bold; font-size: 14px; }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 13px; margin-top: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: white; }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+    .section-title { margin-top: 22px; padding: 8px 10px; background: #e1f5fe; border-left: 4px solid #0288d1; font-weight: bold; font-size: 14px; border-radius: 0 6px 6px 0; }
+    .primary-btn { width: 100%; padding: 16px; margin-top: 25px; font-size: 17px; font-weight: bold; border: 0; border-radius: 8px; background: #0288d1; color: white; cursor: pointer; }
+    .primary-btn:disabled { opacity: 0.6; }
+    .secondary-btn { width: 100%; padding: 14px; margin-top: 10px; font-size: 15px; font-weight: bold; border: 1px solid #0288d1; border-radius: 8px; background: white; color: #0288d1; cursor: pointer; }
+    .secondary-btn:disabled { opacity: 0.6; }
+    .error-box { margin-top: 15px; padding: 10px 12px; background: #fdecea; border: 1px solid #f5c2c0; border-radius: 6px; color: #842029; font-size: 14px; display: none; }
+    .error-box.visible { display: block; }
+    .success-screen { text-align: center; padding: 40px 20px; }
+    .success-screen .check { font-size: 70px; }
+    .whatsapp-btn { display: block; margin-top: 25px; padding: 18px; text-align: center; background: #25D366; color: white; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 10px; }
+
+    .filters { background: white; border-radius: 12px; padding: 12px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .filter-row:last-child { margin-bottom: 0; }
+    .filter-row > * { flex: 1; }
+    .filter-label { font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block; }
+    select.filter-input { width: 100%; padding: 10px 32px 10px 12px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; background: white; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; }
+    .tabs { display: flex; background: white; border-radius: 12px; padding: 5px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+    .tab { flex: 1; min-width: 80px; padding: 12px 8px; text-align: center; font-size: 13px; font-weight: bold; color: #666; cursor: pointer; border-radius: 8px; white-space: nowrap; }
+    .tab.active { background: #0288d1; color: white; }
+    .tab .count { display: inline-block; background: rgba(0,0,0,0.1); padding: 1px 7px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
+    .tab.active .count { background: rgba(255,255,255,0.25); }
+
+    .card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 4px solid #0288d1; }
+    .card.clickable { cursor: pointer; }
+    .card.clickable:active { background: #fafafa; }
+    .card.pending { border-left-color: #f9a825; }
+    .card.complete { border-left-color: #0288d1; }
+    .card.issue-low { border-left-color: #9e9e9e; }
+    .card.issue-medium { border-left-color: #1976d2; }
+    .card.issue-high { border-left-color: #f57c00; }
+    .card.issue-critical { border-left-color: #d32f2f; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 10px; }
+    .card-title { font-size: 15px; font-weight: bold; color: #01579b; line-height: 1.2; }
+    .card-title.issue { color: #333; }
+    .card-date { font-size: 11px; color: #888; white-space: nowrap; }
+    .card-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-top: 3px; }
+    .card-row .lbl { color: #888; }
+    .card-row .val { text-align: right; font-weight: 500; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.3px; margin-right: 4px; }
+    .pill.pending { background: #fff8e1; color: #f57c00; }
+    .pill.complete { background: #e1f5fe; color: #0288d1; }
+    .pill.low { background: #eeeeee; color: #555; }
+    .pill.medium { background: #e3f2fd; color: #1976d2; }
+    .pill.high { background: #fff3e0; color: #ef6c00; }
+    .pill.critical { background: #ffebee; color: #c62828; }
+    .pill.open { background: #fff8e1; color: #f57c00; }
+    .pill.inprogress { background: #e3f2fd; color: #1976d2; }
+    .pill.resolved { background: #e1f5fe; color: #0288d1; }
+    .card-desc { font-size: 13px; color: #555; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; line-height: 1.4; }
+    .card-photo { display: block; margin-top: 10px; border-radius: 8px; max-width: 100%; max-height: 180px; }
+    .empty { text-align: center; padding: 60px 20px; color: #888; font-size: 14px; }
+    .empty .icon { font-size: 50px; margin-bottom: 12px; opacity: 0.4; }
+    .loading { text-align: center; padding: 40px; color: #0288d1; font-weight: bold; font-size: 14px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .summary-tile { background: white; border-radius: 12px; padding: 14px 10px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .summary-tile .num { font-size: 26px; font-weight: bold; color: #0288d1; }
+    .summary-tile.alert .num { color: #d32f2f; }
+    .summary-tile .lbl { font-size: 11px; color: #777; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .section-heading { font-size: 13px; font-weight: bold; color: #01579b; text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 4px 8px; }
+
+    .photo-area { background: white; border: 2px dashed #bbb; border-radius: 12px; padding: 30px 20px; text-align: center; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .photo-area .cam-icon { font-size: 48px; margin-bottom: 8px; }
+    .photo-area .hint { font-size: 15px; font-weight: bold; color: #0288d1; margin-bottom: 4px; }
+    .photo-area .sub { font-size: 12px; color: #777; }
+    .photo-area img { max-width: 100%; max-height: 320px; border-radius: 8px; display: block; }
+    .photo-area.has-photo { padding: 8px; border-style: solid; border-color: #0288d1; }
+    .photo-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .photo-btn { padding: 14px 10px; font-size: 14px; font-weight: bold; border: 0; border-radius: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .photo-btn .ic { font-size: 22px; }
+    .photo-btn.camera { background: #0288d1; color: white; }
+    .photo-btn.gallery { background: #e1f5fe; color: #01579b; border: 1px solid #b3e5fc; }
+    .photo-btn:active { transform: scale(0.97); }
+    .photo-actions { display: flex; gap: 10px; margin-top: 10px; }
+    .photo-actions button { flex: 1; padding: 12px; font-size: 14px; font-weight: bold; border: 0; border-radius: 8px; cursor: pointer; }
+    .retake-btn { background: #eee; color: #333; }
+    .remove-btn { background: #fdecea; color: #842029; }
+
+    .busy-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .busy-overlay .box { background: white; padding: 30px 40px; border-radius: 12px; text-align: center; font-size: 15px; font-weight: bold; color: #0288d1; }
+    .busy-overlay .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #0288d1; border-radius: 50%; margin: 0 auto 12px; animation: spin 0.9s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 2000; }
+    .modal-card { background: white; border-radius: 14px; width: 100%; max-width: 420px; max-height: 90vh; overflow: auto; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-card h3 { margin: 0 0 14px; font-size: 17px; color: #01579b; }
+    .modal-card .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-card .modal-actions button { flex: 1; }
+
+    .timeline { margin-top: 8px; padding-left: 4px; }
+    .timeline-item { position: relative; padding: 6px 0 6px 18px; border-left: 2px solid #b3e5fc; font-size: 12px; color: #555; }
+    .timeline-item:before { content: ''; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: #0288d1; }
+    .timeline-item .when { color: #888; font-size: 11px; }
+
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .kpi-tile { background: white; border-radius: 12px; padding: 16px 12px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-top: 3px solid #0288d1; }
+    .kpi-value { font-size: 24px; font-weight: bold; color: #01579b; line-height: 1.1; }
+    .kpi-label { font-size: 11px; color: #777; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .kpi-sub { font-size: 10px; color: #999; margin-top: 2px; }
+    .chart-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .chart-title { font-size: 13px; font-weight: bold; color: #01579b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .chart-body { min-height: 20px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .chart-row .chart-card { margin-bottom: 0; }
+    .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+    .bar-label { min-width: 68px; max-width: 68px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+    .bar-track { flex: 1; background: #f0f0f0; border-radius: 6px; height: 22px; position: relative; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #4fc3f7, #0288d1); }
+    .bar-value { min-width: 30px; max-width: 30px; text-align: right; font-weight: bold; color: #0288d1; }
+    .pill-chart { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-chart-item { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 500; background: #f5f5f5; }
+    .pill-chart-item .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .pill-chart-item .num { font-weight: bold; color: #222; }
+    .line-chart-svg { width: 100%; height: auto; display: block; }
+    .dash-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .dash-table th { text-align: left; padding: 8px 6px; background: #f5f5f5; color: #444; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .dash-table td { padding: 8px 6px; border-bottom: 1px solid #eee; color: #333; }
+    .dash-table tr:last-child td { border-bottom: 0; }
+    .dash-table .num { text-align: right; font-weight: 600; }
+    .no-data { text-align: center; padding: 20px; color: #999; font-size: 13px; }
+
+    #offlineBanner { position: fixed; bottom: 0; left: 0; right: 0; background: #c62828; color: white; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; z-index: 99999; box-shadow: 0 -2px 8px rgba(0,0,0,0.2); }
+  </style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="logo-wrap"><img src="/icon-512.png" alt="KCT Plant"></div>
+    <h1>KCT Plant App</h1>
+    <div class="sub">Kakinada Coal Terminal</div>
+    <label for="loginUserId">User ID</label>
+    <input id="loginUserId" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">LOGIN</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="credit">Built by <b>Saurab Upadhyay</b><br>Kakinada Coal Terminal</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="homeScreen" class="hidden">
+  <div class="home-header">
+    <div class="greeting">Welcome back,</div>
+    <div class="name" id="homeUserName">—</div>
+    <div class="role" id="homeUserRole">—</div>
+  </div>
+  <div class="home-grid">
+    <div class="home-tile" onclick="openWorkForm()"><div class="icon">🔧</div><div class="label">WORK<br>INTIMATION</div><div class="sublabel">Start / Complete work</div></div>
+    <div class="home-tile" onclick="openIssuesScreen()"><div class="icon">📷</div><div class="label">REPORT<br>ISSUE</div><div class="sublabel">Snap &amp; submit</div></div>
+    <div class="home-tile" onclick="openHistory()"><div class="icon">📋</div><div class="label">MY<br>HISTORY</div><div class="sublabel">View past records</div></div>
+    <div class="home-tile" onclick="openToday()"><div class="icon">📊</div><div class="label">TODAY</div><div class="badge" id="todayBadge">0</div><div class="sublabel">Live plant status</div></div>
+    <div class="home-tile hidden" id="allIssuesTile" onclick="openAllIssues()"><div class="icon">🗂️</div><div class="label">ALL<br>ISSUES</div><div class="badge" id="allIssuesBadge">0</div><div class="sublabel">Manage &amp; resolve</div></div>
+    <div class="home-tile hidden" id="dashboardTile" onclick="openDashboard()"><div class="icon">📈</div><div class="label">DASH<br>BOARD</div><div class="sublabel">Analytics &amp; trends</div></div>
+  </div>
+  <div class="home-footer">
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+    <div class="credit">Built by <b>Saurab Upadhyay</b><br>KCT Plant App v3D</div>
+  </div>
+</div>
+
+<!-- WORK INTIMATION -->
+<div id="workScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">Work Intimation</div></div>
+  <div class="page-body">
+    <form id="workForm" autocomplete="off" onsubmit="submitWorkForm(event)">
+      <label class="form-label" for="wfStatus">Work Status *</label>
+      <select id="wfStatus" class="form-select" required onchange="changeWorkStatus()">
+        <option value="" selected>Select Status</option>
+        <option value="WORK STARTING">🟢 WORK STARTING</option>
+        <option value="WORK COMPLETED">🔵 WORK COMPLETED</option>
+      </select>
+      <div id="wfCommon" class="hidden">
+        <label class="form-label" for="wfEquipment">Equipment / Conveyor *</label>
+        <select id="wfEquipment" class="form-select" required>
+          <option value="">Select Equipment</option>
+          <option>C1</option><option>C2</option><option>C3</option><option>C4</option><option>C5</option><option>C6</option><option>C7</option>
+          <option>TH#1</option><option>TH#2</option><option>TH#3</option><option>SCR#1</option><option>SCR#2</option><option>RTL</option>
+          <option>TT1</option><option>TT2</option><option>TT3</option><option>TT4</option><option>TT5</option><option>TT6</option>
+        </select>
+        <label class="form-label" for="wfWorkType">Type of Work *</label>
+        <select id="wfWorkType" class="form-select" required>
+          <option value="">Select Work</option>
+          <option>Idler Replacement</option><option>Chute Cleaning</option><option>Take-up Cleaning</option>
+          <option>Belt Inspection</option><option>Belt Cleaning</option><option>Scraper Cleaning / Adjustment</option>
+          <option>Steel Cord / Patch Cutting</option><option>Minor Hot Work</option><option>Skirt Rubber Adjustment</option>
+        </select>
+        <label class="form-label" for="wfLocation">Exact Work Location *</label>
+        <input type="text" id="wfLocation" class="form-input" required>
+        <label class="form-label" for="wfShiftIncharge">Shift In-charge *</label>
+        <select id="wfShiftIncharge" class="form-select" required>
+          <option value="">Select Shift In-charge</option>
+          <option>Akshya Kumar Dash</option><option>Bidyut Kumar Kuiri</option><option>Biren Sahu</option>
+          <option>Hemanth Varma</option><option>Prashant Kumar Parida</option><option>Raj Kumar</option><option>Vamsi Krishna</option>
+        </select>
+        <label class="form-label" for="wfResponsible">Responsible Person *</label>
+        <input type="text" id="wfResponsible" class="form-input" required>
+      </div>
+      <div id="wfStartFields" class="hidden">
+        <div class="section-title">🟢 WORK STARTING DETAILS</div>
+        <label class="form-label" for="wfManpower">Number of Persons Engaged *</label>
+        <input type="number" id="wfManpower" class="form-input" min="1">
+        <label class="form-label" for="wfExpectedDuration">Expected Duration *</label>
+        <select id="wfExpectedDuration" class="form-select">
+          <option value="">Select Expected Duration</option>
+          <option>Less than 15 Minutes</option><option>15-30 Minutes</option><option>More Than 30 Minutes</option>
+        </select>
+        <label class="form-label" for="wfStartTime">Actual Work Start Time *</label>
+        <input type="time" id="wfStartTime" class="form-input">
+        <label class="form-label">Safety Confirmation</label>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;"><input type="checkbox" name="wfSafety" value="Control Room Informed"><span>Control Room Informed</span></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;"><input type="checkbox" name="wfSafety" value="Work Team Briefed"><span>Work Team Briefed</span></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;"><input type="checkbox" name="wfSafety" value="Required PPE Ensured"><span>Required PPE Ensured</span></div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;"><input type="checkbox" name="wfSafety" value="Work Area Checked and Made Safe"><span>Work Area Checked and Made Safe</span></div>
+      </div>
+      <div id="wfCompletionFields" class="hidden">
+        <div class="section-title">🔵 WORK COMPLETION DETAILS</div>
+        <label class="form-label" for="wfCompletionTime">Actual Work Completion Time *</label>
+        <input type="time" id="wfCompletionTime" class="form-input">
+        <label class="form-label" for="wfCompletionStatus">Completion Status *</label>
+        <select id="wfCompletionStatus" class="form-select">
+          <option value="">Select Status</option>
+          <option>Work Completed Successfully</option><option>Work Partially Completed</option>
+          <option>Work Stopped / Suspended</option><option>Further Work Required</option>
+        </select>
+        <label class="form-label" for="wfRemarks">Completion Remarks</label>
+        <textarea id="wfRemarks" class="form-textarea"></textarea>
+      </div>
+      <button type="submit" id="wfSubmitBtn" class="primary-btn">SUBMIT</button>
+      <div class="error-box" id="wfError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- WORK SUCCESS -->
+<div id="successScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">Success</div></div>
+  <div class="success-screen">
+    <div class="check">✅</div>
+    <h2 id="successTitle">Data Saved Successfully</h2>
+    <p id="successMessage">Your work intimation has been recorded.</p>
+    <a id="whatsappLink" class="whatsapp-btn" href="#" target="_blank" rel="noopener">📱 SHARE TO WHATSAPP GROUP</a>
+    <p style="margin-top:20px;color:#666;font-size:13px;">You can tap the back arrow or Logout when finished.</p>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="historyScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title" id="historyPageTitle">My History</div></div>
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div><label class="filter-label">Date Range</label><select id="hDateRange" class="filter-input" onchange="historyReload()"><option value="today">Today</option><option value="week" selected>Last 7 Days</option><option value="month">Last 30 Days</option><option value="all">All Time</option></select></div>
+        <div><label class="filter-label">Equipment</label><select id="hEquipment" class="filter-input" onchange="historyReload()"><option value="">All Equipment</option></select></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <div id="tabWork" class="tab active" onclick="historyShowTab('work')">Work <span class="count" id="cntWork">0</span></div>
+      <div id="tabIssues" class="tab" onclick="historyShowTab('issues')">Issues <span class="count" id="cntIssues">0</span></div>
+    </div>
+    <div id="historyWorkList" class="list"><div class="loading">Loading…</div></div>
+    <div id="historyIssueList" class="list hidden"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- TODAY -->
+<div id="todayScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div><div class="title">Today</div><div class="subtitle" id="todayDateLabel">—</div></div></div>
+  <div class="page-body">
+    <div class="summary-grid">
+      <div class="summary-tile"><div class="num" id="tWorkCount">0</div><div class="lbl">Work Items</div></div>
+      <div class="summary-tile"><div class="num" id="tIssueCount">0</div><div class="lbl">Issues</div></div>
+      <div class="summary-tile alert"><div class="num" id="tBadge">0</div><div class="lbl">Open / Critical</div></div>
+    </div>
+    <div class="section-heading">Today's Work</div>
+    <div id="todayWorkList"><div class="loading">Loading…</div></div>
+    <div class="section-heading">Today's Issues</div>
+    <div id="todayIssueList"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ISSUES (Report) -->
+<div id="issuesScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">Report Issue</div></div>
+  <div class="page-body">
+    <div id="photoArea" class="photo-area hidden"><img id="photoPreview" alt="Issue photo"></div>
+    <div id="photoPicker">
+      <div class="photo-area" style="border-style:dashed;cursor:default;"><div class="cam-icon">📷</div><div class="hint">ADD A PHOTO</div><div class="sub">Required — take or choose a photo of the issue</div></div>
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="openCamera()"><span class="ic">📷</span><span>Take Photo</span></button>
+        <button type="button" class="photo-btn gallery" onclick="openGallery()"><span class="ic">🖼️</span><span>Choose from Gallery</span></button>
+      </div>
+    </div>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="onPhotoChosen(event)">
+    <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="onPhotoChosen(event)">
+    <div id="photoActions" class="photo-actions hidden"><button type="button" class="retake-btn" onclick="openCamera()">🔄 RETAKE</button><button type="button" class="remove-btn" onclick="removePhoto()">🗑️ REMOVE</button></div>
+    <label class="form-label" for="isIssueType">Issue Type *</label>
+    <select id="isIssueType" class="form-select"><option value="">Select Issue Type</option><option>Mechanical</option><option>Electrical</option><option>Structural</option><option>Safety</option><option>Housekeeping</option><option>Other</option></select>
+    <label class="form-label" for="isEquipment">Equipment *</label>
+    <select id="isEquipment" class="form-select"><option value="">Select Equipment</option><option>C1</option><option>C2</option><option>C3</option><option>C4</option><option>C5</option><option>C6</option><option>C7</option><option>TH#1</option><option>TH#2</option><option>TH#3</option><option>SCR#1</option><option>SCR#2</option><option>RTL</option><option>TT1</option><option>TT2</option><option>TT3</option><option>TT4</option><option>TT5</option><option>TT6</option></select>
+    <label class="form-label" for="isLocation">Location *</label>
+    <input type="text" id="isLocation" class="form-input" placeholder="e.g. Pillar 24, Boom conveyor">
+    <label class="form-label" for="isPriority">Priority *</label>
+    <select id="isPriority" class="form-select"><option value="">Select Priority</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select>
+    <label class="form-label" for="isDescription">Description *</label>
+    <textarea id="isDescription" class="form-textarea" placeholder="What's the issue? Any relevant detail."></textarea>
+    <button type="button" id="isSubmitBtn" class="primary-btn" onclick="submitIssueForm()">SUBMIT ISSUE</button>
+    <div class="error-box" id="isError"></div>
+  </div>
+</div>
+
+<!-- ISSUE SUCCESS -->
+<div id="issueSuccessScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">Issue Reported</div></div>
+  <div class="success-screen">
+    <div class="check">✅</div><h2>Issue Reported Successfully</h2>
+    <p style="color:#555;">Your issue has been logged and the in-charges have been notified.</p>
+    <a id="issueWhatsappLink" class="whatsapp-btn" href="#" target="_blank" rel="noopener">📱 SHARE TO WHATSAPP GROUP</a>
+    <p style="margin-top:20px;color:#666;font-size:13px;">Tap Share, pick the plant group, and send.<br>You can tap back to return home.</p>
+  </div>
+</div>
+
+<!-- ALL ISSUES -->
+<div id="allIssuesScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">All Issues</div></div>
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div><label class="filter-label">Priority</label><select id="aiPriority" class="filter-input" onchange="allIssuesLoad()"><option value="">All</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+        <div><label class="filter-label">Equipment</label><select id="aiEquipment" class="filter-input" onchange="allIssuesLoad()"><option value="">All</option></select></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <div id="aiTab-open" class="tab active" onclick="allIssuesSetTab('open')">Open</div>
+      <div id="aiTab-inprogress" class="tab" onclick="allIssuesSetTab('inprogress')">In Progress</div>
+      <div id="aiTab-resolved" class="tab" onclick="allIssuesSetTab('resolved')">Resolved</div>
+      <div id="aiTab-all" class="tab" onclick="allIssuesSetTab('all')">All</div>
+    </div>
+    <div id="allIssuesList" class="list"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ISSUE DETAIL -->
+<div id="issueDetailScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="backFromIssueDetail()">←</div><div class="title">Issue Detail</div></div>
+  <div class="page-body">
+    <div id="issueDetailBody"><div class="loading">Loading…</div></div>
+    <div id="issueDetailActions" class="hidden" style="margin-top:20px;">
+      <button id="assignBtn" class="secondary-btn" onclick="openAssignModal()">🔧 ASSIGN ISSUE</button>
+      <button id="inProgressBtn" class="secondary-btn" onclick="markInProgress()">⏳ MARK IN PROGRESS</button>
+      <button id="resolveBtn" class="primary-btn" onclick="openResolveModal()">✅ MARK RESOLVED</button>
+    </div>
+    <div class="error-box" id="issueDetailError"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardScreen" class="hidden">
+  <div class="page-header"><div class="back" onclick="goHome()">←</div><div class="title">Dashboard</div></div>
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div><label class="filter-label">Date Range</label><select id="dbRange" class="filter-input" onchange="dashboardLoad()"><option value="7d">Last 7 Days</option><option value="30d" selected>Last 30 Days</option><option value="90d">Last 90 Days</option><option value="all">All Time</option></select></div>
+        <div><label class="filter-label">Equipment</label><select id="dbEquipment" class="filter-input" onchange="dashboardLoad()"><option value="">All Equipment</option></select></div>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-tile"><div class="kpi-value" id="kpiOpen">—</div><div class="kpi-label">Open Issues</div></div>
+      <div class="kpi-tile"><div class="kpi-value" id="kpiMttr">—</div><div class="kpi-label">Avg Resolve Time</div><div class="kpi-sub" id="kpiMttrSub"></div></div>
+      <div class="kpi-tile"><div class="kpi-value" id="kpiMonth">—</div><div class="kpi-label">Work This Month</div></div>
+      <div class="kpi-tile"><div class="kpi-value" id="kpiPending">—</div><div class="kpi-label">Pending Work</div></div>
+    </div>
+    <div class="chart-card"><div class="chart-title">📈 Issues Trend (Last 30 Days)</div><div id="trendChart" class="chart-body"></div></div>
+    <div class="chart-card"><div class="chart-title">🔧 Issues by Equipment</div><div id="equipChart" class="chart-body"></div></div>
+    <div class="chart-row">
+      <div class="chart-card half"><div class="chart-title">⚠️ By Priority</div><div id="priorityChart" class="chart-body"></div></div>
+      <div class="chart-card half"><div class="chart-title">📊 By Status</div><div id="statusChart" class="chart-body"></div></div>
+    </div>
+    <div class="chart-card"><div class="chart-title">🏷️ Issues by Type</div><div id="typeChart" class="chart-body"></div></div>
+    <div class="chart-card"><div class="chart-title">👷 Work by Shift In-charge</div><div id="shiftTable" class="chart-body"></div></div>
+    <div class="chart-card"><div class="chart-title">🏅 Top Reporters</div><div id="topReportersChart" class="chart-body"></div></div>
+    <div class="chart-card"><div class="chart-title">⏰ Aging Issues (&gt; 3 days open)</div><div id="agingTable" class="chart-body"></div></div>
+  </div>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div id="assignModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3>Assign Issue</h3>
+    <label class="form-label" for="assignUser">Assign To *</label>
+    <select id="assignUser" class="form-select"><option value="">Loading…</option></select>
+    <div class="error-box" id="assignError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeAssignModal()">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitAssign()" id="assignSubmitBtn">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESOLVE MODAL -->
+<div id="resolveModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3>Mark Resolved</h3>
+    <label class="form-label">Resolution Photo *</label>
+    <div id="resolvePhotoArea" class="photo-area hidden" style="margin-top:6px;"><img id="resolvePhotoPreview" alt="Resolution photo"></div>
+    <div id="resolvePhotoPicker" style="margin-top:6px;">
+      <div class="photo-area" style="border-style:dashed;cursor:default;min-height:120px;"><div class="cam-icon" style="font-size:32px;">📷</div><div class="hint" style="font-size:13px;">Add a photo of the resolved state</div></div>
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="resolvePhotoCamera()"><span class="ic">📷</span><span>Take Photo</span></button>
+        <button type="button" class="photo-btn gallery" onclick="resolvePhotoGallery()"><span class="ic">🖼️</span><span>Choose from Gallery</span></button>
+      </div>
+    </div>
+    <input type="file" id="resolveCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onResolvePhotoChosen(event)">
+    <input type="file" id="resolveGalleryInput" accept="image/*" style="display:none" onchange="onResolvePhotoChosen(event)">
+    <label class="form-label" for="resolveNotes">Resolution Notes *</label>
+    <textarea id="resolveNotes" class="form-textarea" placeholder="What was done to resolve the issue?"></textarea>
+    <div class="error-box" id="resolveError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeResolveModal()">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitResolve()" id="resolveSubmitBtn">Resolve</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUSY OVERLAY -->
+<div id="busyOverlay" class="busy-overlay hidden"><div class="box"><div class="spinner"></div><div id="busyText">Uploading photo…</div></div></div>
+
+<script>
+/* ============================================================
+   ⚠️ REPLACE THIS WITH YOUR APPS SCRIPT /exec URL
+   ============================================================ */
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE";
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let SESSION_TOKEN = null;
+let CURRENT_USER = null;
+let CURRENT_ISSUE = null;
+let CURRENT_ISSUE_BACK_TO = "home";
+let ALL_ISSUES_TAB = "open";
+let HISTORY_TAB = "work";
+let HISTORY_EQUIP_LOADED = false;
+let DASHBOARD_EQUIP_LOADED = false;
+let capturedPhotoBase64 = null;
+let capturedPhotoMime = "image/jpeg";
+let capturedPhotoName = "photo.jpg";
+let RESOLVE_PHOTO_B64 = null;
+let RESOLVE_PHOTO_MIME = "image/jpeg";
+
+const SCREENS = ["loginScreen","homeScreen","workScreen","successScreen","historyScreen","todayScreen","issuesScreen","issueSuccessScreen","allIssuesScreen","issueDetailScreen","dashboardScreen"];
+const PRIORITY_COLORS = { "Low":"#9e9e9e","Medium":"#1976d2","High":"#f57c00","Critical":"#d32f2f" };
+const STATUS_COLORS = { "Open":"#f57c00","In Progress":"#1976d2","Resolved":"#0288d1" };
+
+/* ============================================================
+   API HELPER
+   ============================================================ */
+function apiCall(action, payload) {
+  return new Promise(function (resolve, reject) {
+    fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data && data.error) reject(new Error(data.error));
+      else resolve(data);
+    })
+    .catch(function (err) { reject(new Error(err.message || "Network error")); });
+  });
+}
+
+/* ============================================================
+   NAV
+   ============================================================ */
+function showScreen(id) {
+  SCREENS.forEach(function (s) { const el = document.getElementById(s); if (el) el.classList.add("hidden"); });
+  const t = document.getElementById(id); if (t) t.classList.remove("hidden");
+  window.scrollTo(0, 0);
+}
+function goHome() {
+  if (!SESSION_TOKEN) { showScreen("loginScreen"); return; }
+  showScreen("homeScreen");
+  refreshTodayBadge();
+  if (CURRENT_USER && (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin")) refreshAllIssuesBadge();
+}
+function backFromIssueDetail() {
+  if (CURRENT_ISSUE_BACK_TO === "allIssues") openAllIssues(); else goHome();
+}
+function esc_(s) {
+  return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function showLoginError(msg) { const b = document.getElementById("loginError"); b.textContent = msg; b.classList.add("visible"); }
+function clearLoginError() { const b = document.getElementById("loginError"); b.textContent = ""; b.classList.remove("visible"); }
+
+function doLogin() {
+  clearLoginError();
+  const userId = document.getElementById("loginUserId").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  if (!userId || !password) { showLoginError("Please enter User ID and Password."); return; }
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true; btn.textContent = "LOGGING IN...";
+  apiCall("loginUser", { userId: userId, password: password })
+    .then(function (res) {
+      btn.disabled = false; btn.textContent = "LOGIN";
+      if (!res || !res.success) { showLoginError(res && res.message ? res.message : "Login failed."); return; }
+      SESSION_TOKEN = res.token; CURRENT_USER = res.user;
+      try { localStorage.setItem("kct_token", SESSION_TOKEN); } catch (e) {}
+      if (CURRENT_USER.mustChangePassword) { promptPasswordChange(); return; }
+      showHome();
+    })
+    .catch(function (err) { btn.disabled = false; btn.textContent = "LOGIN"; showLoginError(err.message || "Login failed."); });
+}
+
+function promptPasswordChange() {
+  const newPwd = prompt("Welcome, " + CURRENT_USER.name + ".\n\nFor security, please set a new password (minimum 6 characters).");
+  if (!newPwd || newPwd.length < 6) { alert("Password must be at least 6 characters. Please log in again."); doLogout(); return; }
+  const confirmPwd = prompt("Re-enter the new password to confirm:");
+  if (confirmPwd !== newPwd) { alert("Passwords do not match. Please log in again."); doLogout(); return; }
+  apiCall("changePassword", { token: SESSION_TOKEN, oldPassword: "kct@123", newPassword: newPwd })
+    .then(function (res) {
+      if (res && res.success) { alert("Password updated. Welcome!"); CURRENT_USER.mustChangePassword = false; showHome(); }
+      else { alert(res && res.message ? res.message : "Password change failed."); doLogout(); }
+    })
+    .catch(function (err) { alert(err.message || "Password change failed."); doLogout(); });
+}
+
+function showHome() {
+  document.getElementById("homeUserName").textContent = CURRENT_USER ? CURRENT_USER.name : "—";
+  document.getElementById("homeUserRole").textContent = CURRENT_USER ? CURRENT_USER.role : "—";
+  const isManager = CURRENT_USER && (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
+  const ai = document.getElementById("allIssuesTile"); if (ai) ai.classList.toggle("hidden", !isManager);
+  const db = document.getElementById("dashboardTile"); if (db) db.classList.toggle("hidden", !isManager);
+  showScreen("homeScreen");
+  refreshTodayBadge();
+  if (isManager) refreshAllIssuesBadge();
+}
+
+function doLogout() {
+  if (SESSION_TOKEN) apiCall("logoutUser", { token: SESSION_TOKEN }).catch(function(){});
+  SESSION_TOKEN = null; CURRENT_USER = null;
+  try { localStorage.removeItem("kct_token"); } catch (e) {}
+  document.getElementById("loginUserId").value = ""; document.getElementById("loginPassword").value = "";
+  clearLoginError(); showScreen("loginScreen");
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+function refreshTodayBadge() {
+  if (!SESSION_TOKEN) return;
+  apiCall("getToday", { token: SESSION_TOKEN }).then(function (res) {
+    const b = document.getElementById("todayBadge"); if (!b) return;
+    if (res && res.success && res.badgeCount > 0) { b.textContent = res.badgeCount; b.classList.add("visible"); }
+    else b.classList.remove("visible");
+  }).catch(function(){});
+}
+function refreshAllIssuesBadge() {
+  if (!SESSION_TOKEN) return;
+  apiCall("getAllIssues", { token: SESSION_TOKEN, filters: { scope: "all" } }).then(function (res) {
+    const b = document.getElementById("allIssuesBadge"); if (!b) return;
+    if (res && res.success) {
+      const openCount = res.items.filter(function (it) { return it.status !== "Resolved"; }).length;
+      if (openCount > 0) { b.textContent = openCount; b.classList.add("visible"); } else b.classList.remove("visible");
+    }
+  }).catch(function(){});
+}
+
+/* ============================================================
+   WORK INTIMATION
+   ============================================================ */
+function openWorkForm() {
+  document.getElementById("workForm").reset();
+  document.getElementById("wfError").classList.remove("visible");
+  document.getElementById("wfCommon").classList.add("hidden");
+  document.getElementById("wfStartFields").classList.add("hidden");
+  document.getElementById("wfCompletionFields").classList.add("hidden");
+  showScreen("workScreen");
+}
+function changeWorkStatus() {
+  const status = document.getElementById("wfStatus").value;
+  document.getElementById("wfCommon").classList.add("hidden");
+  document.getElementById("wfStartFields").classList.add("hidden");
+  document.getElementById("wfCompletionFields").classList.add("hidden");
+  if (status === "WORK STARTING") { document.getElementById("wfCommon").classList.remove("hidden"); document.getElementById("wfStartFields").classList.remove("hidden"); }
+  if (status === "WORK COMPLETED") { document.getElementById("wfCommon").classList.remove("hidden"); document.getElementById("wfCompletionFields").classList.remove("hidden"); }
+}
+function showWorkError(msg) { const b = document.getElementById("wfError"); b.textContent = msg; b.classList.add("visible"); window.scrollTo(0, document.body.scrollHeight); }
+
+function submitWorkForm(e) {
+  e.preventDefault();
+  document.getElementById("wfError").classList.remove("visible");
+  const btn = document.getElementById("wfSubmitBtn"); if (btn.disabled) return;
+  const status = document.getElementById("wfStatus").value;
+  if (!status) { alert("Please select Work Status."); return; }
+  const requiredCommon = [["wfEquipment","Equipment"],["wfWorkType","Type of Work"],["wfLocation","Exact Work Location"],["wfShiftIncharge","Shift In-charge"],["wfResponsible","Responsible Person"]];
+  for (const item of requiredCommon) {
+    const v = document.getElementById(item[0]).value.trim();
+    if (!v) { alert("Please enter/select " + item[1] + "."); document.getElementById(item[0]).focus(); return; }
+  }
+  if (status === "WORK STARTING") {
+    if (!document.getElementById("wfManpower").value) { alert("Please enter Number of Persons Engaged."); return; }
+    if (!document.getElementById("wfExpectedDuration").value) { alert("Please select Expected Duration."); return; }
+    if (!document.getElementById("wfStartTime").value) { alert("Please enter Actual Work Start Time."); return; }
+  }
+  if (status === "WORK COMPLETED") {
+    if (!document.getElementById("wfCompletionTime").value) { alert("Please enter Actual Work Completion Time."); return; }
+    if (!document.getElementById("wfCompletionStatus").value) { alert("Please select Completion Status."); return; }
+  }
+  btn.disabled = true; btn.textContent = "SUBMITTING...";
+  const safetyItems = Array.from(document.querySelectorAll('input[name="wfSafety"]:checked')).map(function (x) { return x.value; });
+  const cleanTime = function (v) { return v ? String(v).slice(0,5) : ""; };
+  const data = {
+    clientId: "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10),
+    status: status,
+    equipment: document.getElementById("wfEquipment").value,
+    workType: document.getElementById("wfWorkType").value,
+    location: document.getElementById("wfLocation").value.toUpperCase(),
+    shiftIncharge: document.getElementById("wfShiftIncharge").value,
+    responsible: document.getElementById("wfResponsible").value.toUpperCase(),
+    manpower: document.getElementById("wfManpower").value,
+    expectedDuration: document.getElementById("wfExpectedDuration").value,
+    startTime: cleanTime(document.getElementById("wfStartTime").value),
+    completionTime: cleanTime(document.getElementById("wfCompletionTime").value),
+    safety: safetyItems.join(", "),
+    completionStatus: document.getElementById("wfCompletionStatus").value,
+    remarks: document.getElementById("wfRemarks").value
+  };
+  apiCall("submitWork", { token: SESSION_TOKEN, formData: data })
+    .then(function (result) {
+      btn.disabled = false; btn.textContent = "SUBMIT";
+      if (!result || !result.success) { showWorkError(result && result.message ? result.message : "Submission failed."); return; }
+      showWorkSuccess(result, data, safetyItems);
+    })
+    .catch(function (err) {
+      btn.disabled = false; btn.textContent = "SUBMIT";
+      const msg = err.message || "Submission failed.";
+      if (msg === "SESSION_EXPIRED") { alert("Your session has expired. Please log in again."); doLogout(); return; }
+      showWorkError(msg);
+    });
+}
+
+function showWorkSuccess(result, data, safetyItems) {
+  let message = "";
+  if (data.status === "WORK STARTING") {
+    const safetyText = safetyItems.length ? safetyItems.map(function (x) { return "✅ " + x; }).join("\n") : "✅ Not specified";
+    message = "🔴 *RUNNING PLANT WORK INTIMATION*\n✅ *STATUS: WORK STARTED*\n\n🗓️ *Date:* " + result.date + "\n⏰ *Start Time:* " + result.startTime + "\n\n🔧 *Work:* " + data.workType + "\n🔩 *Equipment:* " + data.equipment + "\n📍 *Location:* " + data.location + "\n\n👷 *Shift In-charge:* " + data.shiftIncharge + "\n👷 *Responsible:* " + data.responsible + "\n👥 *Manpower:* " + data.manpower + " Nos.\n⏳ *Expected Duration:* " + data.expectedDuration + "\n\n*Safety Confirmation:*\n" + safetyText + "\n\n✅ *STATUS: WORK STARTED*";
+  } else {
+    message = "🔵 *RUNNING PLANT WORK COMPLETION*\n🔵 *STATUS: WORK COMPLETED*\n\n🗓️ *Date:* " + result.date + "\n⏰ *Start Time:* " + (result.startTime || "Not available") + "\n⏰ *Completion Time:* " + result.completionTime + "\n\n⏳ *Total Work Duration:* " + result.duration + "\n\n🔧 *Work:* " + data.workType + "\n🔩 *Equipment:* " + data.equipment + "\n📍 *Location:* " + data.location + "\n\n👷 *Shift In-charge:* " + data.shiftIncharge + "\n👷 *Responsible:* " + data.responsible + "\n\n📌 *Completion Status:*\n" + data.completionStatus + "\n\n📝 *Remarks:*\n" + (data.remarks || "Not specified") + "\n\n🔵 *STATUS: WORK COMPLETED*";
+  }
+  document.getElementById("whatsappLink").href = "https://wa.me/?text=" + encodeURIComponent(message);
+  document.getElementById("successTitle").textContent = "Data Saved Successfully";
+  document.getElementById("successMessage").textContent = "Your work intimation has been recorded.";
+  showScreen("successScreen");
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+function openHistory() {
+  showScreen("historyScreen");
+  if (!HISTORY_EQUIP_LOADED) {
+    apiCall("getEquipmentList", {}).then(function (list) {
+      const sel = document.getElementById("hEquipment");
+      (list || []).forEach(function (eq) { const o = document.createElement("option"); o.value = eq; o.textContent = eq; sel.appendChild(o); });
+      HISTORY_EQUIP_LOADED = true;
+    }).catch(function(){});
+  }
+  historyReload();
+}
+function historyShowTab(name) {
+  HISTORY_TAB = name;
+  document.getElementById("tabWork").classList.toggle("active", name === "work");
+  document.getElementById("tabIssues").classList.toggle("active", name === "issues");
+  document.getElementById("historyWorkList").classList.toggle("hidden", name !== "work");
+  document.getElementById("historyIssueList").classList.toggle("hidden", name !== "issues");
+}
+function historyReload() {
+  if (!SESSION_TOKEN) return;
+  document.getElementById("historyWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+  document.getElementById("historyIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+  const filters = { dateRange: document.getElementById("hDateRange").value, equipment: document.getElementById("hEquipment").value };
+  apiCall("getHistory", { token: SESSION_TOKEN, filters: filters })
+    .then(function (res) {
+      if (!res || !res.success) {
+        document.getElementById("historyWorkList").innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(res && res.message ? res.message : "Failed to load.") + "</div>";
+        return;
+      }
+      document.getElementById("cntWork").textContent = res.workCount;
+      document.getElementById("cntIssues").textContent = res.issueCount;
+      document.getElementById("historyPageTitle").textContent = res.ownOnly ? "My History" : "Plant History";
+      renderHistoryWork_(res.work);
+      renderHistoryIssues_(res.issues);
+    })
+    .catch(function (err) {
+      document.getElementById("historyWorkList").innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(err.message) + "</div>";
+    });
+}
+function renderHistoryWork_(items) {
+  const el = document.getElementById("historyWorkList");
+  if (!items || !items.length) { el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work records in this range.</div>"; return; }
+  el.innerHTML = items.map(function (it) {
+    const cls = it.isPending ? "pending" : "complete";
+    const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+    return "<div class='card " + cls + "'><div class='card-head'><div class='card-title'>" + esc_(it.equipment) + " — " + esc_(it.workType) + "</div><div class='card-date'>" + esc_(it.dateLabel) + "</div></div><div>" + pill + "</div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div><div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + esc_(it.responsible) + "</span></div><div class='card-row'><span class='lbl'>Start</span><span class='val'>" + esc_(it.startTime || "—") + "</span></div>" + (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + esc_(it.completionTime) + "</span></div>" : "") + (it.duration ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + esc_(it.duration) + "</span></div>" : "") + "</div>";
+  }).join("");
+}
+function renderHistoryIssues_(items) {
+  const el = document.getElementById("historyIssueList");
+  if (!items || !items.length) { el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues in this range.</div>"; return; }
+  el.innerHTML = items.map(function (it) {
+    const prio = String(it.priority || "").toLowerCase();
+    const status = String(it.status || "Open").toLowerCase().replace(/\s+/g, "");
+    return "<div class='card issue-" + esc_(prio) + "'><div class='card-head'><div class='card-title issue'>" + esc_(it.issueType) + " — " + esc_(it.equipment) + "</div><div class='card-date'>" + esc_(it.dateLabel) + "</div></div><div><span class='pill " + esc_(prio) + "'>" + esc_(it.priority) + "</span><span class='pill " + status + "'>" + esc_(it.status) + "</span></div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div>" + (it.assignedTo ? "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + esc_(it.assignedTo) + "</span></div>" : "") + (it.description ? "<div class='card-desc'>" + esc_(it.description) + "</div>" : "") + (it.photoUrl ? "<a href='" + esc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + esc_(it.photoUrl) + "' alt='issue photo'></a>" : "") + "</div>";
+  }).join("");
+}
+
+/* ============================================================
+   TODAY
+   ============================================================ */
+function openToday() { showScreen("todayScreen"); todayLoad(); }
+function todayLoad() {
+  if (!SESSION_TOKEN) return;
+  document.getElementById("todayWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+  document.getElementById("todayIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+  apiCall("getToday", { token: SESSION_TOKEN })
+    .then(function (res) {
+      if (!res || !res.success) {
+        document.getElementById("todayWorkList").innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(res && res.message ? res.message : "Failed to load.") + "</div>";
+        document.getElementById("todayIssueList").innerHTML = "";
+        return;
+      }
+      document.getElementById("todayDateLabel").textContent = res.dateLabel || "";
+      document.getElementById("tWorkCount").textContent = res.workCount;
+      document.getElementById("tIssueCount").textContent = res.issueCount;
+      document.getElementById("tBadge").textContent = res.badgeCount;
+      renderTodayWork_(res.work);
+      renderTodayIssues_(res.issues);
+    })
+    .catch(function (err) {
+      document.getElementById("todayWorkList").innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(err.message) + "</div>";
+    });
+}
+function renderTodayWork_(items) {
+  const el = document.getElementById("todayWorkList");
+  if (!items || !items.length) { el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work logged today yet.</div>"; return; }
+  el.innerHTML = items.map(function (it) {
+    const cls = it.isPending ? "pending" : "complete";
+    const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+    return "<div class='card " + cls + "'><div class='card-head'><div class='card-title'>" + esc_(it.equipment) + " — " + esc_(it.workType) + "</div></div><div>" + pill + "</div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div><div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + esc_(it.responsible) + "</span></div><div class='card-row'><span class='lbl'>Start</span><span class='val'>" + esc_(it.startTime || "—") + "</span></div>" + (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + esc_(it.completionTime) + "</span></div>" : "") + "</div>";
+  }).join("");
+}
+function renderTodayIssues_(items) {
+  const el = document.getElementById("todayIssueList");
+  if (!items || !items.length) { el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues reported today.</div>"; return; }
+  el.innerHTML = items.map(function (it) {
+    const prio = String(it.priority || "").toLowerCase();
+    const status = String(it.status || "Open").toLowerCase().replace(/\s+/g, "");
+    return "<div class='card issue-" + esc_(prio) + "'><div class='card-head'><div class='card-title issue'>" + esc_(it.issueType) + " — " + esc_(it.equipment) + "</div></div><div><span class='pill " + esc_(prio) + "'>" + esc_(it.priority) + "</span><span class='pill " + status + "'>" + esc_(it.status) + "</span></div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div><div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + esc_(it.reportedBy) + "</span></div>" + (it.description ? "<div class='card-desc'>" + esc_(it.description) + "</div>" : "") + (it.photoUrl ? "<a href='" + esc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + esc_(it.photoUrl) + "' alt='issue photo'></a>" : "") + "</div>";
+  }).join("");
+}
+
+/* ============================================================
+   ISSUES (Report)
+   ============================================================ */
+function openIssuesScreen() { resetIssueForm(); showScreen("issuesScreen"); }
+function resetIssueForm() {
+  capturedPhotoBase64 = null;
+  document.getElementById("photoArea").classList.add("hidden");
+  document.getElementById("photoPicker").classList.remove("hidden");
+  document.getElementById("photoActions").classList.add("hidden");
+  document.getElementById("photoPreview").src = "";
+  document.getElementById("isIssueType").value = "";
+  document.getElementById("isEquipment").value = "";
+  document.getElementById("isLocation").value = "";
+  document.getElementById("isPriority").value = "";
+  document.getElementById("isDescription").value = "";
+  document.getElementById("isError").classList.remove("visible");
+  try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+  try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+}
+function openCamera() { document.getElementById("cameraInput").click(); }
+function openGallery() { document.getElementById("galleryInput").click(); }
+function removePhoto() {
+  capturedPhotoBase64 = null;
+  document.getElementById("photoArea").classList.add("hidden");
+  document.getElementById("photoPicker").classList.remove("hidden");
+  document.getElementById("photoActions").classList.add("hidden");
+  document.getElementById("photoPreview").src = "";
+  try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+  try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+}
+function onPhotoChosen(evt) {
+  const file = evt.target.files && evt.target.files[0]; if (!file) return;
+  capturedPhotoMime = file.type || "image/jpeg";
+  capturedPhotoName = file.name || "photo.jpg";
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    compressImage_(e.target.result, 1200, 0.7, function (compressed) {
+      const comma = compressed.indexOf(",");
+      capturedPhotoBase64 = compressed.substring(comma + 1);
+      document.getElementById("photoPreview").src = compressed;
+      document.getElementById("photoArea").classList.remove("hidden");
+      document.getElementById("photoPicker").classList.add("hidden");
+      document.getElementById("photoActions").classList.remove("hidden");
+    });
+  };
+  reader.readAsDataURL(file);
+}
+function compressImage_(dataUrl, maxWidth, quality, callback) {
+  const img = new Image();
+  img.onload = function () {
+    let w = img.width, h = img.height;
+    if (w > maxWidth) { h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+    const canvas = document.createElement("canvas"); canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, w, h);
+    try { callback(canvas.toDataURL("image/jpeg", quality)); } catch (err) { callback(dataUrl); }
+  };
+  img.onerror = function () { callback(dataUrl); };
+  img.src = dataUrl;
+}
+function isShowError(msg) { const b = document.getElementById("isError"); b.textContent = msg; b.classList.add("visible"); window.scrollTo(0, document.body.scrollHeight); }
+function showBusy(text) { document.getElementById("busyText").textContent = text || "Uploading…"; document.getElementById("busyOverlay").classList.remove("hidden"); }
+function hideBusy() { document.getElementById("busyOverlay").classList.add("hidden"); }
+
+function submitIssueForm() {
+  document.getElementById("isError").classList.remove("visible");
+  if (!capturedPhotoBase64) { alert("Please take or choose a photo of the issue."); return; }
+  const issueType = document.getElementById("isIssueType").value;
+  const equipment = document.getElementById("isEquipment").value;
+  const location = document.getElementById("isLocation").value.trim();
+  const priority = document.getElementById("isPriority").value;
+  const description = document.getElementById("isDescription").value.trim();
+  if (!issueType) { alert("Please select Issue Type."); return; }
+  if (!equipment) { alert("Please select Equipment."); return; }
+  if (!location) { alert("Please enter Location."); return; }
+  if (!priority) { alert("Please select Priority."); return; }
+  if (!description) { alert("Please enter Description."); return; }
+  const btn = document.getElementById("isSubmitBtn"); btn.disabled = true; showBusy("Uploading photo…");
+  const payload = { clientId: "is-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,10), issueType: issueType, equipment: equipment, location: location.toUpperCase(), priority: priority, description: description, photoBase64: capturedPhotoBase64, photoMime: capturedPhotoMime, photoName: capturedPhotoName };
+  if (!SESSION_TOKEN) { hideBusy(); btn.disabled = false; alert("Session lost. Please log in again."); return; }
+  apiCall("submitIssue", { token: SESSION_TOKEN, payload: payload })
+    .then(function (result) {
+      hideBusy(); btn.disabled = false;
+      if (!result || !result.success) { isShowError(result && result.message ? result.message : "Submission failed."); return; }
+      showIssueSuccess(result, payload);
+    })
+    .catch(function (err) {
+      hideBusy(); btn.disabled = false;
+      const msg = err.message || "Submission failed.";
+      if (msg === "SESSION_EXPIRED") { alert("Your session has expired. Please log in again."); return; }
+      isShowError(msg);
+    });
+}
+function showIssueSuccess(result, data) {
+  const prioEmoji = { "Low":"🟢","Medium":"🟡","High":"🟠","Critical":"🔴" }[data.priority] || "⚠️";
+  const message = prioEmoji + " *NEW PLANT ISSUE REPORTED*\n\n🏷️ *Issue Type:* " + data.issueType + "\n🔩 *Equipment:* " + data.equipment + "\n📍 *Location:* " + data.location + "\n⚠️ *Priority:* " + data.priority + "\n\n📝 *Description:*\n" + data.description + "\n\n👤 *Reported By:* " + result.reportedBy + "\n🗓️ *Reported At:* " + result.reportedAt + "\n\n📷 *Photo:*\n" + result.photoUrl + "\n\nPlease review and take action.";
+  document.getElementById("issueWhatsappLink").href = "https://wa.me/?text=" + encodeURIComponent(message);
+  showScreen("issueSuccessScreen");
+}
+
+/* ============================================================
+   ALL ISSUES
+   ============================================================ */
+function openAllIssues() {
+  CURRENT_ISSUE_BACK_TO = "allIssues";
+  showScreen("allIssuesScreen");
+  if (!document.getElementById("aiEquipment").dataset.loaded) {
+    apiCall("getEquipmentList", {}).then(function (list) {
+      const sel = document.getElementById("aiEquipment");
+      (list || []).forEach(function (eq) { const o = document.createElement("option"); o.value = eq; o.textContent = eq; sel.appendChild(o); });
+      document.getElementById("aiEquipment").dataset.loaded = "1";
+    }).catch(function(){});
+  }
+  allIssuesLoad();
+}
+function allIssuesSetTab(tab) {
+  ALL_ISSUES_TAB = tab;
+  ["open","inprogress","resolved","all"].forEach(function (t) {
+    const el = document.getElementById("aiTab-" + t); if (el) el.classList.toggle("active", t === tab);
+  });
+  allIssuesLoad();
+}
+function allIssuesLoad() {
+  if (!SESSION_TOKEN) return;
+  const list = document.getElementById("allIssuesList");
+  list.innerHTML = "<div class='loading'>Loading…</div>";
+  let statusFilter = "";
+  if (ALL_ISSUES_TAB === "open") statusFilter = "Open";
+  if (ALL_ISSUES_TAB === "inprogress") statusFilter = "In Progress";
+  if (ALL_ISSUES_TAB === "resolved") statusFilter = "Resolved";
+  const filters = { scope: "all", status: statusFilter, priority: document.getElementById("aiPriority").value, equipment: document.getElementById("aiEquipment").value };
+  apiCall("getAllIssues", { token: SESSION_TOKEN, filters: filters })
+    .then(function (res) {
+      if (!res || !res.success) { list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(res && res.message ? res.message : "Failed.") + "</div>"; return; }
+      renderAllIssues_(res.items);
+    })
+    .catch(function (err) { list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(err.message) + "</div>"; });
+}
+function renderAllIssues_(items) {
+  const list = document.getElementById("allIssuesList");
+  if (!items || !items.length) { list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No issues in this view.</div>"; return; }
+  list.innerHTML = items.map(function (it) {
+    const prio = String(it.priority || "").toLowerCase();
+    const statusClass = String(it.status || "").toLowerCase().replace(/\s+/g, "");
+    return "<div class='card clickable issue-" + esc_(prio) + "' onclick='openIssueDetail(" + it.rowNumber + ")'><div class='card-head'><div class='card-title issue'>" + esc_(it.issueType) + " — " + esc_(it.equipment) + "</div><div class='card-date'>" + esc_(it.dateLabel) + "</div></div><div><span class='pill " + esc_(prio) + "'>" + esc_(it.priority) + "</span><span class='pill " + statusClass + "'>" + esc_(it.status) + "</span></div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div><div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + esc_(it.reportedBy) + "</span></div><div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + (it.assignedTo ? esc_(it.assignedTo) : "<i style='color:#d32f2f;'>Unassigned</i>") + "</span></div></div>";
+  }).join("");
+}
+
+/* ============================================================
+   ISSUE DETAIL
+   ============================================================ */
+function openIssueDetail(rowNumber) {
+  showScreen("issueDetailScreen");
+  const body = document.getElementById("issueDetailBody");
+  body.innerHTML = "<div class='loading'>Loading…</div>";
+  document.getElementById("issueDetailActions").classList.add("hidden");
+  document.getElementById("issueDetailError").classList.remove("visible");
+  apiCall("getIssueDetail", { token: SESSION_TOKEN, rowNumber: rowNumber })
+    .then(function (res) {
+      if (!res || !res.success) { body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(res && res.message ? res.message : "Failed.") + "</div>"; return; }
+      CURRENT_ISSUE = res.issue; CURRENT_ISSUE.canManage = res.canManage;
+      renderIssueDetail_();
+    })
+    .catch(function (err) { body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" + esc_(err.message) + "</div>"; });
+}
+function renderIssueDetail_() {
+  const it = CURRENT_ISSUE; if (!it) return;
+  const body = document.getElementById("issueDetailBody");
+  const prio = String(it.priority || "").toLowerCase();
+  const statusClass = String(it.status || "").toLowerCase().replace(/\s+/g, "");
+  let html = "";
+  html += "<div class='card issue-" + esc_(prio) + "' style='border-left-width:6px;'><div class='card-head'><div class='card-title issue' style='font-size:17px;'>" + esc_(it.issueType) + " — " + esc_(it.equipment) + "</div><div class='card-date'>" + esc_(it.dateLabel) + "</div></div><div><span class='pill " + esc_(prio) + "'>" + esc_(it.priority) + "</span><span class='pill " + statusClass + "'>" + esc_(it.status) + "</span></div><div class='card-row'><span class='lbl'>Location</span><span class='val'>" + esc_(it.location) + "</span></div><div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + esc_(it.reportedBy) + "</span></div><div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + (it.assignedTo ? esc_(it.assignedTo) : "<i>Unassigned</i>") + "</span></div>";
+  if (it.assignedAt) html += "<div class='card-row'><span class='lbl'>Assigned At</span><span class='val'>" + esc_(it.assignedAt) + "</span></div>";
+  if (it.resolvedAt) html += "<div class='card-row'><span class='lbl'>Resolved At</span><span class='val'>" + esc_(it.resolvedAt) + "</span></div>";
+  if (it.resolvedBy) html += "<div class='card-row'><span class='lbl'>Resolved By</span><span class='val'>" + esc_(it.resolvedBy) + "</span></div>";
+  html += "</div>";
+  if (it.description) html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Description</div><div style='font-size:14px;color:#444;line-height:1.4;'>" + esc_(it.description) + "</div></div>";
+  if (it.photoUrl) html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Reported Photo</div><a href='" + esc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + esc_(it.photoUrl) + "' alt='issue photo'></a></div>";
+  if (it.resolvedPhotoUrl) html += "<div class='card' style='border-left-color:#0288d1;'><div class='section-heading' style='margin-top:0;'>Resolved Photo</div><a href='" + esc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + esc_(it.resolvedPhotoUrl) + "' alt='resolution photo'></a></div>";
+  if (it.resolutionNotes) html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Resolution Notes</div><div style='font-size:14px;color:#444;line-height:1.4;'>" + esc_(it.resolutionNotes) + "</div></div>";
+  if (it.statusHistory && it.statusHistory.length) {
+    html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Timeline</div><div class='timeline'>";
+    it.statusHistory.forEach(function (h) {
+      let line = "";
+      if (h.action === "Created") line = "Created by " + (h.by || "");
+      else if (h.action === "Assigned") line = "Assigned to " + (h.to || "") + " by " + (h.by || "");
+      else if (h.action === "Status changed") line = (h.from || "") + " → " + (h.to || "") + " by " + (h.by || "");
+      else line = (h.action || "") + " by " + (h.by || "");
+      html += "<div class='timeline-item'><div>" + esc_(line) + "</div><div class='when'>" + esc_(h.at || "") + "</div></div>";
+    });
+    html += "</div></div>";
+  }
+  body.innerHTML = html;
+  if (it.canManage) {
+    document.getElementById("issueDetailActions").classList.remove("hidden");
+    const isResolved = it.status === "Resolved";
+    const isInProgress = it.status === "In Progress";
+    document.getElementById("assignBtn").disabled = isResolved;
+    document.getElementById("inProgressBtn").disabled = isResolved || isInProgress;
+    document.getElementById("resolveBtn").disabled = isResolved;
+  } else document.getElementById("issueDetailActions").classList.add("hidden");
+}
+
+/* ============================================================
+   ASSIGN
+   ============================================================ */
+function openAssignModal() {
+  if (!CURRENT_ISSUE) return;
+  document.getElementById("assignError").classList.remove("visible");
+  document.getElementById("assignModal").classList.remove("hidden");
+  const sel = document.getElementById("assignUser");
+  sel.innerHTML = "<option value=''>Loading…</option>";
+  apiCall("getAssignableUsers", { token: SESSION_TOKEN })
+    .then(function (res) {
+      if (!res || !res.success) { sel.innerHTML = "<option value=''>Failed to load</option>"; return; }
+      sel.innerHTML = "<option value=''>Select Person</option>";
+      (res.users || []).forEach(function (u) { const o = document.createElement("option"); o.value = u.name; o.textContent = u.name + " (" + u.role + ")"; sel.appendChild(o); });
+      if (CURRENT_ISSUE.assignedTo) sel.value = CURRENT_ISSUE.assignedTo;
+    })
+    .catch(function () { sel.innerHTML = "<option value=''>Failed to load</option>"; });
+}
+function closeAssignModal() { document.getElementById("assignModal").classList.add("hidden"); }
+function submitAssign() {
+  const name = document.getElementById("assignUser").value;
+  if (!name) { const e = document.getElementById("assignError"); e.textContent = "Please pick a person."; e.classList.add("visible"); return; }
+  const btn = document.getElementById("assignSubmitBtn"); btn.disabled = true; btn.textContent = "Assigning…";
+  apiCall("assignIssue", { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, assigneeName: name })
+    .then(function (res) {
+      btn.disabled = false; btn.textContent = "Assign";
+      if (!res || !res.success) { const e = document.getElementById("assignError"); e.textContent = res && res.message ? res.message : "Failed."; e.classList.add("visible"); return; }
+      closeAssignModal(); openIssueDetail(CURRENT_ISSUE.rowNumber);
+    })
+    .catch(function (err) { btn.disabled = false; btn.textContent = "Assign"; const e = document.getElementById("assignError"); e.textContent = err.message; e.classList.add("visible"); });
+}
+
+/* ============================================================
+   IN PROGRESS
+   ============================================================ */
+function markInProgress() {
+  if (!CURRENT_ISSUE) return;
+  if (!confirm("Mark this issue as In Progress?")) return;
+  apiCall("updateIssueStatus", { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, newStatus: "In Progress", notes: "", resolvedPhotoBase64: null, resolvedPhotoMime: null })
+    .then(function (res) { if (!res || !res.success) { alert(res && res.message ? res.message : "Failed."); return; } openIssueDetail(CURRENT_ISSUE.rowNumber); })
+    .catch(function (err) { alert(err.message); });
+}
+
+/* ============================================================
+   RESOLVE
+   ============================================================ */
+function openResolveModal() {
+  if (!CURRENT_ISSUE) return;
+  RESOLVE_PHOTO_B64 = null;
+  document.getElementById("resolveNotes").value = "";
+  document.getElementById("resolvePhotoArea").classList.add("hidden");
+  document.getElementById("resolvePhotoPicker").classList.remove("hidden");
+  document.getElementById("resolvePhotoPreview").src = "";
+  document.getElementById("resolveError").classList.remove("visible");
+  document.getElementById("resolveModal").classList.remove("hidden");
+}
+function closeResolveModal() { document.getElementById("resolveModal").classList.add("hidden"); }
+function resolvePhotoCamera() { document.getElementById("resolveCameraInput").click(); }
+function resolvePhotoGallery() { document.getElementById("resolveGalleryInput").click(); }
+function onResolvePhotoChosen(evt) {
+  const file = evt.target.files && evt.target.files[0]; if (!file) return;
+  RESOLVE_PHOTO_MIME = file.type || "image/jpeg";
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    compressImage_(e.target.result, 1200, 0.7, function (compressed) {
+      const comma = compressed.indexOf(",");
+      RESOLVE_PHOTO_B64 = compressed.substring(comma + 1);
+      document.getElementById("resolvePhotoPreview").src = compressed;
+      document.getElementById("resolvePhotoArea").classList.remove("hidden");
+      document.getElementById("resolvePhotoPicker").classList.add("hidden");
+    });
+  };
+  reader.readAsDataURL(file);
+}
+function submitResolve() {
+  const notes = document.getElementById("resolveNotes").value.trim();
+  const errBox = document.getElementById("resolveError");
+  if (!RESOLVE_PHOTO_B64) { errBox.textContent = "A photo is required."; errBox.classList.add("visible"); return; }
+  if (!notes) { errBox.textContent = "Please add resolution notes."; errBox.classList.add("visible"); return; }
+  const btn = document.getElementById("resolveSubmitBtn"); btn.disabled = true; btn.textContent = "Resolving…"; showBusy("Uploading resolved photo…");
+  apiCall("updateIssueStatus", { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, newStatus: "Resolved", notes: notes, resolvedPhotoBase64: RESOLVE_PHOTO_B64, resolvedPhotoMime: RESOLVE_PHOTO_MIME })
+    .then(function (res) {
+      hideBusy(); btn.disabled = false; btn.textContent = "Resolve";
+      if (!res || !res.success) { errBox.textContent = res && res.message ? res.message : "Failed."; errBox.classList.add("visible"); return; }
+      closeResolveModal(); openIssueDetail(CURRENT_ISSUE.rowNumber);
+    })
+    .catch(function (err) { hideBusy(); btn.disabled = false; btn.textContent = "Resolve"; errBox.textContent = err.message; errBox.classList.add("visible"); });
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function openDashboard() {
+  showScreen("dashboardScreen");
+  if (!DASHBOARD_EQUIP_LOADED) {
+    apiCall("getEquipmentList", {}).then(function (list) {
+      const sel = document.getElementById("dbEquipment");
+      (list || []).forEach(function (eq) { const o = document.createElement("option"); o.value = eq; o.textContent = eq; sel.appendChild(o); });
+      DASHBOARD_EQUIP_LOADED = true;
+    }).catch(function(){});
+  }
+  dashboardLoad();
+}
+function dashboardLoad() {
+  if (!SESSION_TOKEN) return;
+  const filters = { dateRange: document.getElementById("dbRange").value, equipment: document.getElementById("dbEquipment").value };
+  ["kpiOpen","kpiMttr","kpiMonth","kpiPending"].forEach(function (id) { const el = document.getElementById(id); if (el) el.textContent = "…"; });
+  apiCall("getDashboard", { token: SESSION_TOKEN, filters: filters })
+    .then(function (res) { if (!res || !res.success) { alert(res && res.message ? res.message : "Failed."); return; } renderDashboard_(res); })
+    .catch(function (err) { alert(err.message); });
+}
+function renderDashboard_(d) {
+  document.getElementById("kpiOpen").textContent = d.kpis.openIssues;
+  document.getElementById("kpiMttr").textContent = d.kpis.mttrLabel;
+  document.getElementById("kpiMttrSub").textContent = d.kpis.mttrCount ? "over " + d.kpis.mttrCount + " issue" + (d.kpis.mttrCount === 1 ? "" : "s") : "";
+  document.getElementById("kpiMonth").textContent = d.kpis.monthDurationLabel || "—";
+  document.getElementById("kpiPending").textContent = d.kpis.pendingWork;
+  renderBarChart_("equipChart", d.charts.equipment);
+  renderBarChart_("typeChart", d.charts.type);
+  renderPillChart_("priorityChart", d.charts.priority, PRIORITY_COLORS);
+  renderPillChart_("statusChart", d.charts.status, STATUS_COLORS);
+  renderLineChart_("trendChart", d.charts.trend);
+  renderBarChart_("topReportersChart", d.topReporters);
+  renderShiftTable_(d.shiftTable);
+  renderAgingTable_(d.aging);
+}
+function renderBarChart_(containerId, items) {
+  const el = document.getElementById(containerId); if (!el) return;
+  if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data in this range.</div>"; return; }
+  const max = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
+  el.innerHTML = items.map(function (it) {
+    const pct = Math.round((it.value / max) * 100);
+    return "<div class='bar-row'><div class='bar-label'>" + esc_(it.label) + "</div><div class='bar-track'><div class='bar-fill' style='width:" + pct + "%'></div></div><div class='bar-value'>" + it.value + "</div></div>";
+  }).join("");
+}
+function renderPillChart_(containerId, items, colors) {
+  const el = document.getElementById(containerId); if (!el) return;
+  if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+  el.innerHTML = "<div class='pill-chart'>" + items.map(function (it) {
+    const color = (colors && colors[it.label]) || "#999";
+    return "<div class='pill-chart-item'><span class='dot' style='background:" + color + "'></span><span>" + esc_(it.label) + "</span><span class='num'>" + it.value + "</span></div>";
+  }).join("") + "</div>";
+}
+function renderLineChart_(containerId, days) {
+  const el = document.getElementById(containerId); if (!el) return;
+  if (!days || !days.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+  const W = 640, H = 180, PAD_L = 28, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+  const innerW = W - PAD_L - PAD_R, innerH = H - PAD_T - PAD_B;
+  const maxVal = Math.max.apply(null, days.map(function (d) { return d.count; })) || 1;
+  const stepX = innerW / Math.max(days.length - 1, 1);
+  let path = ""; const points = [];
+  days.forEach(function (d, i) {
+    const x = PAD_L + i * stepX, y = PAD_T + innerH - (d.count / maxVal) * innerH;
+    points.push({ x: x, y: y, d: d });
+    path += (i === 0 ? "M" : "L") + x + "," + y + " ";
+  });
+  let grid = "";
+  [0, 0.5, 1].forEach(function (frac) {
+    const y = PAD_T + innerH - frac * innerH;
+    grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) + "' y2='" + y + "' stroke='#eee' stroke-width='1'/>";
+    grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) + "' text-anchor='end' font-size='9' fill='#999'>" + Math.round(maxVal * frac) + "</text>";
+  });
+  let xLabels = "";
+  days.forEach(function (d, i) {
+    if (i % 5 === 0 || i === days.length - 1) {
+      const x = PAD_L + i * stepX;
+      xLabels += "<text x='" + x + "' y='" + (H - 8) + "' text-anchor='middle' font-size='9' fill='#999'>" + d.label + "</text>";
+    }
+  });
+  let dots = "";
+  points.forEach(function (p) { if (p.d.count > 0) dots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#0288d1'/>"; });
+  el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" + grid + "<path d='" + path + "' fill='none' stroke='#0288d1' stroke-width='2'/>" + dots + xLabels + "</svg>";
+}
+function renderShiftTable_(rows) {
+  const el = document.getElementById("shiftTable"); if (!el) return;
+  if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No shift data in this range.</div>"; return; }
+  el.innerHTML = "<table class='dash-table'><thead><tr><th>Shift In-charge</th><th class='num'>Jobs</th><th class='num'>Manpower</th><th class='num'>Duration</th><th class='num'>Pending</th></tr></thead><tbody>" + rows.map(function (r) {
+    return "<tr><td>" + esc_(r.label) + "</td><td class='num'>" + r.jobs + "</td><td class='num'>" + r.manpower + "</td><td class='num'>" + esc_(r.durationLabel || "—") + "</td><td class='num'>" + r.pending + "</td></tr>";
+  }).join("") + "</tbody></table>";
+}
+function renderAgingTable_(rows) {
+  const el = document.getElementById("agingTable"); if (!el) return;
+  if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No aging issues. 👍</div>"; return; }
+  el.innerHTML = "<table class='dash-table'><thead><tr><th>Days</th><th>Equipment</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th></tr></thead><tbody>" + rows.map(function (r) {
+    return "<tr onclick='openIssueDetail(" + r.rowNumber + ")' style='cursor:pointer;'><td><b>" + r.daysOpen + "d</b></td><td>" + esc_(r.equipment) + "</td><td>" + esc_(r.issueType) + "</td><td>" + esc_(r.priority) + "</td><td>" + esc_(r.status) + "</td><td>" + (r.assignedTo ? esc_(r.assignedTo) : "<i style='color:#d32f2f;'>—</i>") + "</td></tr>";
+  }).join("") + "</tbody></table>";
+}
+
+/* ============================================================
+   SERVICE WORKER + OFFLINE
+   ============================================================ */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/service-worker.js").catch(function (err) { console.warn("SW registration failed:", err); });
+  });
+}
+function updateOnlineBanner() {
+  const existing = document.getElementById("offlineBanner");
+  if (navigator.onLine) { if (existing) existing.remove(); }
+  else if (!existing) {
+    const b = document.createElement("div"); b.id = "offlineBanner"; b.textContent = "⚠️ You're offline — check your connection";
+    document.body.appendChild(b);
+  }
+}
+window.addEventListener("online", updateOnlineBanner);
+window.addEventListener("offline", updateOnlineBanner);
+
+/* ============================================================
+   AUTO-LOGIN
+   ============================================================ */
+window.addEventListener("load", function () {
+  updateOnlineBanner();
+  let saved = null;
+  try { saved = localStorage.getItem("kct_token"); } catch (e) {}
+  if (!saved) { showScreen("loginScreen"); return; }
+  apiCall("validateSession", { token: saved })
+    .then(function (res) {
+      if (res && res.success) {
+        SESSION_TOKEN = saved; CURRENT_USER = res.user; showHome();
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const action = params.get("action");
+          if (action === "work") setTimeout(openWorkForm, 300);
+          else if (action === "issue") setTimeout(openIssuesScreen, 300);
+          else if (action === "today") setTimeout(openToday, 300);
+        } catch (e) {}
+      } else {
+        try { localStorage.removeItem("kct_token"); } catch (e) {}
+        showScreen("loginScreen");
+      }
+    })
+    .catch(function () { showScreen("loginScreen"); });
+});
+</script>
+
+</body>
+</html>
