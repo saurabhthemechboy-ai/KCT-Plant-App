@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.kct.plantapp",
+    "sha256_cert_fingerprints": ["2E:DF:8E:78:0D:39:D8:43:62:4C:A3:BA:81:2C:28:54:EE:5F:5B:BC:B5:A1:23:46:5A:44:B5:8E:FB:59:96:EE"]
+  }
+}]
