@@ -8,11 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: "true"
-      BUBBLEWRAP_INSTALL_JDK: "false"
-      BUBBLEWRAP_INSTALL_SDK: "false"
-      ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -25,12 +22,23 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Verify environment
+      - name: Show Android SDK
         run: |
-          java -version
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls -la $ANDROID_HOME || echo "SDK dir missing"
-          ls -la $ANDROID_HOME/cmdline-tools || echo "cmdline-tools missing"
+          ls -la $ANDROID_HOME
+          ls -la $ANDROID_HOME/cmdline-tools
+          ls -la $ANDROID_HOME/platforms || echo "no platforms"
+          ls -la $ANDROID_HOME/build-tools || echo "no build-tools"
+
+      - name: Accept Android SDK licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Install required SDK packages
+        run: |
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "platform-tools" || true
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
@@ -38,12 +46,12 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
 
-      - name: Create TWA project (non-interactive)
+      - name: Create TWA project
         run: |
           mkdir -p android-app
           cd android-app
 
-          # Pre-seed Bubblewrap's config so it skips all prompts
+          # Pre-seed Bubblewrap config — this is CRITICAL
           mkdir -p ~/.bubblewrap
           cat > ~/.bubblewrap/config.json <<EOF
           {
@@ -84,37 +92,38 @@ jobs:
           }
           EOF
 
-          echo "--- Config written ---"
-          cat ~/.bubblewrap/config.json
-          echo "--- twa-manifest.json ---"
-          cat twa-manifest.json
-
-      - name: Copy keystore into project
+      - name: Copy keystore
         run: cp android.keystore android-app/android.keystore
 
-      - name: Build APK (with piped answers)
+      - name: Run Bubblewrap doctor (diagnostic)
+        run: |
+          cd android-app
+          bubblewrap doctor || true
+
+      - name: Build APK (fail on error)
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android-app
-          # Pipe default answers to any remaining prompt
-          printf 'y\ny\ny\nn\nn\n' | bubblewrap build --skipPwaValidation --verbose || \
-          printf 'n\nn\nn\n' | bubblewrap build --skipPwaValidation || true
+          bubblewrap build --skipPwaValidation
 
-      - name: Locate APK
+      - name: Verify APK exists
         run: |
-          echo "=== Files in android-app ==="
-          ls -la android-app/ || true
-          echo "=== Find APK ==="
-          find android-app -type f -name "*.apk" -exec ls -la {} \; || true
+          ls -la android-app/
+          if [ ! -f android-app/app-release-signed.apk ]; then
+            echo "❌ APK NOT CREATED"
+            exit 1
+          fi
+          echo "✅ APK created successfully"
+          ls -la android-app/app-release-signed.apk
 
-      - name: Upload artifact
+      - name: Upload artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: kct-plant-apk
           path: |
             android-app/app-release-signed.apk
-            android-app/app-release-bundle.aab
             android-app/*.json
-          if-no-files-found: warn
+          if-no-files-found: error
