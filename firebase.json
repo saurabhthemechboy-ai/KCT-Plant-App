@@ -1,13 +1,7 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      ".github/**",
-      "README.md"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", ".github/**", "README.md"],
     "headers": [
       {
         "source": "/service-worker.js",
