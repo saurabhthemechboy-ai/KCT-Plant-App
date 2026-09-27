@@ -35,25 +35,12 @@ jobs:
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
           ls -la android.keystore
 
-      - name: Create project directory
-        run: mkdir -p android-app
-
-      - name: Initialize Bubblewrap project
+      - name: Create project directory and config
         run: |
+          mkdir -p android-app
           cd android-app
-          yes "" | bubblewrap init \
-            --manifest="https://kct-plant-app.web.app/manifest.json" \
-            --directory=. \
-            --skipPwaValidation || true
-          echo "--- FILES IN android-app ---"
-          ls -la
 
-      - name: Patch twa-manifest.json
-        run: |
-          cd android-app
-          if [ ! -f twa-manifest.json ]; then
-            echo "No twa-manifest.json — creating one"
-            cat > twa-manifest.json <<EOF
+          cat > twa-manifest.json <<EOF
           {
             "packageId": "com.kct.plantapp",
             "host": "kct-plant-app.web.app",
@@ -80,21 +67,12 @@ jobs:
             "isChromeOSOnly": false,
             "signingKey": {
               "path": "./android.keystore",
-              "alias": "kct"
+              "alias": "${{ secrets.KEY_ALIAS }}"
             }
           }
           EOF
-          fi
 
-          # Ensure signing key path is correct regardless
-          node -e "
-            const fs = require('fs');
-            const f = 'twa-manifest.json';
-            const j = JSON.parse(fs.readFileSync(f));
-            j.signingKey = { path: './android.keystore', alias: '${{ secrets.KEY_ALIAS }}' };
-            fs.writeFileSync(f, JSON.stringify(j, null, 2));
-          "
-          echo "--- PATCHED twa-manifest.json ---"
+          echo "--- twa-manifest.json created ---"
           cat twa-manifest.json
 
       - name: Copy keystore into android-app
@@ -106,6 +84,8 @@ jobs:
         env:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         run: |
           cd android-app
           bubblewrap build --skipPwaValidation
