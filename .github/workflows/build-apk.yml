@@ -17,7 +17,7 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
 
-      - name: Prepare Android project manually
+      - name: Prepare Android project skeleton
         run: |
           mkdir -p twa-project/app/src/main
           cd twa-project
@@ -60,8 +60,10 @@ jobs:
           zipStorePath=wrapper/dists
           EOF
 
-          curl -sSLo gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar
-          curl -sSLo gradlew https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew
+          curl -sSLo gradle/wrapper/gradle-wrapper.jar \
+            https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar
+          curl -sSLo gradlew \
+            https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew
           chmod +x gradlew
 
       - name: Configure app module
@@ -112,6 +114,7 @@ jobs:
           EOF
 
           mkdir -p src/main/res/values
+
           cat > src/main/res/values/strings.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
@@ -162,30 +165,52 @@ jobs:
           </manifest>
           EOF
 
-      # UPDATED — download real PNG icons instead of empty placeholders
-      - name: Download launcher icons
+      # ============================================================
+      # BLOCKER FIX — normalize icons to true PNG with ImageMagick
+      # ============================================================
+      - name: Download and normalize launcher icons
         run: |
+          # Ensure ImageMagick is available
+          if ! command -v convert &> /dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq imagemagick
+          fi
+
           mkdir -p twa-project/app/src/main/res/mipmap-hdpi
           mkdir -p twa-project/app/src/main/res/mipmap-mdpi
           mkdir -p twa-project/app/src/main/res/mipmap-xhdpi
           mkdir -p twa-project/app/src/main/res/mipmap-xxhdpi
           mkdir -p twa-project/app/src/main/res/mipmap-xxxhdpi
 
-          # 512×512 — used as xxxhdpi and downscaled copies (Android will scale)
-          curl -sSLo twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+          # Download the icon (whatever its true format is)
+          curl -sSLo /tmp/kct-icon-source \
             https://kct-plant-app.web.app/icon-512.png
 
-          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-             twa-project/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-             twa-project/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-             twa-project/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-             twa-project/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          echo "=== Source format check ==="
+          file /tmp/kct-icon-source
+          echo "=== First bytes (hex) ==="
+          xxd /tmp/kct-icon-source | head -2
 
-          echo "--- Icon file sizes ---"
+          # Normalize to real PNG at each density (works JPEG → PNG too)
+          convert /tmp/kct-icon-source -background none -flatten \
+            -strip -define png:color-type=6 -define png:bit-depth=8 \
+            -resize 48x48   twa-project/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert /tmp/kct-icon-source -background none -flatten \
+            -strip -define png:color-type=6 -define png:bit-depth=8 \
+            -resize 72x72   twa-project/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert /tmp/kct-icon-source -background none -flatten \
+            -strip -define png:color-type=6 -define png:bit-depth=8 \
+            -resize 96x96   twa-project/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert /tmp/kct-icon-source -background none -flatten \
+            -strip -define png:color-type=6 -define png:bit-depth=8 \
+            -resize 144x144 twa-project/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert /tmp/kct-icon-source -background none -flatten \
+            -strip -define png:color-type=6 -define png:bit-depth=8 \
+            -resize 192x192 twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+          echo "=== Output files (all should be PNG) ==="
           find twa-project/app/src/main/res -name "ic_launcher.png" -exec ls -la {} \;
+          find twa-project/app/src/main/res -name "ic_launcher.png" -exec file {} \;
 
       - name: Build APK
         env:
@@ -198,6 +223,7 @@ jobs:
 
       - name: Find APK
         run: |
+          echo "=== APK file ==="
           find twa-project -name "*.apk" -type f -exec ls -la {} \;
 
       - name: Upload APK
@@ -205,4 +231,4 @@ jobs:
         with:
           name: kct-plant-apk
           path: twa-project/app/build/outputs/apk/release/*.apk
-          if-no-files-found: warn
+          if-no-files-found: error
