@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: "true"
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +25,53 @@ jobs:
 
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+
+      - name: Install fresh Android SDK
+        run: |
+          # Install cmdline-tools into a fresh folder Bubblewrap will accept
+          export SDK_ROOT="$HOME/android-sdk"
+          mkdir -p "$SDK_ROOT/cmdline-tools"
+          cd "$SDK_ROOT/cmdline-tools"
+
+          curl -sSLo tools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q tools.zip
+          mv cmdline-tools latest
+          rm tools.zip
+
+          export ANDROID_HOME="$SDK_ROOT"
+          export ANDROID_SDK_ROOT="$SDK_ROOT"
+          export PATH="$SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+          # Accept licenses and install required packages
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1 || true
+
+          echo "SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> $GITHUB_ENV
+
+          echo "--- SDK layout ---"
+          ls -la "$SDK_ROOT"
+          ls -la "$SDK_ROOT/build-tools" || echo "no build-tools"
+          ls -la "$SDK_ROOT/platforms" || echo "no platforms"
+
+      - name: Install Android SDK 'build' shim (Bubblewrap quirk)
+        run: |
+          # Bubblewrap looks for a folder named "build" directly under the SDK.
+          # Create a symlink so validation passes.
+          ln -sf "$ANDROID_HOME/build-tools/34.0.0" "$ANDROID_HOME/build" || true
+          ls -la "$ANDROID_HOME" | grep build
+
+      - name: Write Bubblewrap config
+        run: |
+          mkdir -p ~/.bubblewrap
+          cat > ~/.bubblewrap/config.json <<EOF
+          {
+            "jdkPath": "$JAVA_HOME",
+            "androidSdkPath": "$ANDROID_HOME"
+          }
+          EOF
+          cat ~/.bubblewrap/config.json
 
       - name: Create TWA project
         run: |
@@ -63,36 +108,12 @@ jobs:
             }
           }
           EOF
+          cp ../android.keystore android.keystore
 
-      - name: Copy keystore
-        run: cp android.keystore android-app/android.keystore
-
-      - name: Update Bubblewrap config
+      - name: Doctor (diagnostic)
         run: |
-          # Bubblewrap wants a specific SDK folder structure.
-          # Point it at the actual path AND run updateConfig.
-          mkdir -p ~/.bubblewrap
-          cat > ~/.bubblewrap/config.json <<EOF
-          {
-            "jdkPath": "$JAVA_HOME",
-            "androidSdkPath": "$ANDROID_HOME"
-          }
-          EOF
-
           cd android-app
-          bubblewrap updateConfig --androidSdkPath "$ANDROID_HOME" || true
-          bubblewrap updateConfig --jdkPath "$JAVA_HOME" || true
-          echo "--- Config after update ---"
-          cat ~/.bubblewrap/config.json
-
-      - name: Try to locate SDK's build folder
-        run: |
-          echo "--- Searching for 'build' folder in SDK ---"
-          find $ANDROID_HOME -maxdepth 3 -type d -name "build*" 2>/dev/null | head
-          echo "--- cmdline-tools contents ---"
-          ls -la $ANDROID_HOME/cmdline-tools/latest/ 2>/dev/null || echo "no latest"
-          echo "--- Root of SDK ---"
-          ls -la $ANDROID_HOME
+          bubblewrap doctor || true
 
       - name: Build APK
         env:
@@ -100,27 +121,18 @@ jobs:
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android-app
-          bubblewrap build --skipPwaValidation || {
-            echo "❌ Build failed. Trying with doctor workaround..."
-            mkdir -p $ANDROID_HOME/build 2>/dev/null || true
-            bubblewrap updateConfig --androidSdkPath "$ANDROID_HOME" || true
-            bubblewrap build --skipPwaValidation
-          }
+          bubblewrap build --skipPwaValidation
 
       - name: Verify APK
-        if: always()
         run: |
-          echo "--- Files in android-app ---"
           ls -la android-app/
-          echo "--- APK search ---"
-          find . -name "*.apk" -type f -exec ls -la {} \; || echo "No APK found"
+          test -f android-app/app-release-signed.apk && echo "✅ APK FOUND" || (echo "❌ APK MISSING" && exit 1)
 
-      - name: Upload APK
-        if: success()
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: kct-plant-apk
           path: |
             android-app/app-release-signed.apk
             android-app/*.json
-          if-no-files-found: warn
+          if-no-files-found: error
