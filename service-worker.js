@@ -1,8 +1,3 @@
-/* ============================================================
-   KCT Plant App — Service Worker
-   Provides offline caching + enables PWA install prompt.
-   ============================================================ */
-
 const CACHE_NAME = "kct-plant-v3";
 const PRECACHE = [
   "/",
@@ -15,8 +10,8 @@ const PRECACHE = [
 
 self.addEventListener("install", function (e) {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(PRECACHE);
+    caches.open(CACHE_NAME).then(function (c) {
+      return c.addAll(PRECACHE);
     })
   );
   self.skipWaiting();
@@ -35,9 +30,16 @@ self.addEventListener("activate", function (e) {
 });
 
 self.addEventListener("fetch", function (e) {
+  if (e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then(function (res) {
-      return res || fetch(e.request);
+    caches.match(e.request).then(function (cached) {
+      return cached || fetch(e.request).then(function (res) {
+        if (res && res.status === 200 && e.request.url.startsWith(self.location.origin)) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(function (c) { c.put(e.request, clone); });
+        }
+        return res;
+      }).catch(function () { return caches.match("/index.html"); });
     })
   );
 });
