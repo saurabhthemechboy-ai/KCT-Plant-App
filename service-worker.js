@@ -1,8 +1,12 @@
-const CACHE_NAME = "kct-plant-v5";
+const CACHE_NAME = "kct-plant-v6";
 const PRECACHE = [
   "/",
   "/index.html",
   "/manifest.json",
+  "/favicon.ico",
+  "/favicon-16x16.png",
+  "/favicon-32x32.png",
+  "/apple-touch-icon.png",
   "/logo-full.png",
   "/icon-192.png",
   "/icon-512.png"
