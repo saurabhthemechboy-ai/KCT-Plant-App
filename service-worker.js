@@ -1,4 +1,4 @@
-const CACHE_NAME = "kct-plant-v4";
+const CACHE_NAME = "kct-plant-v5";
 const PRECACHE = [
   "/",
   "/index.html",
