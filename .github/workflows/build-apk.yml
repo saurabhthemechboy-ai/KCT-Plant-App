@@ -17,17 +17,11 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
 
-      - name: Clone TWA template
-        run: |
-          git clone --depth 1 https://github.com/GoogleChromeLabs/svgomg-twa.git twa-template || \
-          git clone --depth 1 https://github.com/GoogleChrome/samples.git samples
-
       - name: Prepare Android project manually
         run: |
           mkdir -p twa-project/app/src/main
           cd twa-project
 
-          # --- Root build.gradle ---
           cat > build.gradle <<'EOF'
           buildscript {
               repositories {
@@ -46,20 +40,17 @@ jobs:
           }
           EOF
 
-          # --- settings.gradle ---
           cat > settings.gradle <<'EOF'
           include ':app'
           rootProject.name = "KCT Plant"
           EOF
 
-          # --- gradle.properties ---
           cat > gradle.properties <<'EOF'
           android.useAndroidX=true
           android.enableJetifier=true
           org.gradle.jvmargs=-Xmx2048m
           EOF
 
-          # --- gradle wrapper properties ---
           mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties <<'EOF'
           distributionBase=GRADLE_USER_HOME
@@ -69,7 +60,6 @@ jobs:
           zipStorePath=wrapper/dists
           EOF
 
-          # --- Download gradlew wrapper jar ---
           curl -sSLo gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar
           curl -sSLo gradlew https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew
           chmod +x gradlew
@@ -172,18 +162,30 @@ jobs:
           </manifest>
           EOF
 
-          # Placeholder icons (default launcher icon)
-          mkdir -p src/main/res/mipmap-hdpi
-          cp /dev/null src/main/res/mipmap-hdpi/ic_launcher.png || true
-
-      - name: Download launcher icon from Firebase
+      # UPDATED — download real PNG icons instead of empty placeholders
+      - name: Download launcher icons
         run: |
+          mkdir -p twa-project/app/src/main/res/mipmap-hdpi
+          mkdir -p twa-project/app/src/main/res/mipmap-mdpi
+          mkdir -p twa-project/app/src/main/res/mipmap-xhdpi
+          mkdir -p twa-project/app/src/main/res/mipmap-xxhdpi
           mkdir -p twa-project/app/src/main/res/mipmap-xxxhdpi
+
+          # 512×512 — used as xxxhdpi and downscaled copies (Android will scale)
           curl -sSLo twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-            https://kct-plant-app.web.app/icon-512.png || true
+            https://kct-plant-app.web.app/icon-512.png
+
           cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
-             twa-project/app/src/main/res/mipmap-hdpi/ic_launcher.png || true
-          ls -la twa-project/app/src/main/res/mipmap-hdpi/ || true
+             twa-project/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+             twa-project/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+             twa-project/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png \
+             twa-project/app/src/main/res/mipmap-mdpi/ic_launcher.png
+
+          echo "--- Icon file sizes ---"
+          find twa-project/app/src/main/res -name "ic_launcher.png" -exec ls -la {} \;
 
       - name: Build APK
         env:
