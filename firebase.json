@@ -1,8 +1,27 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", ".github/**", "README.md"],
+    "ignore": [
+      "firebase.json",
+      "**/node_modules/**",
+      ".github/**",
+      "README.md"
+    ],
     "headers": [
+      {
+        "source": "/favicon.ico",
+        "headers": [
+          { "key": "Content-Type", "value": "image/x-icon" },
+          { "key": "Cache-Control", "value": "public, max-age=86400" }
+        ]
+      },
+      {
+        "source": "/.well-known/assetlinks.json",
+        "headers": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      },
       {
         "source": "/service-worker.js",
         "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
