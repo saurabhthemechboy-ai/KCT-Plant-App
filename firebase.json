@@ -9,13 +9,6 @@
     ],
     "headers": [
       {
-        "source": "/favicon.ico",
-        "headers": [
-          { "key": "Content-Type", "value": "image/x-icon" },
-          { "key": "Cache-Control", "value": "public, max-age=86400" }
-        ]
-      },
-      {
         "source": "/.well-known/assetlinks.json",
         "headers": [
           { "key": "Content-Type", "value": "application/json" },
