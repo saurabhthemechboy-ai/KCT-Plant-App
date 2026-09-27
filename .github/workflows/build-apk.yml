@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUBBLEWRAP_INSTALL_JDK: "false"
+      CI: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,47 +24,103 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Verify Java
+        run: java -version
+
       - name: Install Bubblewrap CLI
         run: npm install -g @bubblewrap/cli
 
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android.keystore
+          ls -la android.keystore
+
+      - name: Create project directory
+        run: mkdir -p android-app
 
       - name: Initialize Bubblewrap project
         run: |
-          bubblewrap init --manifest="https://kct-plant-app.web.app/manifest.json" \
-            --directory=android-app \
-            --skipPwaValidation
+          cd android-app
+          yes "" | bubblewrap init \
+            --manifest="https://kct-plant-app.web.app/manifest.json" \
+            --directory=. \
+            --skipPwaValidation || true
+          echo "--- FILES IN android-app ---"
+          ls -la
 
-      - name: Configure signing
+      - name: Patch twa-manifest.json
         run: |
           cd android-app
-          cat > signing-config.json <<EOF
+          if [ ! -f twa-manifest.json ]; then
+            echo "No twa-manifest.json — creating one"
+            cat > twa-manifest.json <<EOF
           {
-            "path": "../android.keystore",
-            "alias": "${{ secrets.KEY_ALIAS }}",
-            "password": "${{ secrets.KEYSTORE_PASSWORD }}",
-            "keyPassword": "${{ secrets.KEY_PASSWORD }}"
+            "packageId": "com.kct.plantapp",
+            "host": "kct-plant-app.web.app",
+            "name": "KCT Plant",
+            "launcherName": "KCT Plant",
+            "display": "standalone",
+            "themeColor": "#0288d1",
+            "navigationColor": "#0288d1",
+            "navigationColorDark": "#01579b",
+            "navigationDividerColor": "#0288d1",
+            "navigationDividerColorDark": "#01579b",
+            "backgroundColor": "#0288d1",
+            "enableNotifications": false,
+            "startUrl": "/",
+            "iconUrl": "https://kct-plant-app.web.app/icon-512.png",
+            "maskableIconUrl": "https://kct-plant-app.web.app/icon-512.png",
+            "appVersionName": "1.0.0",
+            "appVersionCode": 1,
+            "shortcuts": [],
+            "generatorApp": "bubblewrap-cli",
+            "webManifestUrl": "https://kct-plant-app.web.app/manifest.json",
+            "fallbackType": "customtabs",
+            "features": {},
+            "isChromeOSOnly": false,
+            "signingKey": {
+              "path": "./android.keystore",
+              "alias": "kct"
+            }
           }
           EOF
+          fi
+
+          # Ensure signing key path is correct regardless
+          node -e "
+            const fs = require('fs');
+            const f = 'twa-manifest.json';
+            const j = JSON.parse(fs.readFileSync(f));
+            j.signingKey = { path: './android.keystore', alias: '${{ secrets.KEY_ALIAS }}' };
+            fs.writeFileSync(f, JSON.stringify(j, null, 2));
+          "
+          echo "--- PATCHED twa-manifest.json ---"
+          cat twa-manifest.json
+
+      - name: Copy keystore into android-app
+        run: |
+          cp android.keystore android-app/android.keystore
+          ls -la android-app/
 
       - name: Build APK
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           cd android-app
-          bubblewrap build --skipPwaValidation --signingKeyPath=../android.keystore \
-            --signingKeyAlias="${{ secrets.KEY_ALIAS }}" \
-            --signingKeyPassword="${{ secrets.KEY_PASSWORD }}" \
-            --password="${{ secrets.KEYSTORE_PASSWORD }}"
+          bubblewrap build --skipPwaValidation
 
-      - name: Upload APK
+      - name: Find built files
+        run: |
+          echo "--- APK / AAB / JSON ---"
+          find android-app -maxdepth 2 -type f \( -name "*.apk" -o -name "*.aab" \) -exec ls -la {} \;
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: kct-plant-apk
-          path: android-app/app-release-signed.apk
-
-      - name: Upload assetlinks.json
-        uses: actions/upload-artifact@v4
-        with:
-          name: assetlinks
-          path: android-app/*.json
+          path: |
+            android-app/app-release-signed.apk
+            android-app/app-release-bundle.aab
+            android-app/*.json
+          if-no-files-found: warn
