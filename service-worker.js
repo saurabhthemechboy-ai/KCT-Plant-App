@@ -1,5 +1,5 @@
 // Build: 2026-10-01-v2
-const CACHE_NAME = "kct-plant-cache-v6-2026-10-01";
+const CACHE_NAME = "kct-plant-cache-v7-2026-10-01";
 
 const PRECACHE = [
   "/",
