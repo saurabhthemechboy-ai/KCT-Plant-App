@@ -771,6 +771,9 @@
 
   <div class="home-footer">
     <button class="logout-btn" onclick="doLogout()">Logout</button>
+    <button class="logout-btn" style="margin-left:8px;" onclick="clearAppCache()">
+      🔄 Refresh App
+    </button>
     <div style="margin-top:16px;font-size:11px;color:#aaa;line-height:1.5;">
       Built by <b style="color:#0288d1;">Saurab Upadhyay</b><br>
       KCT Plant App v3D
@@ -1650,6 +1653,44 @@
     document.getElementById("loginPassword").value = "";
     clearLoginError();
     showScreen("loginScreen");
+  }
+
+    function clearAppCache() {
+    if (!confirm("Refresh app?\n\nThis will clear cached data and reload the latest version. Your login will be preserved.")) {
+      return;
+    }
+
+    showBusy("Refreshing…");
+
+    // 1. Clear the service worker caches
+    var cacheCleared = Promise.resolve();
+    if (typeof caches !== "undefined") {
+      cacheCleared = caches.keys().then(function (keys) {
+        return Promise.all(
+          keys.map(function (k) { return caches.delete(k); })
+        );
+      });
+    }
+
+    // 2. Unregister service workers so a fresh one registers on reload
+    var swCleared = Promise.resolve();
+    if ("serviceWorker" in navigator) {
+      swCleared = navigator.serviceWorker.getRegistrations().then(function (regs) {
+        return Promise.all(
+          regs.map(function (r) { return r.unregister(); })
+        );
+      });
+    }
+
+    // 3. Wait for both, then reload
+    Promise.all([cacheCleared, swCleared])
+      .then(function () {
+        location.reload(true);
+      })
+      .catch(function (err) {
+        console.error("[KCT] Cache clear failed:", err);
+        location.reload(true);
+      });
   }
 
   function refreshTodayBadge() {
