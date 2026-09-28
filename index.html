@@ -1408,8 +1408,12 @@
 <script>
   let SESSION_TOKEN = null;
   let CURRENT_USER = null;
+  let FIRST_SCREEN_SHOWN = false;
 
   const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
+
+  // Screens that are NOT pushed to browser history
+  const ROOT_SCREENS = ["loginScreen", "homeScreen"];
 
   function apiCall(action, payload, onSuccess, onFail) {
     onSuccess = onSuccess || function () {};
@@ -1496,7 +1500,11 @@
     "allIssuesScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
   ];
 
-  function showScreen(id) {
+  /* ============================================================
+     SCREEN NAVIGATION with History API support
+     ============================================================ */
+
+  function showScreen(id, fromPop) {
     SCREENS.forEach(function (s) {
       const el = document.getElementById(s);
       if (el) el.classList.add("hidden");
@@ -1504,7 +1512,32 @@
     const target = document.getElementById(id);
     if (target) target.classList.remove("hidden");
     window.scrollTo(0, 0);
+
+    // Push to browser history so the Android back button works.
+    // Skip for root screens (login/home) — pressing back from home should
+    // exit the app, not loop.
+    if (!fromPop && FIRST_SCREEN_SHOWN && ROOT_SCREENS.indexOf(id) === -1) {
+      try {
+        history.pushState({ screen: id }, "", "#" + id);
+      } catch (e) {}
+    }
+    FIRST_SCREEN_SHOWN = true;
   }
+
+  window.addEventListener("popstate", function (event) {
+    const state = event.state;
+    if (state && state.screen) {
+      showScreen(state.screen, true);
+    } else {
+      // No state → user pressed back past the beginning.
+      // Show home if logged in, else login.
+      if (SESSION_TOKEN) {
+        showScreen("homeScreen", true);
+      } else {
+        showScreen("loginScreen", true);
+      }
+    }
+  });
 
   function goHome() {
     if (!SESSION_TOKEN) { showScreen("loginScreen"); return; }
@@ -1655,14 +1688,13 @@
     showScreen("loginScreen");
   }
 
-    function clearAppCache() {
+  function clearAppCache() {
     if (!confirm("Refresh app?\n\nThis will clear cached data and reload the latest version. Your login will be preserved.")) {
       return;
     }
 
     showBusy("Refreshing…");
 
-    // 1. Clear the service worker caches
     var cacheCleared = Promise.resolve();
     if (typeof caches !== "undefined") {
       cacheCleared = caches.keys().then(function (keys) {
@@ -1672,7 +1704,6 @@
       });
     }
 
-    // 2. Unregister service workers so a fresh one registers on reload
     var swCleared = Promise.resolve();
     if ("serviceWorker" in navigator) {
       swCleared = navigator.serviceWorker.getRegistrations().then(function (regs) {
@@ -1682,7 +1713,6 @@
       });
     }
 
-    // 3. Wait for both, then reload
     Promise.all([cacheCleared, swCleared])
       .then(function () {
         location.reload(true);
@@ -3528,7 +3558,10 @@ Please review and take action.`;
     ctx.fill();
   }
 
-  // ===== Service worker + misc =====
+  /* ============================================================
+     PWA + SERVICE WORKER
+     ============================================================ */
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker
@@ -3621,6 +3654,7 @@ Please review and take action.`;
       banner.remove();
     };
   });
+
 </script>
 
 </body>
