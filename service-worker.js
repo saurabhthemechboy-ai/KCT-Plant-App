@@ -1,49 +1,72 @@
-const CACHE_NAME = "kct-plant-v11";
+// Build: 2026-10-01-v2
+const CACHE_NAME = "kct-plant-cache-v2-2026-10-01";
+
 const PRECACHE = [
   "/",
   "/index.html",
-  "/manifest.json",
-  "/favicon.ico",
-  "/favicon-16x16.png",
-  "/favicon-32x32.png",
-  "/apple-touch-icon.png",
-  "/logo-full.png",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/manifest.json"
 ];
 
+// Install: cache core files and activate immediately
 self.addEventListener("install", function (e) {
+  self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE_NAME).then(function (c) {
-      return c.addAll(PRECACHE);
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.addAll(PRECACHE);
     })
   );
-  self.skipWaiting();
 });
 
+// Activate: delete ALL old caches, take control of open pages
 self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(
-        keys.filter(function (k) { return k !== CACHE_NAME; })
-            .map(function (k) { return caches.delete(k); })
+        keys.map(function (k) {
+          if (k !== CACHE_NAME) return caches.delete(k);
+        })
       );
+    }).then(function () {
+      return self.clients.claim();
     })
   );
-  self.clients.claim();
 });
 
+// Fetch: NETWORK-FIRST for HTML (so updates always win)
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+
+  const url = new URL(e.request.url);
+
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) return;
+
+  // For HTML navigations, go network-first
+  const isHTML =
+    e.request.mode === "navigate" ||
+    (e.request.headers.get("accept") || "").indexOf("text/html") !== -1;
+
+  if (isHTML) {
+    e.respondWith(
+      fetch(e.request)
+        .then(function (res) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(function (c) {
+            c.put(e.request, clone);
+          });
+          return res;
+        })
+        .catch(function () {
+          return caches.match("/index.html");
+        })
+    );
+    return;
+  }
+
+  // Everything else: cache-first (faster)
   e.respondWith(
     caches.match(e.request).then(function (cached) {
-      return cached || fetch(e.request).then(function (res) {
-        if (res && res.status === 200 && e.request.url.startsWith(self.location.origin)) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(function (c) { c.put(e.request, clone); });
-        }
-        return res;
-      }).catch(function () { return caches.match("/index.html"); });
+      return cached || fetch(e.request);
     })
   );
 });
