@@ -466,9 +466,7 @@
     .modal-card .modal-actions {
       display: flex; gap: 10px; margin-top: 20px;
     }
-    .modal-card .modal-actions button {
-      flex: 1;
-    }
+    .modal-card .modal-actions button { flex: 1; }
 
     .timeline { margin-top: 8px; padding-left: 4px; }
     .timeline-item {
@@ -587,102 +585,73 @@
       color: #999; font-size: 13px;
     }
 
-    /* ===== Annotate styles (from Annotate.html) ===== */
+    /* ===== Annotate styles ===== */
     .annotate-modal {
       position: fixed; inset: 0;
-      background: #111;
-      z-index: 5000;
+      background: #111; z-index: 5000;
       display: flex; flex-direction: column;
-      color: white;
-      user-select: none;
+      color: white; user-select: none;
     }
     .annotate-topbar {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 14px;
-      background: #1a1a1a;
-      border-bottom: 1px solid #333;
+      background: #1a1a1a; border-bottom: 1px solid #333;
     }
     .annotate-title { font-size: 15px; font-weight: bold; }
     .ann-btn-cancel, .ann-btn-done {
       padding: 8px 14px; border-radius: 8px;
-      border: 0; font-size: 14px; font-weight: bold;
-      cursor: pointer;
+      border: 0; font-size: 14px; font-weight: bold; cursor: pointer;
     }
     .ann-btn-cancel { background: #333; color: white; }
     .ann-btn-done   { background: #0288d1; color: white; }
-
     .annotate-toolbar {
       display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
       padding: 10px 12px;
-      background: #1a1a1a;
-      border-bottom: 1px solid #333;
+      background: #1a1a1a; border-bottom: 1px solid #333;
       overflow-x: auto;
     }
     .ann-tool {
       background: #262626; color: white;
-      border: 1px solid #333;
-      border-radius: 8px;
+      border: 1px solid #333; border-radius: 8px;
       min-width: 42px; height: 42px;
-      font-size: 18px;
-      cursor: pointer;
+      font-size: 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
     .ann-tool.active { background: #0288d1; border-color: #0288d1; }
-    .ann-sep {
-      width: 1px; height: 26px;
-      background: #333;
-      margin: 0 4px;
-    }
+    .ann-sep { width: 1px; height: 26px; background: #333; margin: 0 4px; }
     .ann-swatch {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 2px solid #444;
-      cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid #444; cursor: pointer;
     }
     .ann-swatch.active { border-color: white; transform: scale(1.1); }
-
     .annotate-stage {
-      flex: 1;
-      overflow: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 12px;
-      background: #0a0a0a;
+      flex: 1; overflow: auto;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px; background: #0a0a0a;
     }
     .annotate-canvas-wrap {
-      position: relative;
-      max-width: 100%;
-      max-height: 100%;
-      transform-origin: center center;
-      transition: transform 0.2s;
+      position: relative; max-width: 100%; max-height: 100%;
+      transform-origin: center center; transition: transform 0.2s;
     }
     .annotate-img {
-      display: block;
-      max-width: 100%;
-      max-height: 70vh;
-      pointer-events: none;
-      user-select: none;
+      display: block; max-width: 100%; max-height: 70vh;
+      pointer-events: none; user-select: none;
     }
     .annotate-canvas {
       position: absolute; top: 0; left: 0;
-      touch-action: none;
-      cursor: crosshair;
+      touch-action: none; cursor: crosshair;
     }
     .annotate-bottombar {
       display: flex; gap: 8px; justify-content: center;
       padding: 12px;
-      background: #1a1a1a;
-      border-top: 1px solid #333;
+      background: #1a1a1a; border-top: 1px solid #333;
     }
     .ann-btn {
-      flex: 1;
-      padding: 12px 8px;
+      flex: 1; padding: 12px 8px;
       font-size: 14px; font-weight: bold;
       border-radius: 8px;
       border: 1px solid #333;
-      background: #262626; color: white;
-      cursor: pointer;
+      background: #262626; color: white; cursor: pointer;
     }
     .ann-btn:active { background: #333; }
   </style>
@@ -1080,6 +1049,33 @@
       <div id="topReportersChart" class="chart-body"></div>
     </div>
 
+    <!-- ===== EXTRA CHARTS (inlined) ===== -->
+    <div class="chart-card">
+      <div class="chart-title">⏱️ MTTR Trend (Avg Resolve Time)</div>
+      <div id="mttrTrendChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📊 Work Started vs Completed</div>
+      <div id="startVsCompleteChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🛠️ Downtime by Equipment</div>
+      <div id="downtimeChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📉 Pareto — Issue Types</div>
+      <div id="paretoChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🔥 Peak Activity Heatmap</div>
+      <div id="heatmapChart" class="chart-body"></div>
+    </div>
+    <!-- ===== END EXTRA CHARTS ===== -->
+
     <div class="chart-card">
       <div class="chart-title">⏰ Aging Issues (&gt; 3 days open)</div>
       <div id="agingTable" class="chart-body"></div>
@@ -1397,9 +1393,6 @@
 </div>
 
 <!-- ========== BUSY OVERLAY ========== -->
-
-<?!= include('ChartsFrontend'); ?>
-
 <div id="busyOverlay" class="busy-overlay hidden">
   <div class="box">
     <div class="spinner"></div>
@@ -1415,7 +1408,6 @@
 
   const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
 
-  // Screens that are NOT pushed to browser history
   const ROOT_SCREENS = ["loginScreen", "homeScreen"];
 
   function apiCall(action, payload, onSuccess, onFail) {
@@ -1424,9 +1416,7 @@
       alert("Network error: " + (err && err.message ? err.message : err));
     };
 
-    if (typeof google !== "undefined" &&
-        google.script &&
-        google.script.run) {
+    if (typeof google !== "undefined" && google.script && google.script.run) {
       const args = buildArgsForAction_(action, payload);
       const runner = google.script.run
         .withSuccessHandler(onSuccess)
@@ -1446,21 +1436,14 @@
       })
       .then(function (text) {
         let res;
-        try {
-          res = JSON.parse(text);
-        } catch (e) {
+        try { res = JSON.parse(text); }
+        catch (e) {
           const m = text.match(/\{[\s\S]*\}/);
-          if (m) {
-            res = JSON.parse(m[0]);
-          } else {
-            throw new Error("Invalid response from server");
-          }
+          if (m) res = JSON.parse(m[0]);
+          else throw new Error("Invalid response from server");
         }
-        if (res && res.error) {
-          onFail(new Error(res.error));
-        } else {
-          onSuccess(res);
-        }
+        if (res && res.error) onFail(new Error(res.error));
+        else onSuccess(res);
       })
       .catch(function (err) {
         console.error("[KCT API] fetch error:", err);
@@ -1503,10 +1486,6 @@
     "allIssuesScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
   ];
 
-  /* ============================================================
-     SCREEN NAVIGATION with History API support
-     ============================================================ */
-
   function showScreen(id, fromPop) {
     SCREENS.forEach(function (s) {
       const el = document.getElementById(s);
@@ -1516,13 +1495,8 @@
     if (target) target.classList.remove("hidden");
     window.scrollTo(0, 0);
 
-    // Push to browser history so the Android back button works.
-    // Skip for root screens (login/home) — pressing back from home should
-    // exit the app, not loop.
     if (!fromPop && FIRST_SCREEN_SHOWN && ROOT_SCREENS.indexOf(id) === -1) {
-      try {
-        history.pushState({ screen: id }, "", "#" + id);
-      } catch (e) {}
+      try { history.pushState({ screen: id }, "", "#" + id); } catch (e) {}
     }
     FIRST_SCREEN_SHOWN = true;
   }
@@ -1532,13 +1506,8 @@
     if (state && state.screen) {
       showScreen(state.screen, true);
     } else {
-      // No state → user pressed back past the beginning.
-      // Show home if logged in, else login.
-      if (SESSION_TOKEN) {
-        showScreen("homeScreen", true);
-      } else {
-        showScreen("loginScreen", true);
-      }
+      if (SESSION_TOKEN) showScreen("homeScreen", true);
+      else showScreen("loginScreen", true);
     }
   });
 
@@ -1552,11 +1521,8 @@
   }
 
   function backFromIssueDetail() {
-    if (CURRENT_ISSUE_BACK_TO === "allIssues") {
-      openAllIssues();
-    } else {
-      goHome();
-    }
+    if (CURRENT_ISSUE_BACK_TO === "allIssues") openAllIssues();
+    else goHome();
   }
 
   function showLoginError(msg) {
@@ -1603,7 +1569,6 @@
           promptPasswordChange();
           return;
         }
-
         showHome();
       },
       function (err) {
@@ -1616,7 +1581,6 @@
 
   function promptPasswordChange() {
     const oldPwd = document.getElementById("loginPassword").value;
-
     const newPwd = prompt(
       "Welcome, " + CURRENT_USER.name + ".\n\n" +
       "For security, please set a new password (minimum 6 characters)."
@@ -1679,9 +1643,7 @@
   }
 
   function doLogout() {
-    if (SESSION_TOKEN) {
-      apiCall("logoutUser", { token: SESSION_TOKEN });
-    }
+    if (SESSION_TOKEN) apiCall("logoutUser", { token: SESSION_TOKEN });
     SESSION_TOKEN = null;
     CURRENT_USER = null;
     try { localStorage.removeItem("kct_token"); } catch (e) {}
@@ -1692,38 +1654,26 @@
   }
 
   function clearAppCache() {
-    if (!confirm("Refresh app?\n\nThis will clear cached data and reload the latest version. Your login will be preserved.")) {
-      return;
-    }
-
+    if (!confirm("Refresh app?\n\nThis will clear cached data and reload the latest version.")) return;
     showBusy("Refreshing…");
 
     var cacheCleared = Promise.resolve();
     if (typeof caches !== "undefined") {
       cacheCleared = caches.keys().then(function (keys) {
-        return Promise.all(
-          keys.map(function (k) { return caches.delete(k); })
-        );
+        return Promise.all(keys.map(function (k) { return caches.delete(k); }));
       });
     }
 
     var swCleared = Promise.resolve();
     if ("serviceWorker" in navigator) {
       swCleared = navigator.serviceWorker.getRegistrations().then(function (regs) {
-        return Promise.all(
-          regs.map(function (r) { return r.unregister(); })
-        );
+        return Promise.all(regs.map(function (r) { return r.unregister(); }));
       });
     }
 
     Promise.all([cacheCleared, swCleared])
-      .then(function () {
-        location.reload(true);
-      })
-      .catch(function (err) {
-        console.error("[KCT] Cache clear failed:", err);
-        location.reload(true);
-      });
+      .then(function () { location.reload(true); })
+      .catch(function () { location.reload(true); });
   }
 
   function refreshTodayBadge() {
@@ -1770,7 +1720,6 @@
       alert("Work Intimation is only available for Shift In-charges and Admins.");
       return;
     }
-
     document.getElementById("workForm").reset();
     document.getElementById("wfError").classList.remove("visible");
     document.getElementById("wfCommon").classList.add("hidden");
@@ -1805,7 +1754,6 @@
   function submitWorkForm(e) {
     e.preventDefault();
     document.getElementById("wfError").classList.remove("visible");
-
     const btn = document.getElementById("wfSubmitBtn");
     if (btn.disabled) return;
 
@@ -1829,24 +1777,14 @@
     }
 
     if (status === "WORK STARTING") {
-      if (!document.getElementById("wfManpower").value) {
-        alert("Please enter Number of Persons Engaged."); return;
-      }
-      if (!document.getElementById("wfExpectedDuration").value) {
-        alert("Please select Expected Duration."); return;
-      }
-      if (!document.getElementById("wfStartTime").value) {
-        alert("Please enter Actual Work Start Time."); return;
-      }
+      if (!document.getElementById("wfManpower").value) { alert("Please enter Number of Persons Engaged."); return; }
+      if (!document.getElementById("wfExpectedDuration").value) { alert("Please select Expected Duration."); return; }
+      if (!document.getElementById("wfStartTime").value) { alert("Please enter Actual Work Start Time."); return; }
     }
 
     if (status === "WORK COMPLETED") {
-      if (!document.getElementById("wfCompletionTime").value) {
-        alert("Please enter Actual Work Completion Time."); return;
-      }
-      if (!document.getElementById("wfCompletionStatus").value) {
-        alert("Please select Completion Status."); return;
-      }
+      if (!document.getElementById("wfCompletionTime").value) { alert("Please enter Actual Work Completion Time."); return; }
+      if (!document.getElementById("wfCompletionStatus").value) { alert("Please select Completion Status."); return; }
     }
 
     btn.disabled = true;
@@ -1859,8 +1797,7 @@
     const cleanTime = function (v) { return v ? String(v).slice(0, 5) : ""; };
 
     const data = {
-      clientId: "c-" + Date.now().toString(36) + "-" +
-                Math.random().toString(36).slice(2, 10),
+      clientId: "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10),
       status: status,
       equipment: document.getElementById("wfEquipment").value,
       workType: document.getElementById("wfWorkType").value,
@@ -1954,8 +1891,7 @@ ${data.remarks || "Not specified"}
     const url = "https://wa.me/?text=" + encodeURIComponent(message);
     document.getElementById("whatsappLink").href = url;
     document.getElementById("successTitle").textContent = "Data Saved Successfully";
-    document.getElementById("successMessage").textContent =
-      "Your work intimation has been recorded.";
+    document.getElementById("successMessage").textContent = "Your work intimation has been recorded.";
     showScreen("successScreen");
   }
 
@@ -2123,54 +2059,39 @@ ${data.remarks || "Not specified"}
     html += "</div>";
 
     if (it.description) {
-      html += "<div class='card'>";
-      html += "  <div class='section-heading' style='margin-top:0;'>Description</div>";
-      html += "  <div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.description) + "</div>";
-      html += "</div>";
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Description</div>";
+      html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.description) + "</div></div>";
     }
 
     if (it.photoUrl) {
-      html += "<div class='card'>";
-      html += "  <div class='section-heading' style='margin-top:0;'>Reported Photo</div>";
-      html += "  <a href='" + allIssuesEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>";
-      html += "    <img class='card-photo' src='" + allIssuesEsc_(it.photoUrl) + "' alt='issue photo'>";
-      html += "  </a>";
-      html += "</div>";
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Reported Photo</div>";
+      html += "<a href='" + allIssuesEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>";
+      html += "<img class='card-photo' src='" + allIssuesEsc_(it.photoUrl) + "' alt='issue photo'></a></div>";
     }
 
     if (it.resolvedPhotoUrl) {
-      html += "<div class='card' style='border-left-color:#0288d1;'>";
-      html += "  <div class='section-heading' style='margin-top:0;'>Resolved Photo</div>";
-      html += "  <a href='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'>";
-      html += "    <img class='card-photo' src='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' alt='resolution photo'>";
-      html += "  </a>";
-      html += "</div>";
+      html += "<div class='card' style='border-left-color:#0288d1;'><div class='section-heading' style='margin-top:0;'>Resolved Photo</div>";
+      html += "<a href='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'>";
+      html += "<img class='card-photo' src='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' alt='resolution photo'></a></div>";
     }
 
     if (it.resolutionNotes) {
-      html += "<div class='card'>";
-      html += "  <div class='section-heading' style='margin-top:0;'>Resolution Notes</div>";
-      html += "  <div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.resolutionNotes) + "</div>";
-      html += "</div>";
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Resolution Notes</div>";
+      html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.resolutionNotes) + "</div></div>";
     }
 
     if (it.statusHistory && it.statusHistory.length) {
-      html += "<div class='card'>";
-      html += "  <div class='section-heading' style='margin-top:0;'>Timeline</div>";
-      html += "  <div class='timeline'>";
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Timeline</div><div class='timeline'>";
       it.statusHistory.forEach(function (h) {
         let line = "";
         if (h.action === "Created") line = "Created by " + (h.by || "");
         else if (h.action === "Assigned") line = "Assigned to " + (h.to || "") + " by " + (h.by || "");
         else if (h.action === "Status changed") line = (h.from || "") + " → " + (h.to || "") + " by " + (h.by || "");
         else line = (h.action || "") + " by " + (h.by || "");
-        html += "    <div class='timeline-item'>";
-        html += "      <div>" + allIssuesEsc_(line) + "</div>";
-        html += "      <div class='when'>" + allIssuesEsc_(h.at || "") + "</div>";
-        html += "    </div>";
+        html += "<div class='timeline-item'><div>" + allIssuesEsc_(line) + "</div>";
+        html += "<div class='when'>" + allIssuesEsc_(h.at || "") + "</div></div>";
       });
-      html += "  </div>";
-      html += "</div>";
+      html += "</div></div>";
     }
 
     body.innerHTML = html;
@@ -2254,19 +2175,10 @@ ${data.remarks || "Not specified"}
     if (!CURRENT_ISSUE) return;
     if (!confirm("Mark this issue as In Progress?")) return;
     apiCall("updateIssueStatus",
-      {
-        token: SESSION_TOKEN,
-        rowNumber: CURRENT_ISSUE.rowNumber,
-        newStatus: "In Progress",
-        notes: "",
-        resolvedPhotoBase64: null,
-        resolvedPhotoMime: null
-      },
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "In Progress", notes: "", resolvedPhotoBase64: null, resolvedPhotoMime: null },
       function (res) {
-        if (!res || !res.success) {
-          alert(res && res.message ? res.message : "Failed.");
-          return;
-        }
+        if (!res || !res.success) { alert(res && res.message ? res.message : "Failed."); return; }
         openIssueDetail(CURRENT_ISSUE.rowNumber);
       }
     );
@@ -2286,16 +2198,9 @@ ${data.remarks || "Not specified"}
     document.getElementById("resolveModal").classList.remove("hidden");
   }
 
-  function closeResolveModal() {
-    document.getElementById("resolveModal").classList.add("hidden");
-  }
-
-  function resolvePhotoCamera() {
-    document.getElementById("resolveCameraInput").click();
-  }
-  function resolvePhotoGallery() {
-    document.getElementById("resolveGalleryInput").click();
-  }
+  function closeResolveModal() { document.getElementById("resolveModal").classList.add("hidden"); }
+  function resolvePhotoCamera() { document.getElementById("resolveCameraInput").click(); }
+  function resolvePhotoGallery() { document.getElementById("resolveGalleryInput").click(); }
 
   function onResolvePhotoChosen(evt) {
     const file = evt.target.files && evt.target.files[0];
@@ -2318,30 +2223,17 @@ ${data.remarks || "Not specified"}
     const notes = document.getElementById("resolveNotes").value.trim();
     const errBox = document.getElementById("resolveError");
 
-    if (!RESOLVE_PHOTO_B64) {
-      errBox.textContent = "A photo is required to mark resolved.";
-      errBox.classList.add("visible");
-      return;
-    }
-    if (!notes) {
-      errBox.textContent = "Please add resolution notes.";
-      errBox.classList.add("visible");
-      return;
-    }
+    if (!RESOLVE_PHOTO_B64) { errBox.textContent = "A photo is required to mark resolved."; errBox.classList.add("visible"); return; }
+    if (!notes) { errBox.textContent = "Please add resolution notes."; errBox.classList.add("visible"); return; }
 
     const btn = document.getElementById("resolveSubmitBtn");
     btn.disabled = true; btn.textContent = "Resolving…";
     showBusy("Uploading resolved photo…");
 
     apiCall("updateIssueStatus",
-      {
-        token: SESSION_TOKEN,
-        rowNumber: CURRENT_ISSUE.rowNumber,
-        newStatus: "Resolved",
-        notes: notes,
-        resolvedPhotoBase64: RESOLVE_PHOTO_B64,
-        resolvedPhotoMime: RESOLVE_PHOTO_MIME
-      },
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "Resolved", notes: notes,
+        resolvedPhotoBase64: RESOLVE_PHOTO_B64, resolvedPhotoMime: RESOLVE_PHOTO_MIME },
       function (res) {
         hideBusy();
         btn.disabled = false; btn.textContent = "Resolve";
@@ -2366,14 +2258,11 @@ ${data.remarks || "Not specified"}
     document.getElementById("busyText").textContent = text || "Working…";
     document.getElementById("busyOverlay").classList.remove("hidden");
   }
-  function hideBusy() {
-    document.getElementById("busyOverlay").classList.add("hidden");
-  }
+  function hideBusy() { document.getElementById("busyOverlay").classList.add("hidden"); }
 
   window.addEventListener("pageshow", function () {
     let saved = null;
     try { saved = localStorage.getItem("kct_token"); } catch (e) {}
-
     if (!saved) { showScreen("loginScreen"); return; }
 
     apiCall("validateSession", { token: saved },
@@ -2387,25 +2276,14 @@ ${data.remarks || "Not specified"}
           showScreen("loginScreen");
         }
       },
-      function () {
-        showScreen("loginScreen");
-      }
+      function () { showScreen("loginScreen"); }
     );
   });
 
   let DASHBOARD_EQUIP_LOADED = false;
 
-  const PRIORITY_COLORS = {
-    "Low": "#9e9e9e",
-    "Medium": "#1976d2",
-    "High": "#f57c00",
-    "Critical": "#d32f2f"
-  };
-  const STATUS_COLORS = {
-    "Open": "#f57c00",
-    "In Progress": "#1976d2",
-    "Resolved": "#0288d1"
-  };
+  const PRIORITY_COLORS = { "Low": "#9e9e9e", "Medium": "#1976d2", "High": "#f57c00", "Critical": "#d32f2f" };
+  const STATUS_COLORS = { "Open": "#f57c00", "In Progress": "#1976d2", "Resolved": "#0288d1" };
 
   function openDashboard() {
     showScreen("dashboardScreen");
@@ -2427,9 +2305,6 @@ ${data.remarks || "Not specified"}
 
   function dashboardLoad() {
     if (!SESSION_TOKEN) return;
-    const body = document.getElementById("dashboardScreen");
-    if (!body) return;
-
     const filters = {
       dateRange: document.getElementById("dbRange").value,
       equipment: document.getElementById("dbEquipment").value
@@ -2459,8 +2334,7 @@ ${data.remarks || "Not specified"}
     document.getElementById("kpiOpen").textContent    = d.kpis.openIssues;
     document.getElementById("kpiMttr").textContent    = d.kpis.mttrLabel;
     document.getElementById("kpiMttrSub").textContent =
-      d.kpis.mttrCount ? "over " + d.kpis.mttrCount + " issue" +
-        (d.kpis.mttrCount === 1 ? "" : "s") : "";
+      d.kpis.mttrCount ? "over " + d.kpis.mttrCount + " issue" + (d.kpis.mttrCount === 1 ? "" : "s") : "";
     document.getElementById("kpiMonth").textContent   = d.kpis.monthDurationLabel || "—";
     document.getElementById("kpiPending").textContent = d.kpis.pendingWork;
 
@@ -2474,70 +2348,46 @@ ${data.remarks || "Not specified"}
     renderShiftTable_(d.shiftTable);
     renderAgingTable_(d.aging);
 
-    // Extra charts (from ChartsFrontend.html)
+    // Extra charts
     if (typeof _renderExtraCharts_ === "function") {
       _renderExtraCharts_(d.charts);
     }
   }
 
   function dashboardEsc_(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function renderBarChart_(containerId, items) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    if (!items || !items.length) {
-      el.innerHTML = "<div class='no-data'>No data in this range.</div>";
-      return;
-    }
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data in this range.</div>"; return; }
     const max = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
-
     el.innerHTML = items.map(function (it) {
       const pct = Math.round((it.value / max) * 100);
-      return (
-        "<div class='bar-row'>" +
-          "<div class='bar-label'>" + dashboardEsc_(it.label) + "</div>" +
-          "<div class='bar-track'>" +
-            "<div class='bar-fill' style='width:" + pct + "%'></div>" +
-          "</div>" +
-          "<div class='bar-value'>" + it.value + "</div>" +
-        "</div>"
-      );
+      return "<div class='bar-row'><div class='bar-label'>" + dashboardEsc_(it.label) + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct + "%'></div></div>" +
+        "<div class='bar-value'>" + it.value + "</div></div>";
     }).join("");
   }
 
   function renderPillChart_(containerId, items, colors) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    if (!items || !items.length) {
-      el.innerHTML = "<div class='no-data'>No data.</div>";
-      return;
-    }
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
     el.innerHTML = "<div class='pill-chart'>" +
       items.map(function (it) {
         const color = (colors && colors[it.label]) || "#999";
-        return (
-          "<div class='pill-chart-item'>" +
-            "<span class='dot' style='background:" + color + "'></span>" +
-            "<span>" + dashboardEsc_(it.label) + "</span>" +
-            "<span class='num'>" + it.value + "</span>" +
-          "</div>"
-        );
-      }).join("") +
-      "</div>";
+        return "<div class='pill-chart-item'><span class='dot' style='background:" + color + "'></span>" +
+          "<span>" + dashboardEsc_(it.label) + "</span><span class='num'>" + it.value + "</span></div>";
+      }).join("") + "</div>";
   }
 
   function renderLineChart_(containerId, days) {
     const el = document.getElementById(containerId);
     if (!el) return;
-    if (!days || !days.length) {
-      el.innerHTML = "<div class='no-data'>No data.</div>";
-      return;
-    }
+    if (!days || !days.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
 
     const W = 640, H = 180, PAD_L = 28, PAD_R = 10, PAD_T = 12, PAD_B = 28;
     const innerW = W - PAD_L - PAD_R;
@@ -2557,120 +2407,75 @@ ${data.remarks || "Not specified"}
     let grid = "";
     [0, 0.5, 1].forEach(function (frac) {
       const y = PAD_T + innerH - frac * innerH;
-      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" +
-              (PAD_L + innerW) + "' y2='" + y +
-              "' stroke='#eee' stroke-width='1'/>";
-      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) +
-              "' text-anchor='end' font-size='9' fill='#999'>" +
-              Math.round(maxVal * frac) + "</text>";
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) + "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) + "' text-anchor='end' font-size='9' fill='#999'>" +
+        Math.round(maxVal * frac) + "</text>";
     });
 
     let xLabels = "";
     days.forEach(function (d, i) {
       if (i % 5 === 0 || i === days.length - 1) {
         const x = PAD_L + i * stepX;
-        xLabels += "<text x='" + x + "' y='" + (H - 8) +
-                   "' text-anchor='middle' font-size='9' fill='#999'>" +
-                   d.label + "</text>";
+        xLabels += "<text x='" + x + "' y='" + (H - 8) + "' text-anchor='middle' font-size='9' fill='#999'>" +
+          d.label + "</text>";
       }
     });
 
     let dots = "";
     points.forEach(function (p) {
       if (p.d.count > 0) {
-        dots += "<circle cx='" + p.x + "' cy='" + p.y +
-                "' r='2.5' fill='#0288d1'/>";
+        dots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#0288d1'/>";
       }
     });
 
-    const svg =
-      "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' " +
-        "preserveAspectRatio='xMidYMid meet'>" +
-        grid +
-        "<path d='" + path + "' fill='none' stroke='#0288d1' stroke-width='2'/>" +
-        dots +
-        xLabels +
-      "</svg>";
-
-    el.innerHTML = svg;
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid + "<path d='" + path + "' fill='none' stroke='#0288d1' stroke-width='2'/>" +
+      dots + xLabels + "</svg>";
   }
 
   function renderShiftTable_(rows) {
     const el = document.getElementById("shiftTable");
     if (!el) return;
-    if (!rows || !rows.length) {
-      el.innerHTML = "<div class='no-data'>No shift data in this range.</div>";
-      return;
-    }
-    el.innerHTML =
-      "<table class='dash-table'>" +
-        "<thead><tr>" +
-          "<th>Shift In-charge</th>" +
-          "<th class='num'>Jobs</th>" +
-          "<th class='num'>Manpower</th>" +
-          "<th class='num'>Duration</th>" +
-          "<th class='num'>Pending</th>" +
-        "</tr></thead>" +
-        "<tbody>" +
-        rows.map(function (r) {
-          return "<tr>" +
-            "<td>" + dashboardEsc_(r.label) + "</td>" +
-            "<td class='num'>" + r.jobs + "</td>" +
-            "<td class='num'>" + r.manpower + "</td>" +
-            "<td class='num'>" + dashboardEsc_(r.durationLabel || "—") + "</td>" +
-            "<td class='num'>" + r.pending + "</td>" +
-          "</tr>";
-        }).join("") +
-        "</tbody>" +
-      "</table>";
+    if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No shift data in this range.</div>"; return; }
+    el.innerHTML = "<table class='dash-table'><thead><tr>" +
+      "<th>Shift In-charge</th><th class='num'>Jobs</th><th class='num'>Manpower</th><th class='num'>Duration</th><th class='num'>Pending</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr><td>" + dashboardEsc_(r.label) + "</td>" +
+          "<td class='num'>" + r.jobs + "</td>" +
+          "<td class='num'>" + r.manpower + "</td>" +
+          "<td class='num'>" + dashboardEsc_(r.durationLabel || "—") + "</td>" +
+          "<td class='num'>" + r.pending + "</td></tr>";
+      }).join("") + "</tbody></table>";
   }
 
   function renderAgingTable_(rows) {
     const el = document.getElementById("agingTable");
     if (!el) return;
-    if (!rows || !rows.length) {
-      el.innerHTML = "<div class='no-data'>No aging issues. 👍</div>";
-      return;
-    }
-    el.innerHTML =
-      "<table class='dash-table'>" +
-        "<thead><tr>" +
-          "<th>Days</th>" +
-          "<th>Equipment</th>" +
-          "<th>Type</th>" +
-          "<th>Priority</th>" +
-          "<th>Status</th>" +
-          "<th>Assigned To</th>" +
-        "</tr></thead>" +
-        "<tbody>" +
-        rows.map(function (r) {
-          return "<tr onclick='openIssueDetail(" + r.rowNumber + ")' style='cursor:pointer;'>" +
-            "<td><b>" + r.daysOpen + "d</b></td>" +
-            "<td>" + dashboardEsc_(r.equipment) + "</td>" +
-            "<td>" + dashboardEsc_(r.issueType) + "</td>" +
-            "<td>" + dashboardEsc_(r.priority) + "</td>" +
-            "<td>" + dashboardEsc_(r.status) + "</td>" +
-            "<td>" + (r.assignedTo ? dashboardEsc_(r.assignedTo) : "<i style='color:#d32f2f;'>—</i>") + "</td>" +
-          "</tr>";
-        }).join("") +
-        "</tbody>" +
-      "</table>";
+    if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No aging issues. 👍</div>"; return; }
+    el.innerHTML = "<table class='dash-table'><thead><tr>" +
+      "<th>Days</th><th>Equipment</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr onclick='openIssueDetail(" + r.rowNumber + ")' style='cursor:pointer;'>" +
+          "<td><b>" + r.daysOpen + "d</b></td>" +
+          "<td>" + dashboardEsc_(r.equipment) + "</td>" +
+          "<td>" + dashboardEsc_(r.issueType) + "</td>" +
+          "<td>" + dashboardEsc_(r.priority) + "</td>" +
+          "<td>" + dashboardEsc_(r.status) + "</td>" +
+          "<td>" + (r.assignedTo ? dashboardEsc_(r.assignedTo) : "<i style='color:#d32f2f;'>—</i>") + "</td></tr>";
+      }).join("") + "</tbody></table>";
   }
 
   function openAdminPanel() {
-    if (!CURRENT_USER || CURRENT_USER.role !== "admin") {
-      alert("Admin access required.");
-      return;
-    }
+    if (!CURRENT_USER || CURRENT_USER.role !== "admin") { alert("Admin access required."); return; }
     showScreen("adminScreen");
     loadAdminUsers();
   }
 
   function adminEsc_(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function loadAdminUsers() {
@@ -2697,70 +2502,41 @@ ${data.remarks || "Not specified"}
 
   function renderAdminUsers_(users) {
     const list = document.getElementById("adminUserList");
-    if (!users || !users.length) {
-      list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No users.</div>";
-      return;
-    }
+    if (!users || !users.length) { list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No users.</div>"; return; }
 
     list.innerHTML = users.map(function (u) {
-      const roleClass = u.role === "admin" ? "critical"
-                      : u.role === "incharge" ? "high"
-                      : u.role === "technician" ? "medium"
-                      : "low";
-
+      const roleClass = u.role === "admin" ? "critical" : u.role === "incharge" ? "high" :
+                        u.role === "technician" ? "medium" : "low";
       const isMe = CURRENT_USER && u.userId === CURRENT_USER.userId;
 
-      return (
-        "<div class='card issue-" + adminEsc_(roleClass) + "'>" +
-          "<div class='card-head'>" +
-            "<div class='card-title issue'>" + adminEsc_(u.name) +
-              (isMe ? " <span style='color:#0288d1;font-size:11px;'>(you)</span>" : "") +
-            "</div>" +
-            "<div class='card-date'>" +
-              (u.active ? "Active" : "<span style='color:#c62828;'>Disabled</span>") +
-            "</div>" +
-          "</div>" +
-
-          "<div>" +
-            "<span class='pill " + adminEsc_(roleClass) + "'>" + adminEsc_(u.role) + "</span>" +
-            (u.mustChange ? "<span class='pill pending'>Must Change Pwd</span>" : "") +
-          "</div>" +
-
-          "<div class='card-row'><span class='lbl'>User ID</span><span class='val'>" +
-            adminEsc_(u.userId) + "</span></div>" +
-
-          "<div class='card-row'><span class='lbl'>Email</span><span class='val'>" +
-            (u.email ? adminEsc_(u.email) : "<i>—</i>") + "</span></div>" +
-
-          "<div class='card-row'><span class='lbl'>Last Login</span><span class='val'>" +
-            adminEsc_(u.lastLogin) + "</span></div>" +
-
-          (isMe ? "" :
-            "<div style='margin-top:12px;display:flex;gap:8px;'>" +
-              "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;'" +
-                "onclick=\"adminConfirmReset('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "')\">" +
-                "🔑 Reset Password</button>" +
-              "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;'" +
-                "onclick=\"adminConfirmToggle('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "', " + u.active + ")\">" +
-                (u.active ? "🚫 Disable" : "✅ Enable") + "</button>" +
-            "</div>"
-          ) +
-        "</div>"
-      );
+      return "<div class='card issue-" + adminEsc_(roleClass) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + adminEsc_(u.name) +
+          (isMe ? " <span style='color:#0288d1;font-size:11px;'>(you)</span>" : "") +
+        "</div><div class='card-date'>" +
+          (u.active ? "Active" : "<span style='color:#c62828;'>Disabled</span>") + "</div></div>" +
+        "<div><span class='pill " + adminEsc_(roleClass) + "'>" + adminEsc_(u.role) + "</span>" +
+          (u.mustChange ? "<span class='pill pending'>Must Change Pwd</span>" : "") + "</div>" +
+        "<div class='card-row'><span class='lbl'>User ID</span><span class='val'>" + adminEsc_(u.userId) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Email</span><span class='val'>" +
+          (u.email ? adminEsc_(u.email) : "<i>—</i>") + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Last Login</span><span class='val'>" + adminEsc_(u.lastLogin) + "</span></div>" +
+        (isMe ? "" :
+          "<div style='margin-top:12px;display:flex;gap:8px;'>" +
+            "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;' " +
+              "onclick=\"adminConfirmReset('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "')\">🔑 Reset Password</button>" +
+            "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;' " +
+              "onclick=\"adminConfirmToggle('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "', " + u.active + ")\">" +
+              (u.active ? "🚫 Disable" : "✅ Enable") + "</button>" +
+          "</div>") + "</div>";
     }).join("");
   }
 
   function adminConfirmReset(userId, name) {
-    if (!confirm("Reset password for " + name + "?\n\n" +
-                 "Their password will be set to a random temporary password " +
-                 "and they'll be forced to change it on next login.")) return;
-
+    if (!confirm("Reset password for " + name + "?")) return;
     const errBox = document.getElementById("adminError");
     errBox.classList.remove("visible");
     showBusy("Resetting…");
-
-    apiCall("adminResetPassword",
-      { token: SESSION_TOKEN, targetUserId: userId },
+    apiCall("adminResetPassword", { token: SESSION_TOKEN, targetUserId: userId },
       function (res) {
         hideBusy();
         if (!res || !res.success) {
@@ -2768,8 +2544,7 @@ ${data.remarks || "Not specified"}
           errBox.classList.add("visible");
           return;
         }
-        alert("✅ " + res.message + "\n\nTemporary password: " + res.tempPassword +
-              "\n\nAsk them to log in with this and set a new one.");
+        alert("✅ " + res.message + "\n\nTemporary password: " + res.tempPassword);
         loadAdminUsers();
       },
       function (err) {
@@ -2783,12 +2558,9 @@ ${data.remarks || "Not specified"}
   function adminConfirmToggle(userId, name, currentlyActive) {
     const action = currentlyActive ? "DISABLE" : "ENABLE";
     if (!confirm(action + " account for " + name + "?")) return;
-
     const errBox = document.getElementById("adminError");
     errBox.classList.remove("visible");
-
-    apiCall("adminSetUserActive",
-      { token: SESSION_TOKEN, targetUserId: userId, active: !currentlyActive },
+    apiCall("adminSetUserActive", { token: SESSION_TOKEN, targetUserId: userId, active: !currentlyActive },
       function (res) {
         if (!res || !res.success) {
           errBox.textContent = res && res.message ? res.message : "Failed.";
@@ -2805,7 +2577,7 @@ ${data.remarks || "Not specified"}
   }
 
   /* ============================================================
-     FRAGMENTS — History, Today, Issues, Annotate (inlined)
+     FRAGMENTS — inlined
      ============================================================ */
 
   // ===== Issues.html JS =====
@@ -2814,30 +2586,23 @@ ${data.remarks || "Not specified"}
   let capturedPhotoName = "photo.jpg";
   let capturedPhotoRawDataUrl = null;
 
-  function openIssuesScreen() {
-    resetIssueForm();
-    showScreen("issuesScreen");
-  }
+  function openIssuesScreen() { resetIssueForm(); showScreen("issuesScreen"); }
 
   function resetIssueForm() {
     capturedPhotoBase64 = null;
     capturedPhotoRawDataUrl = null;
-
     document.getElementById("photoArea").classList.add("hidden");
     document.getElementById("photoPicker").classList.remove("hidden");
     document.getElementById("photoActions").classList.add("hidden");
     document.getElementById("photoPreview").src = "";
-
     const markBtn = document.getElementById("markSpotBtn");
     if (markBtn) markBtn.classList.add("hidden");
-
     document.getElementById("isIssueType").value = "";
     document.getElementById("isEquipment").value = "";
     document.getElementById("isLocation").value = "";
     document.getElementById("isPriority").value = "";
     document.getElementById("isDescription").value = "";
     document.getElementById("isError").classList.remove("visible");
-
     try { document.getElementById("cameraInput").value = ""; } catch (e) {}
     try { document.getElementById("galleryInput").value = ""; } catch (e) {}
   }
@@ -2852,10 +2617,8 @@ ${data.remarks || "Not specified"}
     document.getElementById("photoPicker").classList.remove("hidden");
     document.getElementById("photoActions").classList.add("hidden");
     document.getElementById("photoPreview").src = "";
-
     const markBtn = document.getElementById("markSpotBtn");
     if (markBtn) markBtn.classList.add("hidden");
-
     try { document.getElementById("cameraInput").value = ""; } catch (e) {}
     try { document.getElementById("galleryInput").value = ""; } catch (e) {}
   }
@@ -2863,10 +2626,8 @@ ${data.remarks || "Not specified"}
   function onPhotoChosen(evt) {
     const file = evt.target.files && evt.target.files[0];
     if (!file) return;
-
     capturedPhotoMime = file.type || "image/jpeg";
     capturedPhotoName = file.name || "photo.jpg";
-
     const reader = new FileReader();
     reader.onload = function (e) {
       const dataUrl = e.target.result;
@@ -2886,12 +2647,10 @@ ${data.remarks || "Not specified"}
       capturedPhotoBase64 = final.substring(comma + 1);
       capturedPhotoMime = "image/jpeg";
       capturedPhotoName = "photo-marked.jpg";
-
       document.getElementById("photoPreview").src = final;
       document.getElementById("photoArea").classList.remove("hidden");
       document.getElementById("photoPicker").classList.add("hidden");
       document.getElementById("photoActions").classList.remove("hidden");
-
       const markBtn = document.getElementById("markSpotBtn");
       if (markBtn) markBtn.classList.remove("hidden");
     });
@@ -2911,13 +2670,9 @@ ${data.remarks || "Not specified"}
     const img = new Image();
     img.onload = function () {
       let w = img.width, h = img.height;
-      if (w > maxWidth) {
-        h = Math.round(h * (maxWidth / w));
-        w = maxWidth;
-      }
+      if (w > maxWidth) { h = Math.round(h * (maxWidth / w)); w = maxWidth; }
       const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, w, h);
       try { callback(canvas.toDataURL("image/jpeg", quality)); }
@@ -2936,11 +2691,7 @@ ${data.remarks || "Not specified"}
 
   function submitIssueForm() {
     document.getElementById("isError").classList.remove("visible");
-
-    if (!capturedPhotoBase64) {
-      alert("Please take or choose a photo of the issue.");
-      return;
-    }
+    if (!capturedPhotoBase64) { alert("Please take or choose a photo of the issue."); return; }
 
     const issueType   = document.getElementById("isIssueType").value;
     const equipment   = document.getElementById("isEquipment").value;
@@ -2959,24 +2710,13 @@ ${data.remarks || "Not specified"}
     showBusy("Uploading photo…");
 
     const payload = {
-      clientId: "is-" + Date.now().toString(36) + "-" +
-                Math.random().toString(36).slice(2, 10),
-      issueType: issueType,
-      equipment: equipment,
-      location: location.toUpperCase(),
-      priority: priority,
-      description: description,
-      photoBase64: capturedPhotoBase64,
-      photoMime: capturedPhotoMime,
-      photoName: capturedPhotoName
+      clientId: "is-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10),
+      issueType: issueType, equipment: equipment, location: location.toUpperCase(),
+      priority: priority, description: description,
+      photoBase64: capturedPhotoBase64, photoMime: capturedPhotoMime, photoName: capturedPhotoName
     };
 
-    if (!SESSION_TOKEN) {
-      hideBusy();
-      btn.disabled = false;
-      alert("Session lost. Please log in again.");
-      return;
-    }
+    if (!SESSION_TOKEN) { hideBusy(); btn.disabled = false; alert("Session lost. Please log in again."); return; }
 
     apiCall("submitIssue",
       { token: SESSION_TOKEN, payload: payload },
@@ -2993,10 +2733,7 @@ ${data.remarks || "Not specified"}
         hideBusy();
         btn.disabled = false;
         const msg = err && err.message ? err.message : "Submission failed.";
-        if (msg === "SESSION_EXPIRED") {
-          alert("Your session has expired. Please log in again.");
-          return;
-        }
+        if (msg === "SESSION_EXPIRED") { alert("Your session has expired. Please log in again."); return; }
         isShowError(msg);
       }
     );
@@ -3023,7 +2760,6 @@ Please review and take action.`;
 
     document.getElementById("issueWhatsappLink").href =
       "https://wa.me/?text=" + encodeURIComponent(message);
-
     showScreen("issueSuccessScreen");
   }
 
@@ -3033,10 +2769,7 @@ Please review and take action.`;
 
   function openHistory() {
     showScreen("historyScreen");
-    if (!HISTORY_EQUIP_LOADED) {
-      populateHistoryEquipment_();
-      HISTORY_EQUIP_LOADED = true;
-    }
+    if (!HISTORY_EQUIP_LOADED) { populateHistoryEquipment_(); HISTORY_EQUIP_LOADED = true; }
     historyReload();
   }
 
@@ -3088,8 +2821,7 @@ Please review and take action.`;
 
         document.getElementById("cntWork").textContent = res.workCount;
         document.getElementById("cntIssues").textContent = res.issueCount;
-        document.getElementById("historyPageTitle").textContent =
-          res.ownOnly ? "My History" : "Plant History";
+        document.getElementById("historyPageTitle").textContent = res.ownOnly ? "My History" : "Plant History";
 
         historyRenderWork_(res.work);
         historyRenderIssues_(res.issues);
@@ -3103,10 +2835,8 @@ Please review and take action.`;
   }
 
   function historyEsc_(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function historyRenderWork_(items) {
@@ -3117,28 +2847,18 @@ Please review and take action.`;
     }
     el.innerHTML = items.map(function (it) {
       const cls = it.isPending ? "pending" : "complete";
-      const pill = it.isPending
-        ? "<span class='pill pending'>Pending</span>"
-        : "<span class='pill complete'>Completed</span>";
-      return (
-        "<div class='card " + cls + "'>" +
-          "<div class='card-head'>" +
-            "<div class='card-title'>" + historyEsc_(it.equipment) + " — " + historyEsc_(it.workType) + "</div>" +
-            "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div>" +
-          "</div>" +
-          "<div>" + pill + "</div>" +
-          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + historyEsc_(it.responsible) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Shift In-charge</span><span class='val'>" + historyEsc_(it.shiftIncharge) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + historyEsc_(it.startTime || "—") + "</span></div>" +
-          (it.completionTime
-            ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + historyEsc_(it.completionTime) + "</span></div>"
-            : "") +
-          (it.duration
-            ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + historyEsc_(it.duration) + "</span></div>"
-            : "") +
-        "</div>"
-      );
+      const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+      return "<div class='card " + cls + "'>" +
+        "<div class='card-head'><div class='card-title'>" + historyEsc_(it.equipment) + " — " + historyEsc_(it.workType) + "</div>" +
+        "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div></div>" +
+        "<div>" + pill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + historyEsc_(it.responsible) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Shift In-charge</span><span class='val'>" + historyEsc_(it.shiftIncharge) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + historyEsc_(it.startTime || "—") + "</span></div>" +
+        (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + historyEsc_(it.completionTime) + "</span></div>" : "") +
+        (it.duration ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + historyEsc_(it.duration) + "</span></div>" : "") +
+        "</div>";
     }).join("");
   }
 
@@ -3153,45 +2873,25 @@ Please review and take action.`;
       const status = String(it.status || "Open").toLowerCase();
       const statusClass = status.replace(/\s+/g, "");
       const statusPill = "<span class='pill " + statusClass + "'>" + historyEsc_(it.status) + "</span>";
-      return (
-        "<div class='card issue-" + historyEsc_(prio) + "'>" +
-          "<div class='card-head'>" +
-            "<div class='card-title issue'>" + historyEsc_(it.issueType) + " — " + historyEsc_(it.equipment) + "</div>" +
-            "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div>" +
-          "</div>" +
-          "<div>" +
-            "<span class='pill " + historyEsc_(prio) + "'>" + historyEsc_(it.priority) + "</span>" +
-            statusPill +
-          "</div>" +
-          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + historyEsc_(it.reportedBy) + "</span></div>" +
-          (it.assignedTo
-            ? "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + historyEsc_(it.assignedTo) + "</span></div>"
-            : "") +
-          (it.description
-            ? "<div class='card-desc'>" + historyEsc_(it.description) + "</div>"
-            : "") +
-          (it.photoUrl
-            ? "<a href='" + historyEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>" +
-              "<img class='card-photo' src='" + historyEsc_(it.photoUrl) + "' alt='issue photo'>" +
-              "</a>"
-            : "") +
-        "</div>"
-      );
+      return "<div class='card issue-" + historyEsc_(prio) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + historyEsc_(it.issueType) + " — " + historyEsc_(it.equipment) + "</div>" +
+        "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div></div>" +
+        "<div><span class='pill " + historyEsc_(prio) + "'>" + historyEsc_(it.priority) + "</span>" + statusPill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + historyEsc_(it.reportedBy) + "</span></div>" +
+        (it.assignedTo ? "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + historyEsc_(it.assignedTo) + "</span></div>" : "") +
+        (it.description ? "<div class='card-desc'>" + historyEsc_(it.description) + "</div>" : "") +
+        (it.photoUrl ? "<a href='" + historyEsc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + historyEsc_(it.photoUrl) + "' alt='issue photo'></a>" : "") +
+        "</div>";
     }).join("");
   }
 
   // ===== Today.html JS =====
-  function openToday() {
-    showScreen("todayScreen");
-    todayLoad();
-  }
+  function openToday() { showScreen("todayScreen"); todayLoad(); }
 
   function todayEsc_(s) {
-    return String(s || "")
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function todayLoad() {
@@ -3200,7 +2900,6 @@ Please review and take action.`;
         "<div class='empty'><div class='icon'>🔒</div>Session lost. Please log in again.</div>";
       return;
     }
-
     document.getElementById("todayWorkList").innerHTML = "<div class='loading'>Loading…</div>";
     document.getElementById("todayIssueList").innerHTML = "<div class='loading'>Loading…</div>";
 
@@ -3213,12 +2912,10 @@ Please review and take action.`;
           document.getElementById("todayIssueList").innerHTML = "";
           return;
         }
-
         document.getElementById("todayDateLabel").textContent = res.dateLabel || "";
         document.getElementById("tWorkCount").textContent = res.workCount;
         document.getElementById("tIssueCount").textContent = res.issueCount;
         document.getElementById("tBadge").textContent = res.badgeCount;
-
         todayRenderWork_(res.work);
         todayRenderIssues_(res.issues);
       },
@@ -3238,26 +2935,16 @@ Please review and take action.`;
     }
     el.innerHTML = items.map(function (it) {
       const cls = it.isPending ? "pending" : "complete";
-      const pill = it.isPending
-        ? "<span class='pill pending'>Pending</span>"
-        : "<span class='pill complete'>Completed</span>";
-      return (
-        "<div class='card " + cls + "'>" +
-          "<div class='card-head'>" +
-            "<div class='card-title'>" + todayEsc_(it.equipment) + " — " + todayEsc_(it.workType) + "</div>" +
-          "</div>" +
-          "<div>" + pill + "</div>" +
-          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + todayEsc_(it.responsible) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + todayEsc_(it.startTime || "—") + "</span></div>" +
-          (it.completionTime
-            ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + todayEsc_(it.completionTime) + "</span></div>"
-            : "") +
-          (it.duration
-            ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + todayEsc_(it.duration) + "</span></div>"
-            : "") +
-        "</div>"
-      );
+      const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+      return "<div class='card " + cls + "'>" +
+        "<div class='card-head'><div class='card-title'>" + todayEsc_(it.equipment) + " — " + todayEsc_(it.workType) + "</div></div>" +
+        "<div>" + pill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + todayEsc_(it.responsible) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + todayEsc_(it.startTime || "—") + "</span></div>" +
+        (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + todayEsc_(it.completionTime) + "</span></div>" : "") +
+        (it.duration ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + todayEsc_(it.duration) + "</span></div>" : "") +
+        "</div>";
     }).join("");
   }
 
@@ -3273,46 +2960,23 @@ Please review and take action.`;
       const statusPill = (status === "resolved" || status === "closed")
         ? "<span class='pill resolved'>Resolved</span>"
         : "<span class='pill open'>Open</span>";
-      return (
-        "<div class='card issue-" + todayEsc_(prio) + "'>" +
-          "<div class='card-head'>" +
-            "<div class='card-title issue'>" + todayEsc_(it.issueType) + " — " + todayEsc_(it.equipment) + "</div>" +
-          "</div>" +
-          "<div>" +
-            "<span class='pill " + todayEsc_(prio) + "'>" + todayEsc_(it.priority) + "</span>" +
-            statusPill +
-          "</div>" +
-          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
-          "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + todayEsc_(it.reportedBy) + "</span></div>" +
-          (it.description
-            ? "<div class='card-desc'>" + todayEsc_(it.description) + "</div>"
-            : "") +
-          (it.photoUrl
-            ? "<a href='" + todayEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>" +
-              "<img class='card-photo' src='" + todayEsc_(it.photoUrl) + "' alt='issue photo'>" +
-              "</a>"
-            : "") +
-        "</div>"
-      );
+      return "<div class='card issue-" + todayEsc_(prio) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + todayEsc_(it.issueType) + " — " + todayEsc_(it.equipment) + "</div></div>" +
+        "<div><span class='pill " + todayEsc_(prio) + "'>" + todayEsc_(it.priority) + "</span>" + statusPill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + todayEsc_(it.reportedBy) + "</span></div>" +
+        (it.description ? "<div class='card-desc'>" + todayEsc_(it.description) + "</div>" : "") +
+        (it.photoUrl ? "<a href='" + todayEsc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + todayEsc_(it.photoUrl) + "' alt='issue photo'></a>" : "") +
+        "</div>";
     }).join("");
   }
 
   // ===== Annotate.html JS =====
   const ANNOTATE = {
-    img: null,
-    canvas: null,
-    ctx: null,
-    tool: "circle",
-    color: "#e53935",
-    width: 6,
-    drawing: false,
-    startX: 0, startY: 0,
-    lastX: 0, lastY: 0,
-    history: [],
-    maxHistory: 12,
-    zoomLevel: 1,
-    dpr: 1,
-    onSave: null
+    img: null, canvas: null, ctx: null,
+    tool: "circle", color: "#e53935", width: 6,
+    drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
+    history: [], maxHistory: 12, zoomLevel: 1, dpr: 1, onSave: null
   };
 
   function openAnnotateModal(dataUrl, onSave) {
@@ -3326,9 +2990,7 @@ Please review and take action.`;
     ANNOTATE.zoomLevel = 1;
     document.getElementById("annotateWrap").style.transform = "scale(1)";
 
-    img.onload = function () {
-      setupCanvas_();
-    };
+    img.onload = function () { setupCanvas_(); };
     img.src = dataUrl;
 
     canvas.replaceWith(canvas.cloneNode(true));
@@ -3355,17 +3017,13 @@ Please review and take action.`;
 
     const scaleX = img.naturalWidth  / canvas.width;
     const scaleY = img.naturalHeight / canvas.height;
-    octx.save();
-    octx.scale(scaleX, scaleY);
-    octx.drawImage(canvas, 0, 0);
-    octx.restore();
+    octx.save(); octx.scale(scaleX, scaleY);
+    octx.drawImage(canvas, 0, 0); octx.restore();
 
     const result = out.toDataURL("image/jpeg", 0.85);
 
     document.getElementById("annotateModal").classList.add("hidden");
-    if (typeof ANNOTATE.onSave === "function") {
-      ANNOTATE.onSave(result);
-    }
+    if (typeof ANNOTATE.onSave === "function") ANNOTATE.onSave(result);
     ANNOTATE.onSave = null;
   }
 
@@ -3375,68 +3033,55 @@ Please review and take action.`;
       b.classList.toggle("active", b.dataset.tool === tool);
     });
   }
-
   function annotateSetColor(color) {
     ANNOTATE.color = color;
     document.querySelectorAll(".ann-swatch").forEach(function (b) {
       b.classList.toggle("active", b.dataset.color === color);
     });
   }
-
   function annotateSetWidth(w) {
     ANNOTATE.width = w;
     document.querySelectorAll(".annotate-toolbar .ann-tool[data-width]").forEach(function (b) {
       b.classList.toggle("active", Number(b.dataset.width) === w);
     });
   }
-
   function annotateUndo() {
     if (!ANNOTATE.history.length) return;
     const last = ANNOTATE.history.pop();
     ANNOTATE.ctx.putImageData(last, 0, 0);
   }
-
   function annotateClear() {
     pushHistory_();
     const c = ANNOTATE.canvas;
     ANNOTATE.ctx.clearRect(0, 0, c.width, c.height);
   }
-
   function annotateZoom() {
     ANNOTATE.zoomLevel = ANNOTATE.zoomLevel >= 2 ? 1 : ANNOTATE.zoomLevel + 0.5;
-    document.getElementById("annotateWrap").style.transform =
-      "scale(" + ANNOTATE.zoomLevel + ")";
+    document.getElementById("annotateWrap").style.transform = "scale(" + ANNOTATE.zoomLevel + ")";
   }
 
   function setupCanvas_() {
     const img = document.getElementById("annotateImg");
     const canvas = document.getElementById("annotateCanvas");
-
     ANNOTATE.img = img;
     ANNOTATE.dpr = window.devicePixelRatio || 1;
 
     requestAnimationFrame(function () {
       canvas.style.transform = "none";
-
       const rect = img.getBoundingClientRect();
       const cssW = Math.round(rect.width);
       const cssH = Math.round(rect.height);
-
       canvas.style.width  = cssW + "px";
       canvas.style.height = cssH + "px";
-
       canvas.width  = Math.round(cssW * ANNOTATE.dpr);
       canvas.height = Math.round(cssH * ANNOTATE.dpr);
-
       const ctx = canvas.getContext("2d");
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(ANNOTATE.dpr, ANNOTATE.dpr);
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-
       ANNOTATE.ctx = ctx;
       ANNOTATE.canvas = canvas;
-
       bindCanvasEvents_();
     });
   }
@@ -3448,10 +3093,7 @@ Please review and take action.`;
     const getPos = function (e) {
       const rect = canvas.getBoundingClientRect();
       const src = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
-      return {
-        x: src.clientX - rect.left,
-        y: src.clientY - rect.top
-      };
+      return { x: src.clientX - rect.left, y: src.clientY - rect.top };
     };
 
     const start = function (e) {
@@ -3471,10 +3113,8 @@ Please review and take action.`;
       pushHistory_();
       ANNOTATE.drawing = true;
       const p = getPos(e);
-      ANNOTATE.startX = p.x;
-      ANNOTATE.startY = p.y;
-      ANNOTATE.lastX = p.x;
-      ANNOTATE.lastY = p.y;
+      ANNOTATE.startX = p.x; ANNOTATE.startY = p.y;
+      ANNOTATE.lastX = p.x; ANNOTATE.lastY = p.y;
     };
 
     const move = function (e) {
@@ -3490,8 +3130,7 @@ Please review and take action.`;
         ctx.moveTo(ANNOTATE.lastX, ANNOTATE.lastY);
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
-        ANNOTATE.lastX = p.x;
-        ANNOTATE.lastY = p.y;
+        ANNOTATE.lastX = p.x; ANNOTATE.lastY = p.y;
       } else {
         restoreLastHistory_();
         ctx.strokeStyle = ANNOTATE.color;
@@ -3507,10 +3146,7 @@ Please review and take action.`;
           ctx.stroke();
         } else if (ANNOTATE.tool === "rect") {
           ctx.beginPath();
-          ctx.rect(
-            ANNOTATE.startX, ANNOTATE.startY,
-            p.x - ANNOTATE.startX, p.y - ANNOTATE.startY
-          );
+          ctx.rect(ANNOTATE.startX, ANNOTATE.startY, p.x - ANNOTATE.startX, p.y - ANNOTATE.startY);
           ctx.stroke();
         } else if (ANNOTATE.tool === "arrow") {
           drawArrow_(ctx, ANNOTATE.startX, ANNOTATE.startY, p.x, p.y, ANNOTATE.width);
@@ -3518,9 +3154,7 @@ Please review and take action.`;
       }
     };
 
-    const end = function () {
-      ANNOTATE.drawing = false;
-    };
+    const end = function () { ANNOTATE.drawing = false; };
 
     canvas.addEventListener("mousedown", start);
     canvas.addEventListener("mousemove", move);
@@ -3537,26 +3171,19 @@ Please review and take action.`;
     if (!c) return;
     try {
       ANNOTATE.history.push(ANNOTATE.ctx.getImageData(0, 0, c.width, c.height));
-      if (ANNOTATE.history.length > ANNOTATE.maxHistory) {
-        ANNOTATE.history.shift();
-      }
+      if (ANNOTATE.history.length > ANNOTATE.maxHistory) ANNOTATE.history.shift();
     } catch (e) {}
   }
-
   function restoreLastHistory_() {
     const c = ANNOTATE.canvas;
     if (!c || !ANNOTATE.history.length) return;
     const last = ANNOTATE.history[ANNOTATE.history.length - 1];
     ANNOTATE.ctx.putImageData(last, 0, 0);
   }
-
   function drawArrow_(ctx, x1, y1, x2, y2, w) {
     const headLen = Math.max(14, w * 3);
     const angle = Math.atan2(y2 - y1, x2 - x1);
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(x2, y2);
     ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 7), y2 - headLen * Math.sin(angle - Math.PI / 7));
@@ -3567,40 +3194,244 @@ Please review and take action.`;
   }
 
   /* ============================================================
-     PWA + SERVICE WORKER
+     EXTRA CHART RENDER FUNCTIONS (inlined)
+     ============================================================ */
+
+  function _renderExtraCharts_(charts) {
+    if (!charts) return;
+    _renderMTTRTrend_("mttrTrendChart", charts.mttrTrend || []);
+    _renderStartVsComplete_("startVsCompleteChart", charts.startVsComplete || []);
+    _renderDowntimeChart_("downtimeChart", charts.downtime || []);
+    _renderParetoChart_("paretoChart", charts.pareto || []);
+    _renderHeatmap_("heatmapChart", charts.heatmap || null);
+  }
+
+  function _extChartEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function _renderMTTRTrend_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const hasData = items.some(function (it) { return it.avgMin > 0; });
+    if (!hasData) { el.innerHTML = "<div class='no-data'>No resolved issues yet.</div>"; return; }
+
+    const W = 640, H = 180, PAD_L = 42, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) { return d.avgMin; })) || 1;
+    const stepX = innerW / Math.max(items.length - 1, 1);
+
+    let path = "";
+    const points = [];
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * stepX;
+      const y = PAD_T + innerH - (d.avgMin / maxVal) * innerH;
+      points.push({ x: x, y: y, d: d });
+      path += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    });
+
+    let grid = "";
+    [0, 0.5, 1].forEach(function (frac) {
+      const y = PAD_T + innerH - frac * innerH;
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) +
+              "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) +
+              "' text-anchor='end' font-size='9' fill='#999'>" + Math.round(maxVal * frac) + "m</text>";
+    });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      if (i % 5 === 0 || i === items.length - 1) {
+        const x = PAD_L + i * stepX;
+        xLabels += "<text x='" + x + "' y='" + (H - 8) +
+                   "' text-anchor='middle' font-size='9' fill='#999'>" + d.label + "</text>";
+      }
+    });
+
+    let dots = "";
+    points.forEach(function (p) {
+      if (p.d.avgMin > 0) dots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#f57c00'/>";
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid + "<path d='" + path + "' fill='none' stroke='#f57c00' stroke-width='2'/>" +
+      dots + xLabels + "</svg>";
+  }
+
+  function _renderStartVsComplete_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const W = 640, H = 200, PAD_L = 34, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) {
+      return Math.max(d.started, d.completed);
+    })) || 1;
+    const stepX = innerW / Math.max(items.length - 1, 1);
+
+    let startedPath = "", completedPath = "";
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * stepX;
+      const yS = PAD_T + innerH - (d.started / maxVal) * innerH;
+      const yC = PAD_T + innerH - (d.completed / maxVal) * innerH;
+      startedPath += (i === 0 ? "M" : "L") + x + "," + yS + " ";
+      completedPath += (i === 0 ? "M" : "L") + x + "," + yC + " ";
+    });
+
+    let grid = "";
+    [0, 0.5, 1].forEach(function (frac) {
+      const y = PAD_T + innerH - frac * innerH;
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) + "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) +
+              "' text-anchor='end' font-size='9' fill='#999'>" + Math.round(maxVal * frac) + "</text>";
+    });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      if (i % 5 === 0 || i === items.length - 1) {
+        const x = PAD_L + i * stepX;
+        xLabels += "<text x='" + x + "' y='" + (H - 8) + "' text-anchor='middle' font-size='9' fill='#999'>" + d.label + "</text>";
+      }
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid +
+      "<path d='" + startedPath + "' fill='none' stroke='#0288d1' stroke-width='2'/>" +
+      "<path d='" + completedPath + "' fill='none' stroke='#2e7d32' stroke-width='2'/>" +
+      xLabels + "</svg>" +
+      "<div style='display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:12px;color:#555;'>" +
+        "<div><span style='display:inline-block;width:12px;height:12px;background:#0288d1;border-radius:3px;margin-right:6px;'></span>Started</div>" +
+        "<div><span style='display:inline-block;width:12px;height:12px;background:#2e7d32;border-radius:3px;margin-right:6px;'></span>Completed</div>" +
+      "</div>";
+  }
+
+  function _renderDowntimeChart_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No completed work.</div>"; return; }
+    const max = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
+    el.innerHTML = items.map(function (it) {
+      const pct = Math.round((it.value / max) * 100);
+      const hrs = (it.value / 60).toFixed(1);
+      return "<div class='bar-row'>" +
+        "<div class='bar-label'>" + _extChartEsc_(it.label) + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct +
+          "%;background:linear-gradient(90deg,#ffb74d,#e65100);'></div></div>" +
+        "<div class='bar-value' style='color:#e65100;'>" + hrs + "h</div>" +
+        "</div>";
+    }).join("");
+  }
+
+  function _renderParetoChart_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No issues.</div>"; return; }
+
+    const W = 640, H = 240, PAD_L = 34, PAD_R = 34, PAD_T = 16, PAD_B = 60;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) { return d.value; })) || 1;
+    const barW = innerW / items.length;
+
+    let bars = "", cumPath = "";
+    const cumPoints = [];
+    items.forEach(function (d, i) {
+      const barH = (d.value / maxVal) * innerH;
+      const x = PAD_L + i * barW;
+      const y = PAD_T + innerH - barH;
+      bars += "<rect x='" + (x + barW * 0.1) + "' y='" + y + "' width='" + (barW * 0.8) +
+              "' height='" + barH + "' fill='#0288d1' rx='2'/>";
+      bars += "<text x='" + (x + barW / 2) + "' y='" + (y - 3) +
+              "' text-anchor='middle' font-size='10' fill='#0288d1' font-weight='bold'>" + d.value + "</text>";
+      const cumY = PAD_T + innerH - (d.cumulativePct / 100) * innerH;
+      const cumX = x + barW / 2;
+      cumPoints.push({ x: cumX, y: cumY });
+    });
+
+    cumPoints.forEach(function (p, i) { cumPath += (i === 0 ? "M" : "L") + p.x + "," + p.y + " "; });
+
+    let cumDots = "";
+    cumPoints.forEach(function (p) { cumDots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#d32f2f'/>"; });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * barW + barW / 2;
+      const shortLabel = d.label.length > 10 ? d.label.substring(0, 9) + "…" : d.label;
+      xLabels += "<text x='" + x + "' y='" + (PAD_T + innerH + 14) +
+                 "' text-anchor='end' font-size='9' fill='#666' " +
+                 "transform='rotate(-35 " + x + " " + (PAD_T + innerH + 14) + ")'>" +
+                 _extChartEsc_(shortLabel) + "</text>";
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      "<line x1='" + PAD_L + "' y1='" + (PAD_T + innerH) + "' x2='" + (PAD_L + innerW) +
+      "' y2='" + (PAD_T + innerH) + "' stroke='#ccc'/>" +
+      bars + "<path d='" + cumPath + "' fill='none' stroke='#d32f2f' stroke-width='2'/>" +
+      cumDots + xLabels + "</svg>" +
+      "<div style='text-align:center;font-size:11px;color:#666;margin-top:6px;'>Bars = count · Line = cumulative %</div>";
+  }
+
+  function _renderHeatmap_(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el || !data || !data.matrix) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const max = data.max || 1;
+    let html = "<div style='display:grid;grid-template-columns:60px repeat(4,1fr);gap:4px;font-size:11px;'>";
+    html += "<div></div>";
+    data.buckets.forEach(function (b) {
+      html += "<div style='text-align:center;color:#666;font-weight:bold;'>" + b + "</div>";
+    });
+    data.days.forEach(function (day, di) {
+      html += "<div style='color:#666;font-weight:bold;text-align:right;padding-right:6px;'>" + day + "</div>";
+      data.buckets.forEach(function (_, bi) {
+        const v = data.matrix[di][bi];
+        const intensity = v / max;
+        const r = Math.round(225 - intensity * 225);
+        const g = Math.round(240 - intensity * 160);
+        const b = Math.round(255 - intensity * 60);
+        const bg = "rgb(" + r + "," + g + "," + b + ")";
+        const color = intensity > 0.6 ? "white" : "#222";
+        html += "<div style='background:" + bg + ";color:" + color +
+                ";padding:10px 4px;border-radius:6px;text-align:center;font-weight:bold;'>" +
+                (v > 0 ? v : "") + "</div>";
+      });
+    });
+    html += "</div>";
+    html += "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>Darker = more work started in that slot</div>";
+    el.innerHTML = html;
+  }
+
+  /* ============================================================
+     SERVICE WORKER + OFFLINE
      ============================================================ */
 
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker
         .register("/service-worker.js")
-        .then(function (reg) {
-          console.log("[KCT] Service worker registered:", reg.scope);
-        })
-        .catch(function (err) {
-          console.warn("[KCT] SW registration failed:", err);
-        });
+        .then(function (reg) { console.log("[KCT] SW registered:", reg.scope); })
+        .catch(function (err) { console.warn("[KCT] SW failed:", err); });
     });
   }
 
   function updateOnlineBanner() {
     const existing = document.getElementById("offlineBanner");
-    if (navigator.onLine) {
-      if (existing) existing.remove();
-    } else {
+    if (navigator.onLine) { if (existing) existing.remove(); }
+    else {
       if (!existing) {
         const b = document.createElement("div");
         b.id = "offlineBanner";
-        b.style.cssText =
-          "position:fixed;bottom:0;left:0;right:0;background:#c62828;color:white;" +
-          "padding:10px;text-align:center;font-size:13px;font-weight:bold;" +
-          "z-index:99999;box-shadow:0 -2px 8px rgba(0,0,0,0.2);";
+        b.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#c62828;color:white;" +
+          "padding:10px;text-align:center;font-size:13px;font-weight:bold;z-index:99999;";
         b.textContent = "⚠️ You're offline — submissions will be queued";
         document.body.appendChild(b);
       }
     }
   }
-
   window.addEventListener("online", updateOnlineBanner);
   window.addEventListener("offline", updateOnlineBanner);
   window.addEventListener("load", updateOnlineBanner);
@@ -3610,50 +3441,34 @@ Please review and take action.`;
       const params = new URLSearchParams(window.location.search);
       const action = params.get("action");
       if (!action || !SESSION_TOKEN) return;
-
-      if (action === "work") {
-        setTimeout(function () { openWorkForm(); }, 400);
-      } else if (action === "issue") {
-        setTimeout(function () { openIssuesScreen(); }, 400);
-      }
+      if (action === "work") setTimeout(function () { openWorkForm(); }, 400);
+      else if (action === "issue") setTimeout(function () { openIssuesScreen(); }, 400);
     } catch (e) {}
   });
 
   let deferredPrompt = null;
-
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault();
     deferredPrompt = e;
-
     if (localStorage.getItem("kct_a2hs_dismissed") === "1") return;
 
     const banner = document.createElement("div");
     banner.id = "a2hsBanner";
-    banner.style.cssText =
-      "position:fixed;bottom:0;left:0;right:0;background:#0288d1;color:white;" +
-      "padding:14px 18px;display:flex;align-items:center;gap:12px;" +
-      "z-index:99999;box-shadow:0 -2px 8px rgba(0,0,0,0.2);font-size:14px;";
+    banner.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#0288d1;color:white;" +
+      "padding:14px 18px;display:flex;align-items:center;gap:12px;z-index:99999;";
     banner.innerHTML =
-      "<div style='flex:1;'>" +
-        "<div style='font-weight:bold;'>Install KCT Plant App</div>" +
-        "<div style='font-size:12px;opacity:0.9;margin-top:2px;'>" +
-          "Add to home screen for quick access" +
-        "</div>" +
-      "</div>" +
-      "<button id='a2hsInstall' style='background:white;color:#0288d1;" +
-        "border:0;padding:8px 14px;border-radius:8px;font-weight:bold;" +
-        "font-size:13px;cursor:pointer;'>INSTALL</button>" +
-      "<button id='a2hsDismiss' style='background:transparent;color:white;" +
-        "border:0;padding:8px;font-size:20px;cursor:pointer;'>&times;</button>";
-
+      "<div style='flex:1;'><div style='font-weight:bold;'>Install KCT Plant App</div>" +
+      "<div style='font-size:12px;opacity:0.9;margin-top:2px;'>Add to home screen for quick access</div></div>" +
+      "<button id='a2hsInstall' style='background:white;color:#0288d1;border:0;padding:8px 14px;" +
+        "border-radius:8px;font-weight:bold;font-size:13px;cursor:pointer;'>INSTALL</button>" +
+      "<button id='a2hsDismiss' style='background:transparent;color:white;border:0;padding:8px;" +
+        "font-size:20px;cursor:pointer;'>&times;</button>";
     document.body.appendChild(banner);
 
     document.getElementById("a2hsInstall").onclick = function () {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(function (choice) {
-        if (choice.outcome === "accepted") {
-          banner.remove();
-        }
+        if (choice.outcome === "accepted") banner.remove();
         deferredPrompt = null;
       });
     };
@@ -3662,7 +3477,6 @@ Please review and take action.`;
       banner.remove();
     };
   });
-
 </script>
 
 </body>
