@@ -1397,6 +1397,9 @@
 </div>
 
 <!-- ========== BUSY OVERLAY ========== -->
+
+<?!= include('ChartsFrontend'); ?>
+
 <div id="busyOverlay" class="busy-overlay hidden">
   <div class="box">
     <div class="spinner"></div>
@@ -2470,6 +2473,11 @@ ${data.remarks || "Not specified"}
 
     renderShiftTable_(d.shiftTable);
     renderAgingTable_(d.aging);
+
+    // Extra charts (from ChartsFrontend.html)
+    if (typeof _renderExtraCharts_ === "function") {
+      _renderExtraCharts_(d.charts);
+    }
   }
 
   function dashboardEsc_(s) {
