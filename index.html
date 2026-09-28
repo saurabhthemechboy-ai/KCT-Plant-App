@@ -586,12 +586,111 @@
       text-align: center; padding: 20px;
       color: #999; font-size: 13px;
     }
+
+    /* ===== Annotate styles (from Annotate.html) ===== */
+    .annotate-modal {
+      position: fixed; inset: 0;
+      background: #111;
+      z-index: 5000;
+      display: flex; flex-direction: column;
+      color: white;
+      user-select: none;
+    }
+    .annotate-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+    }
+    .annotate-title { font-size: 15px; font-weight: bold; }
+    .ann-btn-cancel, .ann-btn-done {
+      padding: 8px 14px; border-radius: 8px;
+      border: 0; font-size: 14px; font-weight: bold;
+      cursor: pointer;
+    }
+    .ann-btn-cancel { background: #333; color: white; }
+    .ann-btn-done   { background: #0288d1; color: white; }
+
+    .annotate-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      padding: 10px 12px;
+      background: #1a1a1a;
+      border-bottom: 1px solid #333;
+      overflow-x: auto;
+    }
+    .ann-tool {
+      background: #262626; color: white;
+      border: 1px solid #333;
+      border-radius: 8px;
+      min-width: 42px; height: 42px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ann-tool.active { background: #0288d1; border-color: #0288d1; }
+    .ann-sep {
+      width: 1px; height: 26px;
+      background: #333;
+      margin: 0 4px;
+    }
+    .ann-swatch {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid #444;
+      cursor: pointer;
+    }
+    .ann-swatch.active { border-color: white; transform: scale(1.1); }
+
+    .annotate-stage {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: #0a0a0a;
+    }
+    .annotate-canvas-wrap {
+      position: relative;
+      max-width: 100%;
+      max-height: 100%;
+      transform-origin: center center;
+      transition: transform 0.2s;
+    }
+    .annotate-img {
+      display: block;
+      max-width: 100%;
+      max-height: 70vh;
+      pointer-events: none;
+      user-select: none;
+    }
+    .annotate-canvas {
+      position: absolute; top: 0; left: 0;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    .annotate-bottombar {
+      display: flex; gap: 8px; justify-content: center;
+      padding: 12px;
+      background: #1a1a1a;
+      border-top: 1px solid #333;
+    }
+    .ann-btn {
+      flex: 1;
+      padding: 12px 8px;
+      font-size: 14px; font-weight: bold;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #262626; color: white;
+      cursor: pointer;
+    }
+    .ann-btn:active { background: #333; }
   </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
+<!-- ========== LOGIN ========== -->
 <div id="loginScreen" class="login-wrap">
   <div class="login-card">
     <img src="/logo-full.png" alt="KCT Plant" class="brand-logo">
@@ -616,7 +715,7 @@
   </div>
 </div>
 
-<!-- HOME -->
+<!-- ========== HOME ========== -->
 <div id="homeScreen" class="hidden">
   <div class="home-header">
     <div class="greeting">Welcome back,</div>
@@ -679,7 +778,7 @@
   </div>
 </div>
 
-<!-- WORK INTIMATION -->
+<!-- ========== WORK INTIMATION ========== -->
 <div id="workScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -805,7 +904,7 @@
   </div>
 </div>
 
-<!-- WORK SUCCESS -->
+<!-- ========== WORK SUCCESS ========== -->
 <div id="successScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -824,7 +923,7 @@
   </div>
 </div>
 
-<!-- ALL ISSUES -->
+<!-- ========== ALL ISSUES ========== -->
 <div id="allIssuesScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -866,7 +965,7 @@
   </div>
 </div>
 
-<!-- ISSUE DETAIL -->
+<!-- ========== ISSUE DETAIL ========== -->
 <div id="issueDetailScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="backFromIssueDetail()">←</div>
@@ -894,7 +993,7 @@
   </div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- ========== DASHBOARD ========== -->
 <div id="dashboardScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -985,7 +1084,7 @@
   </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ========== ADMIN ========== -->
 <div id="adminScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -1000,7 +1099,247 @@
   </div>
 </div>
 
-<!-- ASSIGN MODAL -->
+<!-- ========== ISSUES fragment (inlined) ========== -->
+<div id="issuesScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Report Issue</div>
+  </div>
+
+  <div class="page-body">
+    <div id="photoArea" class="photo-area hidden">
+      <img id="photoPreview" alt="Issue photo">
+    </div>
+
+    <div id="photoPicker">
+      <div class="photo-area" style="border-style:dashed;cursor:default;">
+        <div class="cam-icon">📷</div>
+        <div class="hint">ADD A PHOTO</div>
+        <div class="sub">Required — take or choose a photo of the issue</div>
+      </div>
+
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="openCamera()">
+          <span class="ic">📷</span>
+          <span>Take Photo</span>
+        </button>
+        <button type="button" class="photo-btn gallery" onclick="openGallery()">
+          <span class="ic">🖼️</span>
+          <span>Choose from Gallery</span>
+        </button>
+      </div>
+    </div>
+
+    <input type="file" id="cameraInput" accept="image/*" capture="environment"
+           style="display:none" onchange="onPhotoChosen(event)">
+    <input type="file" id="galleryInput" accept="image/*"
+           style="display:none" onchange="onPhotoChosen(event)">
+
+    <div id="photoActions" class="photo-actions hidden">
+      <button type="button" class="retake-btn" onclick="openCamera()">🔄 RETAKE</button>
+      <button type="button" class="remove-btn" onclick="removePhoto()">🗑️ REMOVE</button>
+    </div>
+
+    <button type="button" id="markSpotBtn" class="secondary-btn hidden"
+            style="margin-top:10px;" onclick="reAnnotateIssue()">
+      ✏️ MARK SPOT AGAIN
+    </button>
+
+    <label class="form-label" for="isIssueType">Issue Type *</label>
+    <select id="isIssueType" class="form-select">
+      <option value="">Select Issue Type</option>
+      <option>Mechanical</option>
+      <option>Electrical</option>
+      <option>Structural</option>
+      <option>Safety</option>
+      <option>Housekeeping</option>
+      <option>Other</option>
+    </select>
+
+    <label class="form-label" for="isEquipment">Equipment *</label>
+    <select id="isEquipment" class="form-select">
+      <option value="">Select Equipment</option>
+      <option>C1</option><option>C2</option><option>C3</option>
+      <option>C4</option><option>C5</option><option>C6</option>
+      <option>C7</option>
+      <option>TH#1</option><option>TH#2</option><option>TH#3</option>
+      <option>SCR#1</option><option>SCR#2</option>
+      <option>RTL</option>
+      <option>TT1</option><option>TT2</option><option>TT3</option>
+      <option>TT4</option><option>TT5</option><option>TT6</option>
+    </select>
+
+    <label class="form-label" for="isLocation">Location *</label>
+    <input type="text" id="isLocation" class="form-input"
+           placeholder="e.g. Pillar 24, Boom conveyor">
+
+    <label class="form-label" for="isPriority">Priority *</label>
+    <select id="isPriority" class="form-select">
+      <option value="">Select Priority</option>
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+      <option>Critical</option>
+    </select>
+
+    <label class="form-label" for="isDescription">Description *</label>
+    <textarea id="isDescription" class="form-textarea"
+              placeholder="What's the issue? Any relevant detail."></textarea>
+
+    <button type="button" id="isSubmitBtn" class="primary-btn" onclick="submitIssueForm()">
+      SUBMIT ISSUE
+    </button>
+
+    <div class="error-box" id="isError"></div>
+  </div>
+</div>
+
+<!-- ========== ISSUE SUCCESS ========== -->
+<div id="issueSuccessScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Issue Reported</div>
+  </div>
+  <div class="success-screen">
+    <div class="check">✅</div>
+    <h2>Issue Reported Successfully</h2>
+    <p id="issueSuccessMsg" style="color:#555;">
+      Your issue has been logged and the in-charges have been notified by email.
+    </p>
+    <a id="issueWhatsappLink" class="whatsapp-btn" href="#" target="_blank" rel="noopener">
+      📱 NOTIFY VIA WHATSAPP
+    </a>
+    <p style="margin-top:20px;color:#666;font-size:13px;">
+      You can tap back to return home.
+    </p>
+  </div>
+</div>
+
+<!-- ========== HISTORY fragment (inlined) ========== -->
+<div id="historyScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title" id="historyPageTitle">My History</div>
+  </div>
+
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div>
+          <label class="filter-label">Date Range</label>
+          <select id="hDateRange" class="filter-input" onchange="historyReload()">
+            <option value="today">Today</option>
+            <option value="week" selected>Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div>
+          <label class="filter-label">Equipment</label>
+          <select id="hEquipment" class="filter-input" onchange="historyReload()">
+            <option value="">All Equipment</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div id="tabWork" class="tab active" onclick="historyShowTab('work')">
+        Work <span class="count" id="cntWork">0</span>
+      </div>
+      <div id="tabIssues" class="tab" onclick="historyShowTab('issues')">
+        Issues <span class="count" id="cntIssues">0</span>
+      </div>
+    </div>
+
+    <div id="historyWorkList" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+    <div id="historyIssueList" class="list hidden">
+      <div class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TODAY fragment (inlined) ========== -->
+<div id="todayScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div>
+      <div class="title">Today</div>
+      <div class="subtitle" id="todayDateLabel">—</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="summary-grid">
+      <div class="summary-tile">
+        <div class="num" id="tWorkCount">0</div>
+        <div class="lbl">Work Items</div>
+      </div>
+      <div class="summary-tile">
+        <div class="num" id="tIssueCount">0</div>
+        <div class="lbl">Issues</div>
+      </div>
+      <div class="summary-tile alert">
+        <div class="num" id="tBadge">0</div>
+        <div class="lbl">Open / Critical</div>
+      </div>
+    </div>
+
+    <div class="section-heading">Today's Work</div>
+    <div id="todayWorkList"><div class="loading">Loading…</div></div>
+
+    <div class="section-heading">Today's Issues</div>
+    <div id="todayIssueList"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ========== ANNOTATE fragment (inlined) ========== -->
+<div id="annotateModal" class="annotate-modal hidden">
+  <div class="annotate-topbar">
+    <button class="ann-btn-cancel" onclick="annotateCancel()">✕ Cancel</button>
+    <div class="annotate-title">Mark the spot</div>
+    <button class="ann-btn-done" onclick="annotateDone()">✓ Done</button>
+  </div>
+
+  <div class="annotate-toolbar">
+    <button class="ann-tool active" data-tool="circle"    onclick="annotateSetTool('circle')">⭕</button>
+    <button class="ann-tool"        data-tool="arrow"     onclick="annotateSetTool('arrow')">➡️</button>
+    <button class="ann-tool"        data-tool="rect"      onclick="annotateSetTool('rect')">🔲</button>
+    <button class="ann-tool"        data-tool="freehand"  onclick="annotateSetTool('freehand')">✏️</button>
+    <button class="ann-tool"        data-tool="text"      onclick="annotateSetTool('text')">🅰️</button>
+
+    <span class="ann-sep"></span>
+
+    <button class="ann-swatch active" data-color="#e53935" style="background:#e53935" onclick="annotateSetColor('#e53935')"></button>
+    <button class="ann-swatch"        data-color="#fdd835" style="background:#fdd835" onclick="annotateSetColor('#fdd835')"></button>
+    <button class="ann-swatch"        data-color="#ffffff" style="background:#ffffff" onclick="annotateSetColor('#ffffff')"></button>
+    <button class="ann-swatch"        data-color="#1e88e5" style="background:#1e88e5" onclick="annotateSetColor('#1e88e5')"></button>
+    <button class="ann-swatch"        data-color="#000000" style="background:#000000" onclick="annotateSetColor('#000000')"></button>
+
+    <span class="ann-sep"></span>
+
+    <button class="ann-tool" data-width="3"  onclick="annotateSetWidth(3)">•</button>
+    <button class="ann-tool active" data-width="6"  onclick="annotateSetWidth(6)">●</button>
+    <button class="ann-tool" data-width="12" onclick="annotateSetWidth(12)">⬤</button>
+  </div>
+
+  <div class="annotate-stage">
+    <div class="annotate-canvas-wrap" id="annotateWrap">
+      <img id="annotateImg" class="annotate-img" alt="to annotate">
+      <canvas id="annotateCanvas" class="annotate-canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="annotate-bottombar">
+    <button class="ann-btn" onclick="annotateUndo()">↩️ Undo</button>
+    <button class="ann-btn" onclick="annotateClear()">🗑️ Clear</button>
+    <button class="ann-btn" onclick="annotateZoom()">🔍 Zoom</button>
+  </div>
+</div>
+
+<!-- ========== ASSIGN MODAL ========== -->
 <div id="assignModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3>Assign Issue</h3>
@@ -1016,7 +1355,7 @@
   </div>
 </div>
 
-<!-- RESOLVE MODAL -->
+<!-- ========== RESOLVE MODAL ========== -->
 <div id="resolveModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3>Mark Resolved</h3>
@@ -1054,7 +1393,7 @@
   </div>
 </div>
 
-<!-- BUSY -->
+<!-- ========== BUSY OVERLAY ========== -->
 <div id="busyOverlay" class="busy-overlay hidden">
   <div class="box">
     <div class="spinner"></div>
@@ -1062,13 +1401,7 @@
   </div>
 </div>
 
-<!-- FRAGMENTS -->
-<?!= include('History'); ?>
-<?!= include('Today'); ?>
-<?!= include('Issues'); ?>
-<?!= include('Annotate'); ?>
-
-<!-- MAIN SCRIPT -->
+<!-- ========== MAIN SCRIPT ========== -->
 <script>
   let SESSION_TOKEN = null;
   let CURRENT_USER = null;
@@ -1157,7 +1490,7 @@
   const SCREENS = [
     "loginScreen", "homeScreen", "workScreen", "successScreen",
     "historyScreen", "todayScreen", "issuesScreen", "issueSuccessScreen",
-    "allIssuesScreen", "issueDetailScreen", "adminScreen"
+    "allIssuesScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
   ];
 
   function showScreen(id) {
@@ -2392,6 +2725,769 @@ ${data.remarks || "Not specified"}
     );
   }
 
+  /* ============================================================
+     FRAGMENTS — History, Today, Issues, Annotate (inlined)
+     ============================================================ */
+
+  // ===== Issues.html JS =====
+  let capturedPhotoBase64 = null;
+  let capturedPhotoMime = "image/jpeg";
+  let capturedPhotoName = "photo.jpg";
+  let capturedPhotoRawDataUrl = null;
+
+  function openIssuesScreen() {
+    resetIssueForm();
+    showScreen("issuesScreen");
+  }
+
+  function resetIssueForm() {
+    capturedPhotoBase64 = null;
+    capturedPhotoRawDataUrl = null;
+
+    document.getElementById("photoArea").classList.add("hidden");
+    document.getElementById("photoPicker").classList.remove("hidden");
+    document.getElementById("photoActions").classList.add("hidden");
+    document.getElementById("photoPreview").src = "";
+
+    const markBtn = document.getElementById("markSpotBtn");
+    if (markBtn) markBtn.classList.add("hidden");
+
+    document.getElementById("isIssueType").value = "";
+    document.getElementById("isEquipment").value = "";
+    document.getElementById("isLocation").value = "";
+    document.getElementById("isPriority").value = "";
+    document.getElementById("isDescription").value = "";
+    document.getElementById("isError").classList.remove("visible");
+
+    try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+    try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+  }
+
+  function openCamera()  { document.getElementById("cameraInput").click(); }
+  function openGallery() { document.getElementById("galleryInput").click(); }
+
+  function removePhoto() {
+    capturedPhotoBase64 = null;
+    capturedPhotoRawDataUrl = null;
+    document.getElementById("photoArea").classList.add("hidden");
+    document.getElementById("photoPicker").classList.remove("hidden");
+    document.getElementById("photoActions").classList.add("hidden");
+    document.getElementById("photoPreview").src = "";
+
+    const markBtn = document.getElementById("markSpotBtn");
+    if (markBtn) markBtn.classList.add("hidden");
+
+    try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+    try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+  }
+
+  function onPhotoChosen(evt) {
+    const file = evt.target.files && evt.target.files[0];
+    if (!file) return;
+
+    capturedPhotoMime = file.type || "image/jpeg";
+    capturedPhotoName = file.name || "photo.jpg";
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const dataUrl = e.target.result;
+      compressImage_(dataUrl, 1600, 0.85, function (compressedDataUrl) {
+        capturedPhotoRawDataUrl = compressedDataUrl;
+        openAnnotateModal(compressedDataUrl, function (annotatedDataUrl) {
+          applyAnnotatedPhoto_(annotatedDataUrl);
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyAnnotatedPhoto_(dataUrl) {
+    compressImage_(dataUrl, 1400, 0.78, function (final) {
+      const comma = final.indexOf(",");
+      capturedPhotoBase64 = final.substring(comma + 1);
+      capturedPhotoMime = "image/jpeg";
+      capturedPhotoName = "photo-marked.jpg";
+
+      document.getElementById("photoPreview").src = final;
+      document.getElementById("photoArea").classList.remove("hidden");
+      document.getElementById("photoPicker").classList.add("hidden");
+      document.getElementById("photoActions").classList.remove("hidden");
+
+      const markBtn = document.getElementById("markSpotBtn");
+      if (markBtn) markBtn.classList.remove("hidden");
+    });
+  }
+
+  function reAnnotateIssue() {
+    if (!capturedPhotoRawDataUrl) {
+      if (!capturedPhotoBase64) return;
+      capturedPhotoRawDataUrl = "data:image/jpeg;base64," + capturedPhotoBase64;
+    }
+    openAnnotateModal(capturedPhotoRawDataUrl, function (annotatedDataUrl) {
+      applyAnnotatedPhoto_(annotatedDataUrl);
+    });
+  }
+
+  function compressImage_(dataUrl, maxWidth, quality, callback) {
+    const img = new Image();
+    img.onload = function () {
+      let w = img.width, h = img.height;
+      if (w > maxWidth) {
+        h = Math.round(h * (maxWidth / w));
+        w = maxWidth;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      try { callback(canvas.toDataURL("image/jpeg", quality)); }
+      catch (err) { callback(dataUrl); }
+    };
+    img.onerror = function () { callback(dataUrl); };
+    img.src = dataUrl;
+  }
+
+  function isShowError(msg) {
+    const box = document.getElementById("isError");
+    box.textContent = msg;
+    box.classList.add("visible");
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function submitIssueForm() {
+    document.getElementById("isError").classList.remove("visible");
+
+    if (!capturedPhotoBase64) {
+      alert("Please take or choose a photo of the issue.");
+      return;
+    }
+
+    const issueType   = document.getElementById("isIssueType").value;
+    const equipment   = document.getElementById("isEquipment").value;
+    const location    = document.getElementById("isLocation").value.trim();
+    const priority    = document.getElementById("isPriority").value;
+    const description = document.getElementById("isDescription").value.trim();
+
+    if (!issueType)   { alert("Please select Issue Type."); return; }
+    if (!equipment)   { alert("Please select Equipment.");  return; }
+    if (!location)    { alert("Please enter Location.");    return; }
+    if (!priority)    { alert("Please select Priority.");   return; }
+    if (!description) { alert("Please enter Description."); return; }
+
+    const btn = document.getElementById("isSubmitBtn");
+    btn.disabled = true;
+    showBusy("Uploading photo…");
+
+    const payload = {
+      clientId: "is-" + Date.now().toString(36) + "-" +
+                Math.random().toString(36).slice(2, 10),
+      issueType: issueType,
+      equipment: equipment,
+      location: location.toUpperCase(),
+      priority: priority,
+      description: description,
+      photoBase64: capturedPhotoBase64,
+      photoMime: capturedPhotoMime,
+      photoName: capturedPhotoName
+    };
+
+    if (!SESSION_TOKEN) {
+      hideBusy();
+      btn.disabled = false;
+      alert("Session lost. Please log in again.");
+      return;
+    }
+
+    apiCall("submitIssue",
+      { token: SESSION_TOKEN, payload: payload },
+      function (result) {
+        hideBusy();
+        btn.disabled = false;
+        if (!result || !result.success) {
+          isShowError(result && result.message ? result.message : "Submission failed.");
+          return;
+        }
+        showIssueSuccess(result, payload);
+      },
+      function (err) {
+        hideBusy();
+        btn.disabled = false;
+        const msg = err && err.message ? err.message : "Submission failed.";
+        if (msg === "SESSION_EXPIRED") {
+          alert("Your session has expired. Please log in again.");
+          return;
+        }
+        isShowError(msg);
+      }
+    );
+  }
+
+  function showIssueSuccess(result, data) {
+    const message =
+`🔴 *NEW PLANT ISSUE REPORTED*
+
+🏷️ *Issue Type:* ${data.issueType}
+🔩 *Equipment:* ${data.equipment}
+📍 *Location:* ${data.location}
+⚠️ *Priority:* ${data.priority}
+
+📝 *Description:*
+${data.description}
+
+👤 *Reported By:* ${result.reportedBy}
+🗓️ *Reported At:* ${result.reportedAt}
+
+📷 *Photo:* ${result.photoUrl}
+
+Please review and take action.`;
+
+    document.getElementById("issueWhatsappLink").href =
+      "https://wa.me/?text=" + encodeURIComponent(message);
+
+    showScreen("issueSuccessScreen");
+  }
+
+  // ===== History.html JS =====
+  let HISTORY_TAB = "work";
+  let HISTORY_EQUIP_LOADED = false;
+
+  function openHistory() {
+    showScreen("historyScreen");
+    if (!HISTORY_EQUIP_LOADED) {
+      populateHistoryEquipment_();
+      HISTORY_EQUIP_LOADED = true;
+    }
+    historyReload();
+  }
+
+  function populateHistoryEquipment_() {
+    apiCall("getEquipmentList", {},
+      function (list) {
+        const sel = document.getElementById("hEquipment");
+        (list || []).forEach(function (eq) {
+          const o = document.createElement("option");
+          o.value = eq; o.textContent = eq;
+          sel.appendChild(o);
+        });
+      }
+    );
+  }
+
+  function historyShowTab(name) {
+    HISTORY_TAB = name;
+    document.getElementById("tabWork").classList.toggle("active", name === "work");
+    document.getElementById("tabIssues").classList.toggle("active", name === "issues");
+    document.getElementById("historyWorkList").classList.toggle("hidden", name !== "work");
+    document.getElementById("historyIssueList").classList.toggle("hidden", name !== "issues");
+  }
+
+  function historyReload() {
+    if (!SESSION_TOKEN) {
+      document.getElementById("historyWorkList").innerHTML =
+        "<div class='empty'><div class='icon'>🔒</div>Session lost. Please log in again.</div>";
+      return;
+    }
+
+    document.getElementById("historyWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+    document.getElementById("historyIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+
+    const filters = {
+      dateRange: document.getElementById("hDateRange").value,
+      equipment: document.getElementById("hEquipment").value
+    };
+
+    apiCall("getHistory",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
+        if (!res || !res.success) {
+          const msg = res && res.message ? res.message : "Failed to load.";
+          document.getElementById("historyWorkList").innerHTML =
+            "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+          return;
+        }
+
+        document.getElementById("cntWork").textContent = res.workCount;
+        document.getElementById("cntIssues").textContent = res.issueCount;
+        document.getElementById("historyPageTitle").textContent =
+          res.ownOnly ? "My History" : "Plant History";
+
+        historyRenderWork_(res.work);
+        historyRenderIssues_(res.issues);
+      },
+      function (err) {
+        const msg = err && err.message ? err.message : "Failed to load.";
+        document.getElementById("historyWorkList").innerHTML =
+          "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+      }
+    );
+  }
+
+  function historyEsc_(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function historyRenderWork_(items) {
+    const el = document.getElementById("historyWorkList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work records in this range.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const cls = it.isPending ? "pending" : "complete";
+      const pill = it.isPending
+        ? "<span class='pill pending'>Pending</span>"
+        : "<span class='pill complete'>Completed</span>";
+      return (
+        "<div class='card " + cls + "'>" +
+          "<div class='card-head'>" +
+            "<div class='card-title'>" + historyEsc_(it.equipment) + " — " + historyEsc_(it.workType) + "</div>" +
+            "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div>" +
+          "</div>" +
+          "<div>" + pill + "</div>" +
+          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + historyEsc_(it.responsible) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Shift In-charge</span><span class='val'>" + historyEsc_(it.shiftIncharge) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + historyEsc_(it.startTime || "—") + "</span></div>" +
+          (it.completionTime
+            ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + historyEsc_(it.completionTime) + "</span></div>"
+            : "") +
+          (it.duration
+            ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + historyEsc_(it.duration) + "</span></div>"
+            : "") +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function historyRenderIssues_(items) {
+    const el = document.getElementById("historyIssueList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues in this range.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const prio = String(it.priority || "").toLowerCase();
+      const status = String(it.status || "Open").toLowerCase();
+      const statusClass = status.replace(/\s+/g, "");
+      const statusPill = "<span class='pill " + statusClass + "'>" + historyEsc_(it.status) + "</span>";
+      return (
+        "<div class='card issue-" + historyEsc_(prio) + "'>" +
+          "<div class='card-head'>" +
+            "<div class='card-title issue'>" + historyEsc_(it.issueType) + " — " + historyEsc_(it.equipment) + "</div>" +
+            "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div>" +
+          "</div>" +
+          "<div>" +
+            "<span class='pill " + historyEsc_(prio) + "'>" + historyEsc_(it.priority) + "</span>" +
+            statusPill +
+          "</div>" +
+          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + historyEsc_(it.reportedBy) + "</span></div>" +
+          (it.assignedTo
+            ? "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + historyEsc_(it.assignedTo) + "</span></div>"
+            : "") +
+          (it.description
+            ? "<div class='card-desc'>" + historyEsc_(it.description) + "</div>"
+            : "") +
+          (it.photoUrl
+            ? "<a href='" + historyEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>" +
+              "<img class='card-photo' src='" + historyEsc_(it.photoUrl) + "' alt='issue photo'>" +
+              "</a>"
+            : "") +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  // ===== Today.html JS =====
+  function openToday() {
+    showScreen("todayScreen");
+    todayLoad();
+  }
+
+  function todayEsc_(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function todayLoad() {
+    if (!SESSION_TOKEN) {
+      document.getElementById("todayWorkList").innerHTML =
+        "<div class='empty'><div class='icon'>🔒</div>Session lost. Please log in again.</div>";
+      return;
+    }
+
+    document.getElementById("todayWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+    document.getElementById("todayIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+
+    apiCall("getToday", { token: SESSION_TOKEN },
+      function (res) {
+        if (!res || !res.success) {
+          const msg = res && res.message ? res.message : "Failed to load.";
+          document.getElementById("todayWorkList").innerHTML =
+            "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+          document.getElementById("todayIssueList").innerHTML = "";
+          return;
+        }
+
+        document.getElementById("todayDateLabel").textContent = res.dateLabel || "";
+        document.getElementById("tWorkCount").textContent = res.workCount;
+        document.getElementById("tIssueCount").textContent = res.issueCount;
+        document.getElementById("tBadge").textContent = res.badgeCount;
+
+        todayRenderWork_(res.work);
+        todayRenderIssues_(res.issues);
+      },
+      function (err) {
+        const msg = err && err.message ? err.message : "Failed to load.";
+        document.getElementById("todayWorkList").innerHTML =
+          "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+      }
+    );
+  }
+
+  function todayRenderWork_(items) {
+    const el = document.getElementById("todayWorkList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work logged today yet.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const cls = it.isPending ? "pending" : "complete";
+      const pill = it.isPending
+        ? "<span class='pill pending'>Pending</span>"
+        : "<span class='pill complete'>Completed</span>";
+      return (
+        "<div class='card " + cls + "'>" +
+          "<div class='card-head'>" +
+            "<div class='card-title'>" + todayEsc_(it.equipment) + " — " + todayEsc_(it.workType) + "</div>" +
+          "</div>" +
+          "<div>" + pill + "</div>" +
+          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + todayEsc_(it.responsible) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + todayEsc_(it.startTime || "—") + "</span></div>" +
+          (it.completionTime
+            ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + todayEsc_(it.completionTime) + "</span></div>"
+            : "") +
+          (it.duration
+            ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + todayEsc_(it.duration) + "</span></div>"
+            : "") +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function todayRenderIssues_(items) {
+    const el = document.getElementById("todayIssueList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues reported today.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const prio = String(it.priority || "").toLowerCase();
+      const status = String(it.status || "Open").toLowerCase();
+      const statusPill = (status === "resolved" || status === "closed")
+        ? "<span class='pill resolved'>Resolved</span>"
+        : "<span class='pill open'>Open</span>";
+      return (
+        "<div class='card issue-" + todayEsc_(prio) + "'>" +
+          "<div class='card-head'>" +
+            "<div class='card-title issue'>" + todayEsc_(it.issueType) + " — " + todayEsc_(it.equipment) + "</div>" +
+          "</div>" +
+          "<div>" +
+            "<span class='pill " + todayEsc_(prio) + "'>" + todayEsc_(it.priority) + "</span>" +
+            statusPill +
+          "</div>" +
+          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + todayEsc_(it.reportedBy) + "</span></div>" +
+          (it.description
+            ? "<div class='card-desc'>" + todayEsc_(it.description) + "</div>"
+            : "") +
+          (it.photoUrl
+            ? "<a href='" + todayEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>" +
+              "<img class='card-photo' src='" + todayEsc_(it.photoUrl) + "' alt='issue photo'>" +
+              "</a>"
+            : "") +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  // ===== Annotate.html JS =====
+  const ANNOTATE = {
+    img: null,
+    canvas: null,
+    ctx: null,
+    tool: "circle",
+    color: "#e53935",
+    width: 6,
+    drawing: false,
+    startX: 0, startY: 0,
+    lastX: 0, lastY: 0,
+    history: [],
+    maxHistory: 12,
+    zoomLevel: 1,
+    dpr: 1,
+    onSave: null
+  };
+
+  function openAnnotateModal(dataUrl, onSave) {
+    ANNOTATE.onSave = onSave;
+    const modal = document.getElementById("annotateModal");
+    const img = document.getElementById("annotateImg");
+    const canvas = document.getElementById("annotateCanvas");
+
+    modal.classList.remove("hidden");
+    ANNOTATE.history = [];
+    ANNOTATE.zoomLevel = 1;
+    document.getElementById("annotateWrap").style.transform = "scale(1)";
+
+    img.onload = function () {
+      setupCanvas_();
+    };
+    img.src = dataUrl;
+
+    canvas.replaceWith(canvas.cloneNode(true));
+    ANNOTATE.canvas = document.getElementById("annotateCanvas");
+    ANNOTATE.ctx = ANNOTATE.canvas.getContext("2d");
+    bindCanvasEvents_();
+  }
+
+  function annotateCancel() {
+    document.getElementById("annotateModal").classList.add("hidden");
+    ANNOTATE.onSave = null;
+  }
+
+  function annotateDone() {
+    const canvas = ANNOTATE.canvas;
+    const img = ANNOTATE.img;
+    if (!canvas || !img) return;
+
+    const out = document.createElement("canvas");
+    out.width = img.naturalWidth;
+    out.height = img.naturalHeight;
+    const octx = out.getContext("2d");
+    octx.drawImage(img, 0, 0, out.width, out.height);
+
+    const scaleX = img.naturalWidth  / canvas.width;
+    const scaleY = img.naturalHeight / canvas.height;
+    octx.save();
+    octx.scale(scaleX, scaleY);
+    octx.drawImage(canvas, 0, 0);
+    octx.restore();
+
+    const result = out.toDataURL("image/jpeg", 0.85);
+
+    document.getElementById("annotateModal").classList.add("hidden");
+    if (typeof ANNOTATE.onSave === "function") {
+      ANNOTATE.onSave(result);
+    }
+    ANNOTATE.onSave = null;
+  }
+
+  function annotateSetTool(tool) {
+    ANNOTATE.tool = tool;
+    document.querySelectorAll(".annotate-toolbar .ann-tool[data-tool]").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tool === tool);
+    });
+  }
+
+  function annotateSetColor(color) {
+    ANNOTATE.color = color;
+    document.querySelectorAll(".ann-swatch").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.color === color);
+    });
+  }
+
+  function annotateSetWidth(w) {
+    ANNOTATE.width = w;
+    document.querySelectorAll(".annotate-toolbar .ann-tool[data-width]").forEach(function (b) {
+      b.classList.toggle("active", Number(b.dataset.width) === w);
+    });
+  }
+
+  function annotateUndo() {
+    if (!ANNOTATE.history.length) return;
+    const last = ANNOTATE.history.pop();
+    ANNOTATE.ctx.putImageData(last, 0, 0);
+  }
+
+  function annotateClear() {
+    pushHistory_();
+    const c = ANNOTATE.canvas;
+    ANNOTATE.ctx.clearRect(0, 0, c.width, c.height);
+  }
+
+  function annotateZoom() {
+    ANNOTATE.zoomLevel = ANNOTATE.zoomLevel >= 2 ? 1 : ANNOTATE.zoomLevel + 0.5;
+    document.getElementById("annotateWrap").style.transform =
+      "scale(" + ANNOTATE.zoomLevel + ")";
+  }
+
+  function setupCanvas_() {
+    const img = document.getElementById("annotateImg");
+    const canvas = document.getElementById("annotateCanvas");
+
+    ANNOTATE.img = img;
+    ANNOTATE.dpr = window.devicePixelRatio || 1;
+
+    requestAnimationFrame(function () {
+      canvas.style.transform = "none";
+
+      const rect = img.getBoundingClientRect();
+      const cssW = Math.round(rect.width);
+      const cssH = Math.round(rect.height);
+
+      canvas.style.width  = cssW + "px";
+      canvas.style.height = cssH + "px";
+
+      canvas.width  = Math.round(cssW * ANNOTATE.dpr);
+      canvas.height = Math.round(cssH * ANNOTATE.dpr);
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ANNOTATE.dpr, ANNOTATE.dpr);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ANNOTATE.ctx = ctx;
+      ANNOTATE.canvas = canvas;
+
+      bindCanvasEvents_();
+    });
+  }
+
+  function bindCanvasEvents_() {
+    const canvas = ANNOTATE.canvas;
+    if (!canvas) return;
+
+    const getPos = function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const src = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+      return {
+        x: src.clientX - rect.left,
+        y: src.clientY - rect.top
+      };
+    };
+
+    const start = function (e) {
+      e.preventDefault();
+      if (ANNOTATE.tool === "text") {
+        const p = getPos(e);
+        const txt = prompt("Enter text:");
+        if (txt && txt.trim()) {
+          pushHistory_();
+          const ctx = ANNOTATE.ctx;
+          ctx.fillStyle = ANNOTATE.color;
+          ctx.font = "bold " + Math.max(14, ANNOTATE.width * 3) + "px sans-serif";
+          ctx.fillText(txt.trim(), p.x, p.y);
+        }
+        return;
+      }
+      pushHistory_();
+      ANNOTATE.drawing = true;
+      const p = getPos(e);
+      ANNOTATE.startX = p.x;
+      ANNOTATE.startY = p.y;
+      ANNOTATE.lastX = p.x;
+      ANNOTATE.lastY = p.y;
+    };
+
+    const move = function (e) {
+      if (!ANNOTATE.drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      const ctx = ANNOTATE.ctx;
+
+      if (ANNOTATE.tool === "freehand") {
+        ctx.strokeStyle = ANNOTATE.color;
+        ctx.lineWidth = ANNOTATE.width;
+        ctx.beginPath();
+        ctx.moveTo(ANNOTATE.lastX, ANNOTATE.lastY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ANNOTATE.lastX = p.x;
+        ANNOTATE.lastY = p.y;
+      } else {
+        restoreLastHistory_();
+        ctx.strokeStyle = ANNOTATE.color;
+        ctx.lineWidth = ANNOTATE.width;
+
+        if (ANNOTATE.tool === "circle") {
+          const rx = Math.abs(p.x - ANNOTATE.startX) / 2;
+          const ry = Math.abs(p.y - ANNOTATE.startY) / 2;
+          const cx = (p.x + ANNOTATE.startX) / 2;
+          const cy = (p.y + ANNOTATE.startY) / 2;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (ANNOTATE.tool === "rect") {
+          ctx.beginPath();
+          ctx.rect(
+            ANNOTATE.startX, ANNOTATE.startY,
+            p.x - ANNOTATE.startX, p.y - ANNOTATE.startY
+          );
+          ctx.stroke();
+        } else if (ANNOTATE.tool === "arrow") {
+          drawArrow_(ctx, ANNOTATE.startX, ANNOTATE.startY, p.x, p.y, ANNOTATE.width);
+        }
+      }
+    };
+
+    const end = function () {
+      ANNOTATE.drawing = false;
+    };
+
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    canvas.addEventListener("mouseup", end);
+    canvas.addEventListener("mouseleave", end);
+    canvas.addEventListener("touchstart", start, { passive: false });
+    canvas.addEventListener("touchmove", move, { passive: false });
+    canvas.addEventListener("touchend", end);
+    canvas.addEventListener("touchcancel", end);
+  }
+
+  function pushHistory_() {
+    const c = ANNOTATE.canvas;
+    if (!c) return;
+    try {
+      ANNOTATE.history.push(ANNOTATE.ctx.getImageData(0, 0, c.width, c.height));
+      if (ANNOTATE.history.length > ANNOTATE.maxHistory) {
+        ANNOTATE.history.shift();
+      }
+    } catch (e) {}
+  }
+
+  function restoreLastHistory_() {
+    const c = ANNOTATE.canvas;
+    if (!c || !ANNOTATE.history.length) return;
+    const last = ANNOTATE.history[ANNOTATE.history.length - 1];
+    ANNOTATE.ctx.putImageData(last, 0, 0);
+  }
+
+  function drawArrow_(ctx, x1, y1, x2, y2, w) {
+    const headLen = Math.max(14, w * 3);
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 7), y2 - headLen * Math.sin(angle - Math.PI / 7));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 7), y2 - headLen * Math.sin(angle + Math.PI / 7));
+    ctx.closePath();
+    ctx.fillStyle = ANNOTATE.color;
+    ctx.fill();
+  }
+
+  // ===== Service worker + misc =====
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker
