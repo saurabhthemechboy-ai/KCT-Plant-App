@@ -1189,38 +1189,49 @@
   const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
 
   function apiCall(action, payload, onSuccess, onFail) {
-    onSuccess = onSuccess || function () {};
-    onFail = onFail || function (err) {
-      alert("Network error: " + (err && err.message ? err.message : err));
-    };
+  onSuccess = onSuccess || function () {};
+  onFail = onFail || function (err) {
+    alert("Network error: " + (err && err.message ? err.message : err));
+  };
 
-    // If running inside Apps Script Web App → use the native bridge
-    if (typeof google !== "undefined" &&
-        google.script &&
-        google.script.run) {
+  // If running inside Apps Script Web App → use the native bridge
+  if (typeof google !== "undefined" &&
+      google.script &&
+      google.script.run) {
+    const args = buildArgsForAction_(action, payload);
+    const runner = google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(onFail);
+    runner[action].apply(runner, args);
+    return;
+  }
 
-      // Build the positional-argument array per action
-      const args = buildArgsForAction_(action, payload);
+  // Otherwise → GET request to Apps Script (avoids POST 302 + CORS issues)
+  const url = API_URL +
+    "?action=" + encodeURIComponent(action) +
+    "&payload=" + encodeURIComponent(JSON.stringify(payload || {}));
 
-      const runner = google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFail);
-
-      runner[action].apply(runner, args);
-      return;
-    }
-
-    // Otherwise (APK / Firebase) → REST via fetch
-    fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: action, payload: payload || {} })
-    })
+  fetch(url, { method: "GET", redirect: "follow" })
     .then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
+      return r.text();
     })
-    .then(function (res) {
+    .then(function (text) {
+      // 👇 DEBUG — show what the server actually returned
+      alert("DEBUG — server response:\n\n" + text.substring(0, 500));
+      // Apps Script sometimes wraps JSON in HTML — strip if needed
+      let res;
+      try {
+        res = JSON.parse(text);
+      } catch (e) {
+        // Try to extract JSON from HTML wrapper
+        const m = text.match(/\{[\s\S]*\}/);
+        if (m) {
+          res = JSON.parse(m[0]);
+        } else {
+          throw new Error("Invalid response from server");
+        }
+      }
       if (res && res.error) {
         onFail(new Error(res.error));
       } else {
@@ -1228,9 +1239,14 @@
       }
     })
     .catch(function (err) {
+      alert("DEBUG — fetch error:\n\n" +
+            "Action: " + action + "\n" +
+            "Error: " + (err && err.message ? err.message : String(err)) +
+            "\n\nURL: " + url);
+      console.error("[KCT API] fetch error:", err);
       onFail(err);
     });
-  }
+}
 
   /**
    * Inside Apps Script we must call the underlying function with its
