@@ -15,18 +15,14 @@
 
   <title>KCT Plant</title>
 
-  <!-- Favicons -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-
-  <!-- PWA manifest (both link and meta) -->
   <link rel="manifest" href="/manifest.json">
   <meta name="manifest" content="/manifest.json">
-  <meta name="theme-color" content="#0288d1">
 
   <style>
     * { box-sizing: border-box; }
@@ -38,7 +34,6 @@
     }
     .hidden { display: none !important; }
 
-    /* ---------- LOGIN ---------- */
     .login-wrap {
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
@@ -93,7 +88,6 @@
     }
     .login-error.visible { display: block; }
 
-    /* ---------- HOME ---------- */
     .home-header {
       background: #0288d1; color: white;
       padding: 20px; padding-top: 25px;
@@ -154,7 +148,6 @@
       font-size: 13px; cursor: pointer;
     }
 
-    /* ---------- PAGE HEADER ---------- */
     .page-header {
       background: #0288d1; color: white;
       padding: 18px 20px;
@@ -173,7 +166,6 @@
 
     .page-body { padding: 20px; padding-bottom: 40px; }
 
-    /* ---------- FORM CONTROLS ---------- */
     .form-label {
       display: block; margin-top: 15px;
       font-weight: bold; font-size: 14px;
@@ -237,7 +229,6 @@
       font-weight: bold; border-radius: 10px;
     }
 
-    /* ---------- SHARED CARD / LIST STYLES ---------- */
     .filters {
       background: white; border-radius: 12px;
       padding: 12px; margin-bottom: 14px;
@@ -383,7 +374,6 @@
       letter-spacing: 0.5px; margin: 16px 4px 8px;
     }
 
-    /* ---------- PHOTO AREA ---------- */
     .photo-area {
       background: white;
       border: 2px dashed #bbb;
@@ -455,7 +445,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ---------- MODAL ---------- */
     .modal-backdrop {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.55);
@@ -481,17 +470,12 @@
       flex: 1;
     }
 
-    /* ---------- TIMELINE ---------- */
-    .timeline {
-      margin-top: 8px;
-      padding-left: 4px;
-    }
+    .timeline { margin-top: 8px; padding-left: 4px; }
     .timeline-item {
       position: relative;
       padding: 6px 0 6px 18px;
       border-left: 2px solid #b3e5fc;
-      font-size: 12px;
-      color: #555;
+      font-size: 12px; color: #555;
     }
     .timeline-item:before {
       content: '';
@@ -501,21 +485,15 @@
       border-radius: 50%;
       background: #0288d1;
     }
-    .timeline-item .when {
-      color: #888; font-size: 11px;
-    }
-        /* ---------- DASHBOARD (Stage 3C) ---------- */
+    .timeline-item .when { color: #888; font-size: 11px; }
+
     .kpi-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 16px;
     }
     .kpi-tile {
-      background: white;
-      border-radius: 12px;
-      padding: 16px 12px;
-      text-align: center;
+      background: white; border-radius: 12px;
+      padding: 16px 12px; text-align: center;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05);
       border-top: 3px solid #0288d1;
     }
@@ -525,39 +503,28 @@
     }
     .kpi-label {
       font-size: 11px; color: #777;
-      margin-top: 5px;
-      text-transform: uppercase;
+      margin-top: 5px; text-transform: uppercase;
       letter-spacing: 0.4px;
     }
-    .kpi-sub {
-      font-size: 10px; color: #999;
-      margin-top: 2px;
-    }
+    .kpi-sub { font-size: 10px; color: #999; margin-top: 2px; }
 
     .chart-card {
-      background: white;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
+      background: white; border-radius: 12px;
+      padding: 14px; margin-bottom: 14px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
     .chart-title {
       font-size: 13px; font-weight: bold;
-      color: #01579b;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      color: #01579b; margin-bottom: 12px;
+      text-transform: uppercase; letter-spacing: 0.3px;
     }
     .chart-body { min-height: 20px; }
     .chart-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 14px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 14px;
     }
     .chart-row .chart-card { margin-bottom: 0; }
 
-    /* Bar chart */
     .bar-row {
       display: flex; align-items: center;
       gap: 8px; margin-bottom: 8px;
@@ -565,100 +532,66 @@
     }
     .bar-label {
       min-width: 68px; max-width: 68px;
-      color: #555;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      color: #555; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
       font-weight: 500;
     }
     .bar-track {
-      flex: 1;
-      background: #f0f0f0;
-      border-radius: 6px;
-      height: 22px;
-      position: relative;
-      overflow: hidden;
+      flex: 1; background: #f0f0f0;
+      border-radius: 6px; height: 22px;
+      position: relative; overflow: hidden;
     }
     .bar-fill {
-      height: 100%;
-      border-radius: 6px;
+      height: 100%; border-radius: 6px;
       background: linear-gradient(90deg, #4fc3f7, #0288d1);
       transition: width 0.4s;
     }
     .bar-value {
       min-width: 30px; max-width: 30px;
-      text-align: right;
-      font-weight: bold;
+      text-align: right; font-weight: bold;
       color: #0288d1;
     }
 
-    /* Pill chart (priority / status) */
-    .pill-chart {
-      display: flex; flex-wrap: wrap;
-      gap: 8px;
-    }
+    .pill-chart { display: flex; flex-wrap: wrap; gap: 8px; }
     .pill-chart-item {
       display: flex; align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      background: #f5f5f5;
+      gap: 6px; padding: 8px 12px;
+      border-radius: 10px; font-size: 13px;
+      font-weight: 500; background: #f5f5f5;
     }
     .pill-chart-item .dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
+      width: 10px; height: 10px; border-radius: 50%;
     }
-    .pill-chart-item .num {
-      font-weight: bold;
-      color: #222;
-    }
+    .pill-chart-item .num { font-weight: bold; color: #222; }
 
-    /* Line chart (SVG) */
-    .line-chart-svg {
-      width: 100%; height: auto;
-      display: block;
-    }
+    .line-chart-svg { width: 100%; height: auto; display: block; }
 
-    /* Table */
     .dash-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
+      width: 100%; border-collapse: collapse; font-size: 12px;
     }
     .dash-table th {
-      text-align: left;
-      padding: 8px 6px;
-      background: #f5f5f5;
-      color: #444;
-      font-weight: bold;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
+      text-align: left; padding: 8px 6px;
+      background: #f5f5f5; color: #444;
+      font-weight: bold; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.3px;
     }
     .dash-table td {
-      padding: 8px 6px;
-      border-bottom: 1px solid #eee;
+      padding: 8px 6px; border-bottom: 1px solid #eee;
       color: #333;
     }
     .dash-table tr:last-child td { border-bottom: 0; }
     .dash-table .num { text-align: right; font-weight: 600; }
 
     .no-data {
-      text-align: center;
-      padding: 20px;
-      color: #999;
-      font-size: 13px;
+      text-align: center; padding: 20px;
+      color: #999; font-size: 13px;
     }
   </style>
 </head>
 
 <body>
 
-<!-- ============================================================
-     LOGIN SCREEN
-     ============================================================ -->
+<!-- LOGIN -->
 <div id="loginScreen" class="login-wrap">
   <div class="login-card">
     <img src="/logo-full.png" alt="KCT Plant" class="brand-logo">
@@ -672,7 +605,7 @@
     <label for="loginPassword">Password</label>
     <input id="loginPassword" type="password" autocomplete="current-password">
 
-        <button class="login-btn" id="loginBtn" onclick="doLogin()">LOGIN</button>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">LOGIN</button>
 
     <div class="login-error" id="loginError"></div>
 
@@ -683,9 +616,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     HOME SCREEN
-     ============================================================ -->
+<!-- HOME -->
 <div id="homeScreen" class="hidden">
   <div class="home-header">
     <div class="greeting">Welcome back,</div>
@@ -737,7 +668,6 @@
       <div class="label">ADMIN<br>USERS</div>
       <div class="sublabel">Manage accounts</div>
     </div>
-
   </div>
 
   <div class="home-footer">
@@ -749,9 +679,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     WORK INTIMATION SCREEN
-     ============================================================ -->
+<!-- WORK INTIMATION -->
 <div id="workScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -877,9 +805,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     WORK SUCCESS SCREEN
-     ============================================================ -->
+<!-- WORK SUCCESS -->
 <div id="successScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -898,9 +824,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     ALL ISSUES SCREEN (Stage 3B)
-     ============================================================ -->
+<!-- ALL ISSUES -->
 <div id="allIssuesScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -942,9 +866,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     ISSUE DETAIL SCREEN (Stage 3B)
-     ============================================================ -->
+<!-- ISSUE DETAIL -->
 <div id="issueDetailScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="backFromIssueDetail()">←</div>
@@ -972,9 +894,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     DASHBOARD SCREEN (Stage 3C)
-     ============================================================ -->
+<!-- DASHBOARD -->
 <div id="dashboardScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -982,8 +902,6 @@
   </div>
 
   <div class="page-body">
-
-    <!-- FILTERS -->
     <div class="filters">
       <div class="filter-row">
         <div>
@@ -1004,7 +922,6 @@
       </div>
     </div>
 
-    <!-- KPI TILES -->
     <div class="kpi-grid">
       <div class="kpi-tile">
         <div class="kpi-value" id="kpiOpen">—</div>
@@ -1025,19 +942,16 @@
       </div>
     </div>
 
-    <!-- 30-DAY TREND -->
     <div class="chart-card">
       <div class="chart-title">📈 Issues Trend (Last 30 Days)</div>
       <div id="trendChart" class="chart-body"></div>
     </div>
 
-    <!-- ISSUES BY EQUIPMENT -->
     <div class="chart-card">
       <div class="chart-title">🔧 Issues by Equipment</div>
       <div id="equipChart" class="chart-body"></div>
     </div>
 
-    <!-- PRIORITY + STATUS -->
     <div class="chart-row">
       <div class="chart-card half">
         <div class="chart-title">⚠️ By Priority</div>
@@ -1049,36 +963,29 @@
       </div>
     </div>
 
-    <!-- ISSUES BY TYPE -->
     <div class="chart-card">
       <div class="chart-title">🏷️ Issues by Type</div>
       <div id="typeChart" class="chart-body"></div>
     </div>
 
-    <!-- SHIFT SUMMARY -->
     <div class="chart-card">
       <div class="chart-title">👷 Work by Shift In-charge</div>
       <div id="shiftTable" class="chart-body"></div>
     </div>
 
-    <!-- TOP REPORTERS -->
     <div class="chart-card">
       <div class="chart-title">🏅 Top Reporters</div>
       <div id="topReportersChart" class="chart-body"></div>
     </div>
 
-    <!-- AGING -->
     <div class="chart-card">
       <div class="chart-title">⏰ Aging Issues (&gt; 3 days open)</div>
       <div id="agingTable" class="chart-body"></div>
     </div>
-
   </div>
 </div>
 
-<!-- ============================================================
-     ADMIN — USER MANAGEMENT SCREEN
-     ============================================================ -->
+<!-- ADMIN -->
 <div id="adminScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
@@ -1093,9 +1000,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     ASSIGN MODAL
-     ============================================================ -->
+<!-- ASSIGN MODAL -->
 <div id="assignModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3>Assign Issue</h3>
@@ -1111,9 +1016,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     RESOLVE MODAL
-     ============================================================ -->
+<!-- RESOLVE MODAL -->
 <div id="resolveModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3>Mark Resolved</h3>
@@ -1151,9 +1054,7 @@
   </div>
 </div>
 
-<!-- ============================================================
-     BUSY OVERLAY
-     ============================================================ -->
+<!-- BUSY -->
 <div id="busyOverlay" class="busy-overlay hidden">
   <div class="box">
     <div class="spinner"></div>
@@ -1161,99 +1062,69 @@
   </div>
 </div>
 
-<!-- ============================================================
-     INLINE FRAGMENTS
-     ============================================================ -->
+<!-- FRAGMENTS -->
 <?!= include('History'); ?>
 <?!= include('Today'); ?>
 <?!= include('Issues'); ?>
 <?!= include('Annotate'); ?>
 
-<!-- ============================================================
-     MAIN SCRIPT
-     ============================================================ -->
+<!-- MAIN SCRIPT -->
 <script>
-/* ============================================================
-   STATE
-   ============================================================ */
-
   let SESSION_TOKEN = null;
   let CURRENT_USER = null;
-
-  /* ============================================================
-     API TRANSPORT
-     Works both inside Apps Script (google.script.run)
-     AND inside the APK / Firebase (fetch to REST API)
-     ============================================================ */
 
   const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
 
   function apiCall(action, payload, onSuccess, onFail) {
-  onSuccess = onSuccess || function () {};
-  onFail = onFail || function (err) {
-    alert("Network error: " + (err && err.message ? err.message : err));
-  };
+    onSuccess = onSuccess || function () {};
+    onFail = onFail || function (err) {
+      alert("Network error: " + (err && err.message ? err.message : err));
+    };
 
-  // If running inside Apps Script Web App → use the native bridge
-  if (typeof google !== "undefined" &&
-      google.script &&
-      google.script.run) {
-    const args = buildArgsForAction_(action, payload);
-    const runner = google.script.run
-      .withSuccessHandler(onSuccess)
-      .withFailureHandler(onFail);
-    runner[action].apply(runner, args);
-    return;
+    if (typeof google !== "undefined" &&
+        google.script &&
+        google.script.run) {
+      const args = buildArgsForAction_(action, payload);
+      const runner = google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFail);
+      runner[action].apply(runner, args);
+      return;
+    }
+
+    const url = API_URL +
+      "?action=" + encodeURIComponent(action) +
+      "&payload=" + encodeURIComponent(JSON.stringify(payload || {}));
+
+    fetch(url, { method: "GET", redirect: "follow" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      })
+      .then(function (text) {
+        let res;
+        try {
+          res = JSON.parse(text);
+        } catch (e) {
+          const m = text.match(/\{[\s\S]*\}/);
+          if (m) {
+            res = JSON.parse(m[0]);
+          } else {
+            throw new Error("Invalid response from server");
+          }
+        }
+        if (res && res.error) {
+          onFail(new Error(res.error));
+        } else {
+          onSuccess(res);
+        }
+      })
+      .catch(function (err) {
+        console.error("[KCT API] fetch error:", err);
+        onFail(err);
+      });
   }
 
-  // Otherwise → GET request to Apps Script (avoids POST 302 + CORS issues)
-  const url = API_URL +
-    "?action=" + encodeURIComponent(action) +
-    "&payload=" + encodeURIComponent(JSON.stringify(payload || {}));
-
-  fetch(url, { method: "GET", redirect: "follow" })
-    .then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.text();
-    })
-    .then(function (text) {
-      // 👇 DEBUG — show what the server actually returned
-      alert("DEBUG — server response:\n\n" + text.substring(0, 500));
-      // Apps Script sometimes wraps JSON in HTML — strip if needed
-      let res;
-      try {
-        res = JSON.parse(text);
-      } catch (e) {
-        // Try to extract JSON from HTML wrapper
-        const m = text.match(/\{[\s\S]*\}/);
-        if (m) {
-          res = JSON.parse(m[0]);
-        } else {
-          throw new Error("Invalid response from server");
-        }
-      }
-      if (res && res.error) {
-        onFail(new Error(res.error));
-      } else {
-        onSuccess(res);
-      }
-    })
-    .catch(function (err) {
-      alert("DEBUG — fetch error:\n\n" +
-            "Action: " + action + "\n" +
-            "Error: " + (err && err.message ? err.message : String(err)) +
-            "\n\nURL: " + url);
-      console.error("[KCT API] fetch error:", err);
-      onFail(err);
-    });
-}
-
-  /**
-   * Inside Apps Script we must call the underlying function with its
-   * original positional arguments. This mapping handles that.
-   * For the fetch path, the backend already reads from `payload`
-   * with the same keys, so no mapping is needed there.
-   */
   function buildArgsForAction_(action, payload) {
     const p = payload || {};
     switch (action) {
@@ -1289,10 +1160,6 @@
     "allIssuesScreen", "issueDetailScreen", "adminScreen"
   ];
 
-  /* ============================================================
-     SCREEN NAVIGATION
-     ============================================================ */
-
   function showScreen(id) {
     SCREENS.forEach(function (s) {
       const el = document.getElementById(s);
@@ -1319,10 +1186,6 @@
       goHome();
     }
   }
-
-  /* ============================================================
-     LOGIN
-     ============================================================ */
 
   function showLoginError(msg) {
     const box = document.getElementById("loginError");
@@ -1431,11 +1294,9 @@
     const dashboardTile = document.getElementById("dashboardTile");
     if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager);
 
-    // Work Intimation — managers only
     const workTile = document.getElementById("workIntimationTile");
     if (workTile) workTile.classList.toggle("hidden", !isManager);
 
-    // Admin Users — admin only
     const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
     const adminTile = document.getElementById("adminTile");
     if (adminTile) adminTile.classList.toggle("hidden", !isAdmin);
@@ -1457,10 +1318,6 @@
     clearLoginError();
     showScreen("loginScreen");
   }
-
-  /* ============================================================
-     BADGES
-     ============================================================ */
 
   function refreshTodayBadge() {
     if (!SESSION_TOKEN) return;
@@ -1500,24 +1357,20 @@
     );
   }
 
-  /* ============================================================
-     WORK INTIMATION
-     ============================================================ */
-
   function openWorkForm() {
-  if (!CURRENT_USER ||
-      (CURRENT_USER.role !== "incharge" && CURRENT_USER.role !== "admin")) {
-    alert("Work Intimation is only available for Shift In-charges and Admins.");
-    return;
-  }
+    if (!CURRENT_USER ||
+        (CURRENT_USER.role !== "incharge" && CURRENT_USER.role !== "admin")) {
+      alert("Work Intimation is only available for Shift In-charges and Admins.");
+      return;
+    }
 
-  document.getElementById("workForm").reset();
-  document.getElementById("wfError").classList.remove("visible");
-  document.getElementById("wfCommon").classList.add("hidden");
-  document.getElementById("wfStartFields").classList.add("hidden");
-  document.getElementById("wfCompletionFields").classList.add("hidden");
-  showScreen("workScreen");
-}
+    document.getElementById("workForm").reset();
+    document.getElementById("wfError").classList.remove("visible");
+    document.getElementById("wfCommon").classList.add("hidden");
+    document.getElementById("wfStartFields").classList.add("hidden");
+    document.getElementById("wfCompletionFields").classList.add("hidden");
+    showScreen("workScreen");
+  }
 
   function changeWorkStatus() {
     const status = document.getElementById("wfStatus").value;
@@ -1699,10 +1552,6 @@ ${data.remarks || "Not specified"}
     showScreen("successScreen");
   }
 
-  /* ============================================================
-     ALL ISSUES SCREEN
-     ============================================================ */
-
   let ALL_ISSUES_TAB = "open";
   let CURRENT_ISSUE = null;
   let CURRENT_ISSUE_BACK_TO = "home";
@@ -1809,10 +1658,6 @@ ${data.remarks || "Not specified"}
       );
     }).join("");
   }
-
-  /* ============================================================
-     ISSUE DETAIL SCREEN
-     ============================================================ */
 
   function openIssueDetail(rowNumber) {
     showScreen("issueDetailScreen");
@@ -1923,7 +1768,6 @@ ${data.remarks || "Not specified"}
 
     body.innerHTML = html;
 
-    // Action buttons
     if (it.canManage) {
       document.getElementById("issueDetailActions").classList.remove("hidden");
       const isResolved = it.status === "Resolved";
@@ -1935,10 +1779,6 @@ ${data.remarks || "Not specified"}
       document.getElementById("issueDetailActions").classList.add("hidden");
     }
   }
-
-  /* ============================================================
-     ASSIGN MODAL
-     ============================================================ */
 
   function openAssignModal() {
     if (!CURRENT_ISSUE) return;
@@ -2003,10 +1843,6 @@ ${data.remarks || "Not specified"}
     );
   }
 
-  /* ============================================================
-     IN PROGRESS
-     ============================================================ */
-
   function markInProgress() {
     if (!CURRENT_ISSUE) return;
     if (!confirm("Mark this issue as In Progress?")) return;
@@ -2028,10 +1864,6 @@ ${data.remarks || "Not specified"}
       }
     );
   }
-
-  /* ============================================================
-     RESOLVE MODAL
-     ============================================================ */
 
   let RESOLVE_PHOTO_B64 = null;
   let RESOLVE_PHOTO_MIME = "image/jpeg";
@@ -2123,10 +1955,6 @@ ${data.remarks || "Not specified"}
     );
   }
 
-  /* ============================================================
-     BUSY OVERLAY
-     ============================================================ */
-
   function showBusy(text) {
     document.getElementById("busyText").textContent = text || "Working…";
     document.getElementById("busyOverlay").classList.remove("hidden");
@@ -2134,10 +1962,6 @@ ${data.remarks || "Not specified"}
   function hideBusy() {
     document.getElementById("busyOverlay").classList.add("hidden");
   }
-
-  /* ============================================================
-     AUTO-LOGIN ON PAGE LOAD
-     ============================================================ */
 
   window.addEventListener("pageshow", function () {
     let saved = null;
@@ -2161,10 +1985,6 @@ ${data.remarks || "Not specified"}
       }
     );
   });
-
-    /* ============================================================
-     DASHBOARD (Stage 3C)
-     ============================================================ */
 
   let DASHBOARD_EQUIP_LOADED = false;
 
@@ -2425,10 +2245,6 @@ ${data.remarks || "Not specified"}
       "</table>";
   }
 
-  /* ============================================================
-     ADMIN — USER MANAGEMENT
-     ============================================================ */
-
   function openAdminPanel() {
     if (!CURRENT_USER || CURRENT_USER.role !== "admin") {
       alert("Admin access required.");
@@ -2576,10 +2392,6 @@ ${data.remarks || "Not specified"}
     );
   }
 
-  /* ============================================================
-     STAGE 3D — PWA + SERVICE WORKER REGISTRATION
-     ============================================================ */
-
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker
@@ -2593,7 +2405,6 @@ ${data.remarks || "Not specified"}
     });
   }
 
-  // -------- Offline / online banner --------
   function updateOnlineBanner() {
     const existing = document.getElementById("offlineBanner");
     if (navigator.onLine) {
@@ -2616,7 +2427,6 @@ ${data.remarks || "Not specified"}
   window.addEventListener("offline", updateOnlineBanner);
   window.addEventListener("load", updateOnlineBanner);
 
-  // -------- Deep-link shortcuts (?action=work / ?action=issue) --------
   window.addEventListener("load", function () {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -2631,14 +2441,12 @@ ${data.remarks || "Not specified"}
     } catch (e) {}
   });
 
-  // -------- Install prompt (A2HS) --------
   let deferredPrompt = null;
 
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault();
     deferredPrompt = e;
 
-    // Show banner only if user hasn't dismissed before
     if (localStorage.getItem("kct_a2hs_dismissed") === "1") return;
 
     const banner = document.createElement("div");
@@ -2676,7 +2484,6 @@ ${data.remarks || "Not specified"}
       banner.remove();
     };
   });
-
 </script>
 
 </body>
