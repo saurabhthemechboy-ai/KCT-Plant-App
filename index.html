@@ -1180,6 +1180,93 @@
   let SESSION_TOKEN = null;
   let CURRENT_USER = null;
 
+  /* ============================================================
+     API TRANSPORT
+     Works both inside Apps Script (google.script.run)
+     AND inside the APK / Firebase (fetch to REST API)
+     ============================================================ */
+
+  const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
+
+  function apiCall(action, payload, onSuccess, onFail) {
+    onSuccess = onSuccess || function () {};
+    onFail = onFail || function (err) {
+      alert("Network error: " + (err && err.message ? err.message : err));
+    };
+
+    // If running inside Apps Script Web App → use the native bridge
+    if (typeof google !== "undefined" &&
+        google.script &&
+        google.script.run) {
+
+      // Build the positional-argument array per action
+      const args = buildArgsForAction_(action, payload);
+
+      const runner = google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFail);
+
+      runner[action].apply(runner, args);
+      return;
+    }
+
+    // Otherwise (APK / Firebase) → REST via fetch
+    fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (res) {
+      if (res && res.error) {
+        onFail(new Error(res.error));
+      } else {
+        onSuccess(res);
+      }
+    })
+    .catch(function (err) {
+      onFail(err);
+    });
+  }
+
+  /**
+   * Inside Apps Script we must call the underlying function with its
+   * original positional arguments. This mapping handles that.
+   * For the fetch path, the backend already reads from `payload`
+   * with the same keys, so no mapping is needed there.
+   */
+  function buildArgsForAction_(action, payload) {
+    const p = payload || {};
+    switch (action) {
+      case "loginUser":            return [p.userId, p.password];
+      case "validateSession":      return [p.token];
+      case "logoutUser":           return [p.token];
+      case "changePassword":       return [p.token, p.oldPassword, p.newPassword];
+      case "getFormOptions":       return [];
+      case "getEquipmentList":     return [];
+      case "getIssueStatuses":     return [];
+      case "getIssuePriorities":   return [];
+      case "submitWork":           return [p.token, p.formData];
+      case "submitIssue":          return [p.token, p.payload];
+      case "getMyIssues":          return [p.token, p.limit];
+      case "getHistory":           return [p.token, p.filters];
+      case "getToday":             return [p.token];
+      case "getAllIssues":         return [p.token, p.filters];
+      case "getIssueDetail":       return [p.token, p.rowNumber];
+      case "getAssignableUsers":   return [p.token];
+      case "assignIssue":          return [p.token, p.rowNumber, p.assigneeName];
+      case "updateIssueStatus":    return [p.token, p.rowNumber, p.newStatus, p.notes, p.resolvedPhotoBase64, p.resolvedPhotoMime];
+      case "getDashboard":         return [p.token, p.filters];
+      case "adminListUsers":       return [p.token];
+      case "adminResetPassword":   return [p.token, p.targetUserId];
+      case "adminSetUserActive":   return [p.token, p.targetUserId, p.active];
+      default:                     return [p];
+    }
+  }
+
   const SCREENS = [
     "loginScreen", "homeScreen", "workScreen", "successScreen",
     "historyScreen", "todayScreen", "issuesScreen", "issueSuccessScreen",
@@ -1246,8 +1333,9 @@
     btn.disabled = true;
     btn.textContent = "LOGGING IN...";
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("loginUser",
+      { userId: userId, password: password },
+      function (res) {
         btn.disabled = false;
         btn.textContent = "LOGIN";
 
@@ -1266,13 +1354,13 @@
         }
 
         showHome();
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         btn.disabled = false;
         btn.textContent = "LOGIN";
         showLoginError(err && err.message ? err.message : "Login failed.");
-      })
-      .loginUser(userId, password);
+      }
+    );
   }
 
   function promptPasswordChange() {
@@ -1294,8 +1382,9 @@
       return;
     }
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("changePassword",
+      { token: SESSION_TOKEN, oldPassword: oldPwd, newPassword: newPwd },
+      function (res) {
         if (res && res.success) {
           alert("Password updated. Welcome!");
           CURRENT_USER.mustChangePassword = false;
@@ -1304,12 +1393,12 @@
           alert(res && res.message ? res.message : "Password change failed.");
           doLogout();
         }
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         alert(err && err.message ? err.message : "Password change failed.");
         doLogout();
-      })
-      .changePassword(SESSION_TOKEN, oldPwd, newPwd);
+      }
+    );
   }
 
   function showHome() {
@@ -1342,7 +1431,7 @@
 
   function doLogout() {
     if (SESSION_TOKEN) {
-      google.script.run.logoutUser(SESSION_TOKEN);
+      apiCall("logoutUser", { token: SESSION_TOKEN });
     }
     SESSION_TOKEN = null;
     CURRENT_USER = null;
@@ -1359,8 +1448,8 @@
 
   function refreshTodayBadge() {
     if (!SESSION_TOKEN) return;
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getToday", { token: SESSION_TOKEN },
+      function (res) {
         const badge = document.getElementById("todayBadge");
         if (!badge) return;
         if (res && res.success && res.badgeCount > 0) {
@@ -1369,14 +1458,15 @@
         } else {
           badge.classList.remove("visible");
         }
-      })
-      .getToday(SESSION_TOKEN);
+      }
+    );
   }
 
   function refreshAllIssuesBadge() {
     if (!SESSION_TOKEN) return;
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getAllIssues",
+      { token: SESSION_TOKEN, filters: { scope: "all" } },
+      function (res) {
         const badge = document.getElementById("allIssuesBadge");
         if (!badge) return;
         if (res && res.success) {
@@ -1390,8 +1480,8 @@
             badge.classList.remove("visible");
           }
         }
-      })
-      .getAllIssues(SESSION_TOKEN, { scope: "all" });
+      }
+    );
   }
 
   /* ============================================================
@@ -1510,13 +1600,14 @@
       remarks: document.getElementById("wfRemarks").value
     };
 
-    google.script.run
-      .withSuccessHandler(function (result) {
+    apiCall("submitWork",
+      { token: SESSION_TOKEN, formData: data },
+      function (result) {
         btn.disabled = false;
         btn.textContent = "SUBMIT";
         showWorkSuccess(result, data, safetyItems);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         btn.disabled = false;
         btn.textContent = "SUBMIT";
         const msg = err && err.message ? err.message : "Submission failed.";
@@ -1526,8 +1617,8 @@
           return;
         }
         showWorkError(msg);
-      })
-      .submitWork(SESSION_TOKEN, data);
+      }
+    );
   }
 
   function showWorkSuccess(result, data, safetyItems) {
@@ -1611,16 +1702,16 @@ ${data.remarks || "Not specified"}
   }
 
   function populateAllIssuesEquipment_() {
-    google.script.run
-      .withSuccessHandler(function (list) {
+    apiCall("getEquipmentList", {},
+      function (list) {
         const sel = document.getElementById("aiEquipment");
         (list || []).forEach(function (eq) {
           const o = document.createElement("option");
           o.value = eq; o.textContent = eq;
           sel.appendChild(o);
         });
-      })
-      .getEquipmentList();
+      }
+    );
   }
 
   function allIssuesSetTab(tab) {
@@ -1656,20 +1747,21 @@ ${data.remarks || "Not specified"}
       equipment: document.getElementById("aiEquipment").value
     };
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getAllIssues",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
         if (!res || !res.success) {
           list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
             (res && res.message ? res.message : "Failed to load.") + "</div>";
           return;
         }
         allIssuesRender_(res.items);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
           (err && err.message ? err.message : "Failed to load.") + "</div>";
-      })
-      .getAllIssues(SESSION_TOKEN, filters);
+      }
+    );
   }
 
   function allIssuesRender_(items) {
@@ -1713,8 +1805,9 @@ ${data.remarks || "Not specified"}
     document.getElementById("issueDetailActions").classList.add("hidden");
     document.getElementById("issueDetailError").classList.remove("visible");
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getIssueDetail",
+      { token: SESSION_TOKEN, rowNumber: rowNumber },
+      function (res) {
         if (!res || !res.success) {
           body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
             (res && res.message ? res.message : "Failed to load.") + "</div>";
@@ -1723,12 +1816,12 @@ ${data.remarks || "Not specified"}
         CURRENT_ISSUE = res.issue;
         CURRENT_ISSUE.canManage = res.canManage;
         renderIssueDetail_();
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
           (err && err.message ? err.message : "Failed to load.") + "</div>";
-      })
-      .getIssueDetail(SESSION_TOKEN, rowNumber);
+      }
+    );
   }
 
   function renderIssueDetail_() {
@@ -1839,8 +1932,8 @@ ${data.remarks || "Not specified"}
     const sel = document.getElementById("assignUser");
     sel.innerHTML = "<option value=''>Loading…</option>";
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getAssignableUsers", { token: SESSION_TOKEN },
+      function (res) {
         if (!res || !res.success) {
           sel.innerHTML = "<option value=''>Failed to load users</option>";
           return;
@@ -1853,8 +1946,8 @@ ${data.remarks || "Not specified"}
           sel.appendChild(o);
         });
         if (CURRENT_ISSUE.assignedTo) sel.value = CURRENT_ISSUE.assignedTo;
-      })
-      .getAssignableUsers(SESSION_TOKEN);
+      }
+    );
   }
 
   function closeAssignModal() {
@@ -1872,8 +1965,9 @@ ${data.remarks || "Not specified"}
     const btn = document.getElementById("assignSubmitBtn");
     btn.disabled = true; btn.textContent = "Assigning…";
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("assignIssue",
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, assigneeName: name },
+      function (res) {
         btn.disabled = false; btn.textContent = "Assign";
         if (!res || !res.success) {
           const e = document.getElementById("assignError");
@@ -1883,14 +1977,14 @@ ${data.remarks || "Not specified"}
         }
         closeAssignModal();
         openIssueDetail(CURRENT_ISSUE.rowNumber);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         btn.disabled = false; btn.textContent = "Assign";
         const e = document.getElementById("assignError");
         e.textContent = err && err.message ? err.message : "Failed.";
         e.classList.add("visible");
-      })
-      .assignIssue(SESSION_TOKEN, CURRENT_ISSUE.rowNumber, name);
+      }
+    );
   }
 
   /* ============================================================
@@ -1900,15 +1994,23 @@ ${data.remarks || "Not specified"}
   function markInProgress() {
     if (!CURRENT_ISSUE) return;
     if (!confirm("Mark this issue as In Progress?")) return;
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("updateIssueStatus",
+      {
+        token: SESSION_TOKEN,
+        rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "In Progress",
+        notes: "",
+        resolvedPhotoBase64: null,
+        resolvedPhotoMime: null
+      },
+      function (res) {
         if (!res || !res.success) {
           alert(res && res.message ? res.message : "Failed.");
           return;
         }
         openIssueDetail(CURRENT_ISSUE.rowNumber);
-      })
-      .updateIssueStatus(SESSION_TOKEN, CURRENT_ISSUE.rowNumber, "In Progress", "", null, null);
+      }
+    );
   }
 
   /* ============================================================
@@ -1976,8 +2078,16 @@ ${data.remarks || "Not specified"}
     btn.disabled = true; btn.textContent = "Resolving…";
     showBusy("Uploading resolved photo…");
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("updateIssueStatus",
+      {
+        token: SESSION_TOKEN,
+        rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "Resolved",
+        notes: notes,
+        resolvedPhotoBase64: RESOLVE_PHOTO_B64,
+        resolvedPhotoMime: RESOLVE_PHOTO_MIME
+      },
+      function (res) {
         hideBusy();
         btn.disabled = false; btn.textContent = "Resolve";
         if (!res || !res.success) {
@@ -1987,15 +2097,14 @@ ${data.remarks || "Not specified"}
         }
         closeResolveModal();
         openIssueDetail(CURRENT_ISSUE.rowNumber);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         hideBusy();
         btn.disabled = false; btn.textContent = "Resolve";
         errBox.textContent = err && err.message ? err.message : "Failed.";
         errBox.classList.add("visible");
-      })
-      .updateIssueStatus(SESSION_TOKEN, CURRENT_ISSUE.rowNumber, "Resolved",
-                         notes, RESOLVE_PHOTO_B64, RESOLVE_PHOTO_MIME);
+      }
+    );
   }
 
   /* ============================================================
@@ -2020,8 +2129,8 @@ ${data.remarks || "Not specified"}
 
     if (!saved) { showScreen("loginScreen"); return; }
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("validateSession", { token: saved },
+      function (res) {
         if (res && res.success) {
           SESSION_TOKEN = saved;
           CURRENT_USER = res.user;
@@ -2030,11 +2139,11 @@ ${data.remarks || "Not specified"}
           try { localStorage.removeItem("kct_token"); } catch (e) {}
           showScreen("loginScreen");
         }
-      })
-      .withFailureHandler(function () {
+      },
+      function () {
         showScreen("loginScreen");
-      })
-      .validateSession(saved);
+      }
+    );
   });
 
     /* ============================================================
@@ -2058,8 +2167,8 @@ ${data.remarks || "Not specified"}
   function openDashboard() {
     showScreen("dashboardScreen");
     if (!DASHBOARD_EQUIP_LOADED) {
-      google.script.run
-        .withSuccessHandler(function (list) {
+      apiCall("getEquipmentList", {},
+        function (list) {
           const sel = document.getElementById("dbEquipment");
           (list || []).forEach(function (eq) {
             const o = document.createElement("option");
@@ -2067,8 +2176,8 @@ ${data.remarks || "Not specified"}
             sel.appendChild(o);
           });
           DASHBOARD_EQUIP_LOADED = true;
-        })
-        .getEquipmentList();
+        }
+      );
     }
     dashboardLoad();
   }
@@ -2088,18 +2197,19 @@ ${data.remarks || "Not specified"}
       if (el) el.textContent = "…";
     });
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("getDashboard",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
         if (!res || !res.success) {
           alert(res && res.message ? res.message : "Failed to load dashboard.");
           return;
         }
         renderDashboard_(res);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         alert(err && err.message ? err.message : "Failed to load dashboard.");
-      })
-      .getDashboard(SESSION_TOKEN, filters);
+      }
+    );
   }
 
   function renderDashboard_(d) {
@@ -2325,20 +2435,20 @@ ${data.remarks || "Not specified"}
     errBox.classList.remove("visible");
     list.innerHTML = "<div class='loading'>Loading users…</div>";
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("adminListUsers", { token: SESSION_TOKEN },
+      function (res) {
         if (!res || !res.success) {
           list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
             (res && res.message ? res.message : "Failed to load.") + "</div>";
           return;
         }
         renderAdminUsers_(res.users);
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
           (err && err.message ? err.message : "Failed to load.") + "</div>";
-      })
-      .adminListUsers(SESSION_TOKEN);
+      }
+    );
   }
 
   function renderAdminUsers_(users) {
@@ -2405,8 +2515,9 @@ ${data.remarks || "Not specified"}
     errBox.classList.remove("visible");
     showBusy("Resetting…");
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("adminResetPassword",
+      { token: SESSION_TOKEN, targetUserId: userId },
+      function (res) {
         hideBusy();
         if (!res || !res.success) {
           errBox.textContent = res && res.message ? res.message : "Reset failed.";
@@ -2416,13 +2527,13 @@ ${data.remarks || "Not specified"}
         alert("✅ " + res.message + "\n\nTemporary password: " + res.tempPassword +
               "\n\nAsk them to log in with this and set a new one.");
         loadAdminUsers();
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         hideBusy();
         errBox.textContent = err && err.message ? err.message : "Reset failed.";
         errBox.classList.add("visible");
-      })
-      .adminResetPassword(SESSION_TOKEN, userId);
+      }
+    );
   }
 
   function adminConfirmToggle(userId, name, currentlyActive) {
@@ -2432,20 +2543,21 @@ ${data.remarks || "Not specified"}
     const errBox = document.getElementById("adminError");
     errBox.classList.remove("visible");
 
-    google.script.run
-      .withSuccessHandler(function (res) {
+    apiCall("adminSetUserActive",
+      { token: SESSION_TOKEN, targetUserId: userId, active: !currentlyActive },
+      function (res) {
         if (!res || !res.success) {
           errBox.textContent = res && res.message ? res.message : "Failed.";
           errBox.classList.add("visible");
           return;
         }
         loadAdminUsers();
-      })
-      .withFailureHandler(function (err) {
+      },
+      function (err) {
         errBox.textContent = err && err.message ? err.message : "Failed.";
         errBox.classList.add("visible");
-      })
-      .adminSetUserActive(SESSION_TOKEN, userId, !currentlyActive);
+      }
+    );
   }
 
   /* ============================================================
