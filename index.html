@@ -1,33 +1,3630 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0288d1">
+  <meta name="description" content="KCT Plant App — Kakinada Coal Terminal work intimation and issue management">
+  <meta name="author" content="Saurab Upadhyay">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KCT Plant">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="KCT Plant">
+
   <title>KCT Plant</title>
-  <script>
-    // Redirect immediately to the Apps Script app.
-    // This makes the APK open the /exec URL, which has google.script.run injected.
-    window.location.replace("https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec");
-  </script>
+
+  <link rel="icon" href="https://kct-plant-app.web.app/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://kct-plant-app.web.app/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://kct-plant-app.web.app/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://kct-plant-app.web.app/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="https://kct-plant-app.web.app/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://kct-plant-app.web.app/apple-touch-icon.png">
+  <link rel="manifest" href="https://kct-plant-app.web.app/manifest.json">
+
   <style>
-    body { font-family: -apple-system, sans-serif; background:#0288d1; color:white;
-           display:flex; align-items:center; justify-content:center;
-           min-height:100vh; margin:0; text-align:center; }
-    .box { padding: 20px; }
-    .spinner { width:40px; height:40px; border:4px solid rgba(255,255,255,0.3);
-               border-top-color:white; border-radius:50%;
-               margin:0 auto 16px; animation:spin 1s linear infinite; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f5f5f5; color: #222;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hidden { display: none !important; }
+
+    .login-wrap {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      background: linear-gradient(160deg, #0288d1 0%, #01579b 100%);
+    }
+    .login-card {
+      width: 100%; max-width: 400px;
+      background: white;
+      padding: 30px 25px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .login-card .brand-logo {
+      display: block; margin: 0 auto 14px;
+      width: 90px; height: 90px; object-fit: contain;
+    }
+    .login-card h1 {
+      text-align: center; margin: 0 0 5px;
+      font-size: 22px; color: #01579b;
+    }
+    .login-card .sub {
+      text-align: center; color: #666;
+      font-size: 13px; margin-bottom: 25px;
+    }
+    .login-card label {
+      display: block; margin-top: 15px;
+      font-weight: bold; font-size: 14px;
+    }
+    .login-card input {
+      width: 100%; padding: 14px; margin-top: 6px;
+      font-size: 16px; border: 1px solid #ccc;
+      border-radius: 8px; background: #fafafa;
+    }
+    .login-card input:focus {
+      outline: none; border-color: #0288d1; background: white;
+    }
+    .login-btn {
+      width: 100%; padding: 16px; margin-top: 25px;
+      font-size: 17px; font-weight: bold;
+      border: 0; border-radius: 8px;
+      background: #0288d1; color: white; cursor: pointer;
+    }
+    .login-btn:disabled { opacity: 0.6; }
+    .login-error {
+      margin-top: 15px; padding: 10px 12px;
+      background: #fdecea;
+      border: 1px solid #f5c2c0;
+      border-radius: 6px;
+      color: #842029; font-size: 14px;
+      display: none;
+    }
+    .login-error.visible { display: block; }
+
+    .home-header {
+      background: #0288d1; color: white;
+      padding: 20px; padding-top: 25px;
+      border-radius: 0 0 20px 20px;
+    }
+    .home-header .greeting { font-size: 13px; opacity: 0.85; }
+    .home-header .name {
+      font-size: 22px; font-weight: bold; margin-top: 3px;
+    }
+    .home-header .role {
+      font-size: 12px; margin-top: 4px;
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 3px 10px; border-radius: 12px;
+      text-transform: capitalize;
+    }
+    .home-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; padding: 20px;
+    }
+    .home-tile {
+      background: white; border-radius: 14px;
+      padding: 22px 14px; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      cursor: pointer; position: relative;
+      min-height: 130px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: transform 0.1s;
+    }
+    .home-tile:active { transform: scale(0.97); }
+    .home-tile .icon { font-size: 40px; margin-bottom: 10px; }
+    .home-tile .label {
+      font-size: 14px; font-weight: bold;
+      color: #01579b; line-height: 1.2;
+    }
+    .home-tile .sublabel {
+      font-size: 11px; color: #777; margin-top: 4px;
+    }
+    .home-tile.disabled { opacity: 0.5; cursor: not-allowed; }
+    .home-tile .badge {
+      position: absolute; top: 10px; right: 10px;
+      background: #d32f2f; color: white;
+      font-size: 11px; font-weight: bold;
+      padding: 3px 8px; border-radius: 10px;
+      display: none;
+    }
+    .home-tile .badge.visible { display: block; }
+    .home-footer {
+      text-align: center; padding: 10px 20px 30px;
+    }
+    .logout-btn {
+      background: transparent;
+      border: 1px solid #bbb;
+      color: #555;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 13px; cursor: pointer;
+    }
+
+    .page-header {
+      background: #0288d1; color: white;
+      padding: 18px 20px;
+      display: flex; align-items: center; gap: 15px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .page-header .back {
+      font-size: 22px; cursor: pointer;
+      padding: 5px 10px; border-radius: 8px;
+    }
+    .page-header .back:active { background: rgba(255,255,255,0.2); }
+    .page-header .title { font-size: 17px; font-weight: bold; }
+    .page-header .subtitle {
+      font-size: 11px; opacity: 0.85; margin-top: 2px;
+    }
+
+    .page-body { padding: 20px; padding-bottom: 40px; }
+
+    .form-label {
+      display: block; margin-top: 15px;
+      font-weight: bold; font-size: 14px;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; padding: 13px; margin-top: 5px;
+      font-size: 16px; border: 1px solid #ccc;
+      border-radius: 8px; background: white;
+    }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+    }
+    .section-title {
+      margin-top: 22px; padding: 8px 10px;
+      background: #e1f5fe;
+      border-left: 4px solid #0288d1;
+      font-weight: bold; font-size: 14px;
+      border-radius: 0 6px 6px 0;
+    }
+    .primary-btn {
+      width: 100%; padding: 16px; margin-top: 25px;
+      font-size: 17px; font-weight: bold;
+      border: 0; border-radius: 8px;
+      background: #0288d1; color: white; cursor: pointer;
+    }
+    .primary-btn:disabled { opacity: 0.6; }
+    .secondary-btn {
+      width: 100%; padding: 14px; margin-top: 10px;
+      font-size: 15px; font-weight: bold;
+      border: 1px solid #0288d1;
+      border-radius: 8px;
+      background: white; color: #0288d1; cursor: pointer;
+    }
+    .secondary-btn:disabled { opacity: 0.6; }
+    .danger-btn {
+      width: 100%; padding: 14px; margin-top: 10px;
+      font-size: 15px; font-weight: bold;
+      border: 0; border-radius: 8px;
+      background: #c62828; color: white; cursor: pointer;
+    }
+    .error-box {
+      margin-top: 15px; padding: 10px 12px;
+      background: #fdecea;
+      border: 1px solid #f5c2c0;
+      border-radius: 6px;
+      color: #842029; font-size: 14px;
+      display: none;
+    }
+    .error-box.visible { display: block; }
+    .success-screen { text-align: center; padding: 40px 20px; }
+    .success-screen .check { font-size: 70px; }
+    .whatsapp-btn {
+      display: block; margin-top: 25px; padding: 18px;
+      text-align: center; background: #25D366; color: white;
+      text-decoration: none; font-size: 18px;
+      font-weight: bold; border-radius: 10px;
+    }
+
+    .filters {
+      background: white; border-radius: 12px;
+      padding: 12px; margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .filter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .filter-row:last-child { margin-bottom: 0; }
+    .filter-row > * { flex: 1; }
+    .filter-label {
+      font-size: 11px; font-weight: bold;
+      color: #666; text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 4px; display: block;
+    }
+    select.filter-input {
+      width: 100%;
+      padding: 10px 32px 10px 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    .tabs {
+      display: flex; background: white;
+      border-radius: 12px; padding: 5px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+    .tab {
+      flex: 1; min-width: 80px;
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 13px; font-weight: bold;
+      color: #666; cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .tab.active { background: #0288d1; color: white; }
+    .tab .count {
+      display: inline-block;
+      background: rgba(0,0,0,0.1);
+      padding: 1px 7px; border-radius: 10px;
+      font-size: 11px; margin-left: 5px;
+    }
+    .tab.active .count { background: rgba(255,255,255,0.25); }
+
+    .list { display: block; }
+    .card {
+      background: white; border-radius: 12px;
+      padding: 14px; margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      border-left: 4px solid #0288d1;
+    }
+    .card.clickable { cursor: pointer; }
+    .card.clickable:active { background: #fafafa; }
+    .card.pending { border-left-color: #f9a825; }
+    .card.complete { border-left-color: #0288d1; }
+    .card.issue-low       { border-left-color: #9e9e9e; }
+    .card.issue-medium    { border-left-color: #1976d2; }
+    .card.issue-high      { border-left-color: #f57c00; }
+    .card.issue-critical  { border-left-color: #d32f2f; }
+    .card-head {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 6px;
+      gap: 10px;
+    }
+    .card-title {
+      font-size: 15px; font-weight: bold;
+      color: #01579b; line-height: 1.2;
+    }
+    .card-title.issue { color: #333; }
+    .card-date {
+      font-size: 11px; color: #888;
+      white-space: nowrap;
+    }
+    .card-row {
+      display: flex; justify-content: space-between;
+      font-size: 13px; color: #555; margin-top: 3px;
+    }
+    .card-row .lbl { color: #888; }
+    .card-row .val { text-align: right; font-weight: 500; }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 10px; font-weight: bold;
+      text-transform: uppercase; letter-spacing: 0.3px;
+      margin-right: 4px;
+    }
+    .pill.pending  { background: #fff8e1; color: #f57c00; }
+    .pill.complete { background: #e1f5fe; color: #0288d1; }
+    .pill.low      { background: #eeeeee; color: #555; }
+    .pill.medium   { background: #e3f2fd; color: #1976d2; }
+    .pill.high     { background: #fff3e0; color: #ef6c00; }
+    .pill.critical { background: #ffebee; color: #c62828; }
+    .pill.open       { background: #fff8e1; color: #f57c00; }
+    .pill.inprogress { background: #e3f2fd; color: #1976d2; }
+    .pill.resolved   { background: #e1f5fe; color: #0288d1; }
+    .card-desc {
+      font-size: 13px; color: #555;
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px dashed #eee; line-height: 1.4;
+    }
+    .card-photo {
+      display: block; margin-top: 10px;
+      border-radius: 8px; max-width: 100%; max-height: 180px;
+    }
+    .empty {
+      text-align: center; padding: 60px 20px;
+      color: #888; font-size: 14px;
+    }
+    .empty .icon { font-size: 50px; margin-bottom: 12px; opacity: 0.4; }
+    .loading {
+      text-align: center; padding: 40px;
+      color: #0288d1; font-weight: bold; font-size: 14px;
+    }
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 16px;
+    }
+    .summary-tile {
+      background: white; border-radius: 12px;
+      padding: 14px 10px; text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .summary-tile .num {
+      font-size: 26px; font-weight: bold; color: #0288d1;
+    }
+    .summary-tile.alert .num { color: #d32f2f; }
+    .summary-tile .lbl {
+      font-size: 11px; color: #777;
+      margin-top: 3px; text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .section-heading {
+      font-size: 13px; font-weight: bold;
+      color: #01579b; text-transform: uppercase;
+      letter-spacing: 0.5px; margin: 16px 4px 8px;
+    }
+
+    .photo-area {
+      background: white;
+      border: 2px dashed #bbb;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      min-height: 180px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .photo-area .cam-icon { font-size: 48px; margin-bottom: 8px; }
+    .photo-area .hint {
+      font-size: 15px; font-weight: bold;
+      color: #0288d1; margin-bottom: 4px;
+    }
+    .photo-area .sub { font-size: 12px; color: #777; }
+    .photo-area img {
+      max-width: 100%; max-height: 320px;
+      border-radius: 8px; display: block;
+    }
+    .photo-area.has-photo {
+      padding: 8px; border-style: solid; border-color: #0288d1;
+    }
+    .photo-buttons {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-top: 12px;
+    }
+    .photo-btn {
+      padding: 14px 10px;
+      font-size: 14px; font-weight: bold;
+      border: 0; border-radius: 10px; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+    }
+    .photo-btn .ic { font-size: 22px; }
+    .photo-btn.camera  { background: #0288d1; color: white; }
+    .photo-btn.gallery { background: #e1f5fe; color: #01579b; border: 1px solid #b3e5fc; }
+    .photo-btn:active { transform: scale(0.97); }
+    .photo-actions {
+      display: flex; gap: 10px; margin-top: 10px;
+    }
+    .photo-actions button {
+      flex: 1; padding: 12px;
+      font-size: 14px; font-weight: bold;
+      border: 0; border-radius: 8px; cursor: pointer;
+    }
+    .retake-btn { background: #eee; color: #333; }
+    .remove-btn { background: #fdecea; color: #842029; }
+
+    .busy-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .busy-overlay .box {
+      background: white; padding: 30px 40px;
+      border-radius: 12px; text-align: center;
+      font-size: 15px; font-weight: bold; color: #0288d1;
+    }
+    .busy-overlay .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #0288d1;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      animation: spin 0.9s linear infinite;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+    }
+    .modal-card {
+      background: white; border-radius: 14px;
+      width: 100%; max-width: 420px;
+      max-height: 90vh; overflow: auto;
+      padding: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-card h3 {
+      margin: 0 0 14px;
+      font-size: 17px; color: #01579b;
+    }
+    .modal-card .modal-actions {
+      display: flex; gap: 10px; margin-top: 20px;
+    }
+    .modal-card .modal-actions button { flex: 1; }
+
+    .timeline { margin-top: 8px; padding-left: 4px; }
+    .timeline-item {
+      position: relative;
+      padding: 6px 0 6px 18px;
+      border-left: 2px solid #b3e5fc;
+      font-size: 12px; color: #555;
+    }
+    .timeline-item:before {
+      content: '';
+      position: absolute;
+      left: -6px; top: 10px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #0288d1;
+    }
+    .timeline-item .when { color: #888; font-size: 11px; }
+
+    .kpi-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 16px;
+    }
+    .kpi-tile {
+      background: white; border-radius: 12px;
+      padding: 16px 12px; text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      border-top: 3px solid #0288d1;
+    }
+    .kpi-value {
+      font-size: 24px; font-weight: bold;
+      color: #01579b; line-height: 1.1;
+    }
+    .kpi-label {
+      font-size: 11px; color: #777;
+      margin-top: 5px; text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .kpi-sub { font-size: 10px; color: #999; margin-top: 2px; }
+
+    .chart-card {
+      background: white; border-radius: 12px;
+      padding: 14px; margin-bottom: 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .chart-title {
+      font-size: 13px; font-weight: bold;
+      color: #01579b; margin-bottom: 12px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .chart-body { min-height: 20px; }
+    .chart-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .chart-row .chart-card { margin-bottom: 0; }
+
+    .bar-row {
+      display: flex; align-items: center;
+      gap: 8px; margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .bar-label {
+      min-width: 68px; max-width: 68px;
+      color: #555; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+      font-weight: 500;
+    }
+    .bar-track {
+      flex: 1; background: #f0f0f0;
+      border-radius: 6px; height: 22px;
+      position: relative; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 6px;
+      background: linear-gradient(90deg, #4fc3f7, #0288d1);
+      transition: width 0.4s;
+    }
+    .bar-value {
+      min-width: 30px; max-width: 30px;
+      text-align: right; font-weight: bold;
+      color: #0288d1;
+    }
+
+    .pill-chart { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill-chart-item {
+      display: flex; align-items: center;
+      gap: 6px; padding: 8px 12px;
+      border-radius: 10px; font-size: 13px;
+      font-weight: 500; background: #f5f5f5;
+    }
+    .pill-chart-item .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .pill-chart-item .num { font-weight: bold; color: #222; }
+
+    .line-chart-svg { width: 100%; height: auto; display: block; }
+
+    .dash-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+    }
+    .dash-table th {
+      text-align: left; padding: 8px 6px;
+      background: #f5f5f5; color: #444;
+      font-weight: bold; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .dash-table td {
+      padding: 8px 6px; border-bottom: 1px solid #eee;
+      color: #333;
+    }
+    .dash-table tr:last-child td { border-bottom: 0; }
+    .dash-table .num { text-align: right; font-weight: 600; }
+
+    .no-data {
+      text-align: center; padding: 20px;
+      color: #999; font-size: 13px;
+    }
+
+    /* ===== Annotate styles ===== */
+    .annotate-modal {
+      position: fixed; inset: 0;
+      background: #111; z-index: 5000;
+      display: flex; flex-direction: column;
+      color: white; user-select: none;
+    }
+    .annotate-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px;
+      background: #1a1a1a; border-bottom: 1px solid #333;
+    }
+    .annotate-title { font-size: 15px; font-weight: bold; }
+    .ann-btn-cancel, .ann-btn-done {
+      padding: 8px 14px; border-radius: 8px;
+      border: 0; font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+    .ann-btn-cancel { background: #333; color: white; }
+    .ann-btn-done   { background: #0288d1; color: white; }
+    .annotate-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+      padding: 10px 12px;
+      background: #1a1a1a; border-bottom: 1px solid #333;
+      overflow-x: auto;
+    }
+    .ann-tool {
+      background: #262626; color: white;
+      border: 1px solid #333; border-radius: 8px;
+      min-width: 42px; height: 42px;
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ann-tool.active { background: #0288d1; border-color: #0288d1; }
+    .ann-sep { width: 1px; height: 26px; background: #333; margin: 0 4px; }
+    .ann-swatch {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2px solid #444; cursor: pointer;
+    }
+    .ann-swatch.active { border-color: white; transform: scale(1.1); }
+    .annotate-stage {
+      flex: 1; overflow: auto;
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px; background: #0a0a0a;
+    }
+    .annotate-canvas-wrap {
+      position: relative; max-width: 100%; max-height: 100%;
+      transform-origin: center center; transition: transform 0.2s;
+    }
+    .annotate-img {
+      display: block; max-width: 100%; max-height: 70vh;
+      pointer-events: none; user-select: none;
+    }
+    .annotate-canvas {
+      position: absolute; top: 0; left: 0;
+      touch-action: none; cursor: crosshair;
+    }
+    .annotate-bottombar {
+      display: flex; gap: 8px; justify-content: center;
+      padding: 12px;
+      background: #1a1a1a; border-top: 1px solid #333;
+    }
+    .ann-btn {
+      flex: 1; padding: 12px 8px;
+      font-size: 14px; font-weight: bold;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #262626; color: white; cursor: pointer;
+    }
+    .ann-btn:active { background: #333; }
   </style>
 </head>
+
 <body>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <img src="https://kct-plant-app.web.app/logo-full.png" alt="KCT Plant" class="brand-logo">
+    <h1>KCT Plant App</h1>
+    <div class="sub">Kakinada Coal Terminal</div>
+
+    <label for="loginUserId">User ID</label>
+    <input id="loginUserId" type="text" autocomplete="username"
+           autocapitalize="none" autocorrect="off" spellcheck="false">
+
+    <label for="loginPassword">Password</label>
+    <input id="loginPassword" type="password" autocomplete="current-password">
+
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">LOGIN</button>
+
+    <div class="login-error" id="loginError"></div>
+
+    <div style="text-align:center;margin-top:22px;font-size:11px;color:#888;line-height:1.5;">
+      Built by <b style="color:#0288d1;">Saurab Upadhyay</b><br>
+      Kakinada Coal Terminal
+    </div>
+  </div>
+</div>
+
+<!-- ========== HOME ========== -->
+<div id="homeScreen" class="hidden">
+  <div class="home-header">
+    <div class="greeting">Welcome back,</div>
+    <div class="name" id="homeUserName">—</div>
+    <div class="role" id="homeUserRole">—</div>
+  </div>
+
+  <div class="home-grid">
+    <div class="home-tile" id="workIntimationTile" onclick="openWorkForm()">
+      <div class="icon">🔧</div>
+      <div class="label">WORK<br>INTIMATION</div>
+      <div class="sublabel">Start / Complete work</div>
+    </div>
+
+    <div class="home-tile" onclick="openIssuesScreen()">
+      <div class="icon">📷</div>
+      <div class="label">REPORT<br>ISSUE</div>
+      <div class="sublabel">Snap &amp; submit</div>
+    </div>
+
+    <div class="home-tile" onclick="openHistory()">
+      <div class="icon">📋</div>
+      <div class="label">MY<br>HISTORY</div>
+      <div class="sublabel">View past records</div>
+    </div>
+
+    <div class="home-tile" onclick="openToday()">
+      <div class="icon">📊</div>
+      <div class="label">TODAY</div>
+      <div class="badge" id="todayBadge">0</div>
+      <div class="sublabel">Live plant status</div>
+    </div>
+
+    <div class="home-tile hidden" id="allIssuesTile" onclick="openAllIssues()">
+      <div class="icon">🗂️</div>
+      <div class="label">ALL<br>ISSUES</div>
+      <div class="badge" id="allIssuesBadge">0</div>
+      <div class="sublabel">Manage &amp; resolve</div>
+    </div>
+
+    <div class="home-tile hidden" id="dashboardTile" onclick="openDashboard()">
+      <div class="icon">📈</div>
+      <div class="label">DASH<br>BOARD</div>
+      <div class="sublabel">Analytics &amp; trends</div>
+    </div>
+
+    <div class="home-tile hidden" id="adminTile" onclick="openAdminPanel()">
+      <div class="icon">👥</div>
+      <div class="label">ADMIN<br>USERS</div>
+      <div class="sublabel">Manage accounts</div>
+    </div>
+  </div>
+
+  <div class="home-footer">
+    <button class="logout-btn" onclick="doLogout()">Logout</button>
+    <button class="logout-btn" style="margin-left:8px;" onclick="clearAppCache()">
+      🔄 Refresh App
+    </button>
+    <div style="margin-top:16px;font-size:11px;color:#aaa;line-height:1.5;">
+      Built by <b style="color:#0288d1;">Saurab Upadhyay</b><br>
+      KCT Plant App v3D
+    </div>
+  </div>
+</div>
+
+<!-- ========== WORK INTIMATION ========== -->
+<div id="workScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Work Intimation</div>
+  </div>
+
+  <div class="page-body">
+    <form id="workForm" autocomplete="off" onsubmit="submitWorkForm(event)">
+
+      <label class="form-label" for="wfStatus">Work Status *</label>
+      <select id="wfStatus" class="form-select" required onchange="changeWorkStatus()">
+        <option value="" selected>Select Status</option>
+        <option value="WORK STARTING">🟢 WORK STARTING</option>
+        <option value="WORK COMPLETED">🔵 WORK COMPLETED</option>
+      </select>
+
+      <div id="wfCommon" class="hidden">
+        <label class="form-label" for="wfEquipment">Equipment / Conveyor *</label>
+        <select id="wfEquipment" class="form-select" required>
+          <option value="">Select Equipment</option>
+          <option>C1</option><option>C2</option><option>C3</option>
+          <option>C4</option><option>C5</option><option>C6</option>
+          <option>C7</option>
+          <option>TH#1</option><option>TH#2</option><option>TH#3</option>
+          <option>SCR#1</option><option>SCR#2</option>
+          <option>RTL</option>
+          <option>TT1</option><option>TT2</option><option>TT3</option>
+          <option>TT4</option><option>TT5</option><option>TT6</option>
+        </select>
+
+        <label class="form-label" for="wfWorkType">Type of Work *</label>
+        <select id="wfWorkType" class="form-select" required>
+          <option value="">Select Work</option>
+          <option>Idler Replacement</option>
+          <option>Chute Cleaning</option>
+          <option>Take-up Cleaning</option>
+          <option>Belt Inspection</option>
+          <option>Belt Cleaning</option>
+          <option>Scraper Cleaning / Adjustment</option>
+          <option>Steel Cord / Patch Cutting</option>
+          <option>Minor Hot Work</option>
+          <option>Skirt Rubber Adjustment</option>
+        </select>
+
+        <label class="form-label" for="wfLocation">Exact Work Location *</label>
+        <input type="text" id="wfLocation" class="form-input" required>
+
+        <label class="form-label" for="wfShiftIncharge">Shift In-charge *</label>
+        <select id="wfShiftIncharge" class="form-select" required>
+          <option value="">Select Shift In-charge</option>
+          <option>Akshya Kumar Dash</option>
+          <option>Bidyut Kumar Kuiri</option>
+          <option>Biren Sahu</option>
+          <option>Hemanth Varma</option>
+          <option>Prashant Kumar Parida</option>
+          <option>Raj Kumar</option>
+          <option>Vamsi Krishna</option>
+        </select>
+
+        <label class="form-label" for="wfResponsible">Responsible Person *</label>
+        <input type="text" id="wfResponsible" class="form-input" required>
+      </div>
+
+      <div id="wfStartFields" class="hidden">
+        <div class="section-title">🟢 WORK STARTING DETAILS</div>
+
+        <label class="form-label" for="wfManpower">Number of Persons Engaged *</label>
+        <input type="number" id="wfManpower" class="form-input" min="1">
+
+        <label class="form-label" for="wfExpectedDuration">Expected Duration *</label>
+        <select id="wfExpectedDuration" class="form-select">
+          <option value="">Select Expected Duration</option>
+          <option>Less than 15 Minutes</option>
+          <option>15-30 Minutes</option>
+          <option>More Than 30 Minutes</option>
+        </select>
+
+        <label class="form-label" for="wfStartTime">Actual Work Start Time *</label>
+        <input type="time" id="wfStartTime" class="form-input">
+
+        <label class="form-label">Safety Confirmation</label>
+
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="wfSafety" value="Control Room Informed">
+          <span>Control Room Informed</span>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="wfSafety" value="Work Team Briefed">
+          <span>Work Team Briefed</span>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="wfSafety" value="Required PPE Ensured">
+          <span>Required PPE Ensured</span>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" name="wfSafety" value="Work Area Checked and Made Safe">
+          <span>Work Area Checked and Made Safe</span>
+        </div>
+      </div>
+
+      <div id="wfCompletionFields" class="hidden">
+        <div class="section-title">🔵 WORK COMPLETION DETAILS</div>
+
+        <label class="form-label" for="wfCompletionTime">Actual Work Completion Time *</label>
+        <input type="time" id="wfCompletionTime" class="form-input">
+
+        <label class="form-label" for="wfCompletionStatus">Completion Status *</label>
+        <select id="wfCompletionStatus" class="form-select">
+          <option value="">Select Status</option>
+          <option>Work Completed Successfully</option>
+          <option>Work Partially Completed</option>
+          <option>Work Stopped / Suspended</option>
+          <option>Further Work Required</option>
+        </select>
+
+        <label class="form-label" for="wfRemarks">Completion Remarks</label>
+        <textarea id="wfRemarks" class="form-textarea"></textarea>
+      </div>
+
+      <button type="submit" id="wfSubmitBtn" class="primary-btn">SUBMIT</button>
+      <div class="error-box" id="wfError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ========== WORK SUCCESS ========== -->
+<div id="successScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Success</div>
+  </div>
+  <div class="success-screen">
+    <div class="check">✅</div>
+    <h2 id="successTitle">Data Saved Successfully</h2>
+    <p id="successMessage">Your work intimation has been recorded.</p>
+    <a id="whatsappLink" class="whatsapp-btn" href="#" target="_blank" rel="noopener">
+      📱 OPEN WHATSAPP
+    </a>
+    <p style="margin-top:20px;color:#666;font-size:13px;">
+      You can tap the back arrow or Logout when finished.
+    </p>
+  </div>
+</div>
+
+<!-- ========== ALL ISSUES ========== -->
+<div id="allIssuesScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">All Issues</div>
+  </div>
+
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div>
+          <label class="filter-label">Priority</label>
+          <select id="aiPriority" class="filter-input" onchange="allIssuesLoad()">
+            <option value="">All</option>
+            <option>Low</option>
+            <option>Medium</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </div>
+        <div>
+          <label class="filter-label">Equipment</label>
+          <select id="aiEquipment" class="filter-input" onchange="allIssuesLoad()">
+            <option value="">All</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div id="aiTab-open"       class="tab active" onclick="allIssuesSetTab('open')">Open</div>
+      <div id="aiTab-inprogress" class="tab"        onclick="allIssuesSetTab('inprogress')">In Progress</div>
+      <div id="aiTab-resolved"   class="tab"        onclick="allIssuesSetTab('resolved')">Resolved</div>
+      <div id="aiTab-all"        class="tab"        onclick="allIssuesSetTab('all')">All</div>
+    </div>
+
+    <div id="allIssuesList" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ISSUE DETAIL ========== -->
+<div id="issueDetailScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="backFromIssueDetail()">←</div>
+    <div class="title">Issue Detail</div>
+  </div>
+
+  <div class="page-body">
+    <div id="issueDetailBody">
+      <div class="loading">Loading…</div>
+    </div>
+
+    <div id="issueDetailActions" class="hidden" style="margin-top:20px;">
+      <button id="assignBtn" class="secondary-btn" onclick="openAssignModal()">
+        🔧 ASSIGN ISSUE
+      </button>
+      <button id="inProgressBtn" class="secondary-btn" onclick="markInProgress()">
+        ⏳ MARK IN PROGRESS
+      </button>
+      <button id="resolveBtn" class="primary-btn" onclick="openResolveModal()">
+        ✅ MARK RESOLVED
+      </button>
+    </div>
+
+    <div class="error-box" id="issueDetailError"></div>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD ========== -->
+<div id="dashboardScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Dashboard</div>
+  </div>
+
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div>
+          <label class="filter-label">Date Range</label>
+          <select id="dbRange" class="filter-input" onchange="dashboardLoad()">
+            <option value="7d">Last 7 Days</option>
+            <option value="30d" selected>Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div>
+          <label class="filter-label">Equipment</label>
+          <select id="dbEquipment" class="filter-input" onchange="dashboardLoad()">
+            <option value="">All Equipment</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiOpen">—</div>
+        <div class="kpi-label">Open Issues</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiMttr">—</div>
+        <div class="kpi-label">Avg Resolve Time</div>
+        <div class="kpi-sub" id="kpiMttrSub"></div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiMonth">—</div>
+        <div class="kpi-label">Work This Month</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiPending">—</div>
+        <div class="kpi-label">Pending Work</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📈 Issues Trend (Last 30 Days)</div>
+      <div id="trendChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🔧 Issues by Equipment</div>
+      <div id="equipChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card half">
+        <div class="chart-title">⚠️ By Priority</div>
+        <div id="priorityChart" class="chart-body"></div>
+      </div>
+      <div class="chart-card half">
+        <div class="chart-title">📊 By Status</div>
+        <div id="statusChart" class="chart-body"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🏷️ Issues by Type</div>
+      <div id="typeChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">👷 Work by Shift In-charge</div>
+      <div id="shiftTable" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🏅 Top Reporters</div>
+      <div id="topReportersChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">⏱️ MTTR Trend (Avg Resolve Time)</div>
+      <div id="mttrTrendChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📊 Work Started vs Completed</div>
+      <div id="startVsCompleteChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🛠️ Downtime by Equipment</div>
+      <div id="downtimeChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">📉 Pareto — Issue Types</div>
+      <div id="paretoChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🔥 Peak Activity Heatmap</div>
+      <div id="heatmapChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">⚙️ Equipment Reliability (MTBF)</div>
+      <div id="mtbfChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🌗 Shift Comparison (Day vs Night)</div>
+      <div id="shiftCompareChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">🏆 Responsible Person Leaderboard</div>
+      <div id="leaderboardChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">♻️ Recurring Issues Heatmap</div>
+      <div id="recurringHeatmapChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">⚠️ Priority Accuracy</div>
+      <div id="priorityAccuracyChart" class="chart-body"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">⏰ Aging Issues (&gt; 3 days open)</div>
+      <div id="agingTable" class="chart-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ADMIN ========== -->
+<div id="adminScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Admin — Users</div>
+  </div>
+
+  <div class="page-body">
+    <div id="adminUserList" class="list">
+      <div class="loading">Loading users…</div>
+    </div>
+    <div class="error-box" id="adminError"></div>
+  </div>
+</div>
+
+<!-- ========== ISSUES SCREEN ========== -->
+<div id="issuesScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Report Issue</div>
+  </div>
+
+  <div class="page-body">
+    <div id="photoArea" class="photo-area hidden">
+      <img id="photoPreview" alt="Issue photo">
+    </div>
+
+    <div id="photoPicker">
+      <div class="photo-area" style="border-style:dashed;cursor:default;">
+        <div class="cam-icon">📷</div>
+        <div class="hint">ADD A PHOTO</div>
+        <div class="sub">Required — take or choose a photo of the issue</div>
+      </div>
+
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="openCamera()">
+          <span class="ic">📷</span>
+          <span>Take Photo</span>
+        </button>
+        <button type="button" class="photo-btn gallery" onclick="openGallery()">
+          <span class="ic">🖼️</span>
+          <span>Choose from Gallery</span>
+        </button>
+      </div>
+    </div>
+
+    <input type="file" id="cameraInput" accept="image/*" capture="environment"
+           style="display:none" onchange="onPhotoChosen(event)">
+    <input type="file" id="galleryInput" accept="image/*"
+           style="display:none" onchange="onPhotoChosen(event)">
+
+    <div id="photoActions" class="photo-actions hidden">
+      <button type="button" class="retake-btn" onclick="openCamera()">🔄 RETAKE</button>
+      <button type="button" class="remove-btn" onclick="removePhoto()">🗑️ REMOVE</button>
+    </div>
+
+    <button type="button" id="markSpotBtn" class="secondary-btn hidden"
+            style="margin-top:10px;" onclick="reAnnotateIssue()">
+      ✏️ MARK SPOT AGAIN
+    </button>
+
+    <label class="form-label" for="isIssueType">Issue Type *</label>
+    <select id="isIssueType" class="form-select">
+      <option value="">Select Issue Type</option>
+      <option>Mechanical</option>
+      <option>Electrical</option>
+      <option>Structural</option>
+      <option>Safety</option>
+      <option>Housekeeping</option>
+      <option>Other</option>
+    </select>
+
+    <label class="form-label" for="isEquipment">Equipment *</label>
+    <select id="isEquipment" class="form-select">
+      <option value="">Select Equipment</option>
+      <option>C1</option><option>C2</option><option>C3</option>
+      <option>C4</option><option>C5</option><option>C6</option>
+      <option>C7</option>
+      <option>TH#1</option><option>TH#2</option><option>TH#3</option>
+      <option>SCR#1</option><option>SCR#2</option>
+      <option>RTL</option>
+      <option>TT1</option><option>TT2</option><option>TT3</option>
+      <option>TT4</option><option>TT5</option><option>TT6</option>
+    </select>
+
+    <label class="form-label" for="isLocation">Location *</label>
+    <input type="text" id="isLocation" class="form-input"
+           placeholder="e.g. Pillar 24, Boom conveyor">
+
+    <label class="form-label" for="isPriority">Priority *</label>
+    <select id="isPriority" class="form-select">
+      <option value="">Select Priority</option>
+      <option>Low</option>
+      <option>Medium</option>
+      <option>High</option>
+      <option>Critical</option>
+    </select>
+
+    <label class="form-label" for="isDescription">Description *</label>
+    <textarea id="isDescription" class="form-textarea"
+              placeholder="What's the issue? Any relevant detail."></textarea>
+
+    <button type="button" id="isSubmitBtn" class="primary-btn" onclick="submitIssueForm()">
+      SUBMIT ISSUE
+    </button>
+
+    <div class="error-box" id="isError"></div>
+  </div>
+</div>
+
+<!-- ========== ISSUE SUCCESS ========== -->
+<div id="issueSuccessScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Issue Reported</div>
+  </div>
+  <div class="success-screen">
+    <div class="check">✅</div>
+    <h2>Issue Reported Successfully</h2>
+    <p id="issueSuccessMsg" style="color:#555;">
+      Your issue has been logged and the in-charges have been notified by email.
+    </p>
+    <a id="issueWhatsappLink" class="whatsapp-btn" href="#" target="_blank" rel="noopener">
+      📱 NOTIFY VIA WHATSAPP
+    </a>
+    <p style="margin-top:20px;color:#666;font-size:13px;">
+      You can tap back to return home.
+    </p>
+  </div>
+</div>
+
+<!-- ========== HISTORY ========== -->
+<div id="historyScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title" id="historyPageTitle">My History</div>
+  </div>
+
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div>
+          <label class="filter-label">Date Range</label>
+          <select id="hDateRange" class="filter-input" onchange="historyReload()">
+            <option value="today">Today</option>
+            <option value="week" selected>Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <div>
+          <label class="filter-label">Equipment</label>
+          <select id="hEquipment" class="filter-input" onchange="historyReload()">
+            <option value="">All Equipment</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div id="tabWork" class="tab active" onclick="historyShowTab('work')">
+        Work <span class="count" id="cntWork">0</span>
+      </div>
+      <div id="tabIssues" class="tab" onclick="historyShowTab('issues')">
+        Issues <span class="count" id="cntIssues">0</span>
+      </div>
+    </div>
+
+    <div id="historyWorkList" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+    <div id="historyIssueList" class="list hidden">
+      <div class="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TODAY ========== -->
+<div id="todayScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div>
+      <div class="title">Today</div>
+      <div class="subtitle" id="todayDateLabel">—</div>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="summary-grid">
+      <div class="summary-tile">
+        <div class="num" id="tWorkCount">0</div>
+        <div class="lbl">Work Items</div>
+      </div>
+      <div class="summary-tile">
+        <div class="num" id="tIssueCount">0</div>
+        <div class="lbl">Issues</div>
+      </div>
+      <div class="summary-tile alert">
+        <div class="num" id="tBadge">0</div>
+        <div class="lbl">Open / Critical</div>
+      </div>
+    </div>
+
+    <div class="section-heading">Today's Work</div>
+    <div id="todayWorkList"><div class="loading">Loading…</div></div>
+
+    <div class="section-heading">Today's Issues</div>
+    <div id="todayIssueList"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<!-- ========== ANNOTATE ========== -->
+<div id="annotateModal" class="annotate-modal hidden">
+  <div class="annotate-topbar">
+    <button class="ann-btn-cancel" onclick="annotateCancel()">✕ Cancel</button>
+    <div class="annotate-title">Mark the spot</div>
+    <button class="ann-btn-done" onclick="annotateDone()">✓ Done</button>
+  </div>
+
+  <div class="annotate-toolbar">
+    <button class="ann-tool active" data-tool="circle"    onclick="annotateSetTool('circle')">⭕</button>
+    <button class="ann-tool"        data-tool="arrow"     onclick="annotateSetTool('arrow')">➡️</button>
+    <button class="ann-tool"        data-tool="rect"      onclick="annotateSetTool('rect')">🔲</button>
+    <button class="ann-tool"        data-tool="freehand"  onclick="annotateSetTool('freehand')">✏️</button>
+    <button class="ann-tool"        data-tool="text"      onclick="annotateSetTool('text')">🅰️</button>
+
+    <span class="ann-sep"></span>
+
+    <button class="ann-swatch active" data-color="#e53935" style="background:#e53935" onclick="annotateSetColor('#e53935')"></button>
+    <button class="ann-swatch"        data-color="#fdd835" style="background:#fdd835" onclick="annotateSetColor('#fdd835')"></button>
+    <button class="ann-swatch"        data-color="#ffffff" style="background:#ffffff" onclick="annotateSetColor('#ffffff')"></button>
+    <button class="ann-swatch"        data-color="#1e88e5" style="background:#1e88e5" onclick="annotateSetColor('#1e88e5')"></button>
+    <button class="ann-swatch"        data-color="#000000" style="background:#000000" onclick="annotateSetColor('#000000')"></button>
+
+    <span class="ann-sep"></span>
+
+    <button class="ann-tool" data-width="3"  onclick="annotateSetWidth(3)">•</button>
+    <button class="ann-tool active" data-width="6"  onclick="annotateSetWidth(6)">●</button>
+    <button class="ann-tool" data-width="12" onclick="annotateSetWidth(12)">⬤</button>
+  </div>
+
+  <div class="annotate-stage">
+    <div class="annotate-canvas-wrap" id="annotateWrap">
+      <img id="annotateImg" class="annotate-img" alt="to annotate">
+      <canvas id="annotateCanvas" class="annotate-canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="annotate-bottombar">
+    <button class="ann-btn" onclick="annotateUndo()">↩️ Undo</button>
+    <button class="ann-btn" onclick="annotateClear()">🗑️ Clear</button>
+    <button class="ann-btn" onclick="annotateZoom()">🔍 Zoom</button>
+  </div>
+</div>
+
+<!-- ========== ASSIGN MODAL ========== -->
+<div id="assignModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3>Assign Issue</h3>
+    <label class="form-label" for="assignUser">Assign To *</label>
+    <select id="assignUser" class="form-select">
+      <option value="">Loading…</option>
+    </select>
+    <div class="error-box" id="assignError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeAssignModal()">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitAssign()" id="assignSubmitBtn">Assign</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== RESOLVE MODAL ========== -->
+<div id="resolveModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3>Mark Resolved</h3>
+
+    <label class="form-label">Resolution Photo *</label>
+    <div id="resolvePhotoArea" class="photo-area hidden" style="margin-top:6px;">
+      <img id="resolvePhotoPreview" alt="Resolution photo">
+    </div>
+    <div id="resolvePhotoPicker" style="margin-top:6px;">
+      <div class="photo-area" style="border-style:dashed;cursor:default;min-height:120px;">
+        <div class="cam-icon" style="font-size:32px;">📷</div>
+        <div class="hint" style="font-size:13px;">Add a photo of the resolved state</div>
+      </div>
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="resolvePhotoCamera()">
+          <span class="ic">📷</span><span>Take Photo</span>
+        </button>
+        <button type="button" class="photo-btn gallery" onclick="resolvePhotoGallery()">
+          <span class="ic">🖼️</span><span>Choose from Gallery</span>
+        </button>
+      </div>
+    </div>
+    <input type="file" id="resolveCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onResolvePhotoChosen(event)">
+    <input type="file" id="resolveGalleryInput" accept="image/*" style="display:none" onchange="onResolvePhotoChosen(event)">
+
+    <label class="form-label" for="resolveNotes">Resolution Notes *</label>
+    <textarea id="resolveNotes" class="form-textarea"
+              placeholder="What was done to resolve the issue?"></textarea>
+
+    <div class="error-box" id="resolveError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeResolveModal()">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitResolve()" id="resolveSubmitBtn">Resolve</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== BUSY OVERLAY ========== -->
+<div id="busyOverlay" class="busy-overlay hidden">
   <div class="box">
     <div class="spinner"></div>
-    <div>Loading KCT Plant…</div>
-    <noscript>
-      <p><a href="https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec"
-            style="color:white;">Tap here to open the app</a></p>
-    </noscript>
+    <div id="busyText">Uploading photo…</div>
   </div>
+</div>
+
+<script>
+  let SESSION_TOKEN = null;
+  let CURRENT_USER = null;
+  let FIRST_SCREEN_SHOWN = false;
+
+  const API_URL = "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
+
+  const ROOT_SCREENS = ["loginScreen", "homeScreen"];
+
+  // ---- apiCall ----
+  // If google.script.run is available (page served by Apps Script), use it.
+  // Otherwise POST to /exec with text/plain to avoid CORS preflight.
+  function apiCall(action, payload, onSuccess, onFail) {
+    onSuccess = onSuccess || function () {};
+    onFail = onFail || function (err) {
+      alert("Network error: " + (err && err.message ? err.message : err));
+    };
+
+    if (typeof google !== "undefined" && google.script && google.script.run) {
+      const args = buildArgsForAction_(action, payload);
+      const runner = google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFail);
+      runner[action].apply(runner, args);
+      return;
+    }
+
+    // POST fallback
+    fetch(API_URL, {
+      method: "POST",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: action, payload: payload || {} })
+    })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      })
+      .then(function (text) {
+        let res;
+        try { res = JSON.parse(text); }
+        catch (e) {
+          const m = text.match(/\{[\s\S]*\}/);
+          if (m) res = JSON.parse(m[0]);
+          else throw new Error("Invalid response from server");
+        }
+        if (res && res.error) onFail(new Error(res.error));
+        else onSuccess(res);
+      })
+      .catch(function (err) {
+        console.error("[KCT API] fetch error:", err);
+        onFail(err);
+      });
+  }
+
+  function buildArgsForAction_(action, payload) {
+    const p = payload || {};
+    switch (action) {
+      case "loginUser":            return [p.userId, p.password];
+      case "validateSession":      return [p.token];
+      case "logoutUser":           return [p.token];
+      case "changePassword":       return [p.token, p.oldPassword, p.newPassword];
+      case "getFormOptions":       return [];
+      case "getEquipmentList":     return [];
+      case "getIssueStatuses":     return [];
+      case "getIssuePriorities":   return [];
+      case "submitWork":           return [p.token, p.formData];
+      case "submitIssue":          return [p.token, p.payload];
+      case "getMyIssues":          return [p.token, p.limit];
+      case "getHistory":           return [p.token, p.filters];
+      case "getToday":             return [p.token];
+      case "getAllIssues":         return [p.token, p.filters];
+      case "getIssueDetail":       return [p.token, p.rowNumber];
+      case "getAssignableUsers":   return [p.token];
+      case "assignIssue":          return [p.token, p.rowNumber, p.assigneeName];
+      case "updateIssueStatus":    return [p.token, p.rowNumber, p.newStatus, p.notes, p.resolvedPhotoBase64, p.resolvedPhotoMime];
+      case "getDashboard":         return [p.token, p.filters];
+      case "adminListUsers":       return [p.token];
+      case "adminResetPassword":   return [p.token, p.targetUserId];
+      case "adminSetUserActive":   return [p.token, p.targetUserId, p.active];
+      default:                     return [p];
+    }
+  }
+
+  const SCREENS = [
+    "loginScreen", "homeScreen", "workScreen", "successScreen",
+    "historyScreen", "todayScreen", "issuesScreen", "issueSuccessScreen",
+    "allIssuesScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
+  ];
+
+  function showScreen(id, fromPop) {
+    SCREENS.forEach(function (s) {
+      const el = document.getElementById(s);
+      if (el) el.classList.add("hidden");
+    });
+    const target = document.getElementById(id);
+    if (target) target.classList.remove("hidden");
+    window.scrollTo(0, 0);
+
+    if (!fromPop && FIRST_SCREEN_SHOWN && ROOT_SCREENS.indexOf(id) === -1) {
+      try { history.pushState({ screen: id }, "", "#" + id); } catch (e) {}
+    }
+    FIRST_SCREEN_SHOWN = true;
+  }
+
+  window.addEventListener("popstate", function (event) {
+    const state = event.state;
+    if (state && state.screen) {
+      showScreen(state.screen, true);
+    } else {
+      if (SESSION_TOKEN) showScreen("homeScreen", true);
+      else showScreen("loginScreen", true);
+    }
+  });
+
+  function goHome() {
+    if (!SESSION_TOKEN) { showScreen("loginScreen"); return; }
+    showScreen("homeScreen");
+    refreshTodayBadge();
+    if (CURRENT_USER && (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin")) {
+      refreshAllIssuesBadge();
+    }
+  }
+
+  function backFromIssueDetail() {
+    if (CURRENT_ISSUE_BACK_TO === "allIssues") openAllIssues();
+    else goHome();
+  }
+
+  function showLoginError(msg) {
+    const box = document.getElementById("loginError");
+    box.textContent = msg;
+    box.classList.add("visible");
+  }
+  function clearLoginError() {
+    const box = document.getElementById("loginError");
+    box.textContent = "";
+    box.classList.remove("visible");
+  }
+
+  function doLogin() {
+    clearLoginError();
+    const userId = document.getElementById("loginUserId").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if (!userId || !password) {
+      showLoginError("Please enter User ID and Password.");
+      return;
+    }
+
+    const btn = document.getElementById("loginBtn");
+    btn.disabled = true;
+    btn.textContent = "LOGGING IN...";
+
+    apiCall("loginUser",
+      { userId: userId, password: password },
+      function (res) {
+        btn.disabled = false;
+        btn.textContent = "LOGIN";
+
+        if (!res || !res.success) {
+          showLoginError(res && res.message ? res.message : "Login failed.");
+          return;
+        }
+
+        SESSION_TOKEN = res.token;
+        CURRENT_USER = res.user;
+        try { localStorage.setItem("kct_token", SESSION_TOKEN); } catch (e) {}
+
+        if (CURRENT_USER.mustChangePassword) {
+          promptPasswordChange();
+          return;
+        }
+        showHome();
+      },
+      function (err) {
+        btn.disabled = false;
+        btn.textContent = "LOGIN";
+        showLoginError(err && err.message ? err.message : "Login failed.");
+      }
+    );
+  }
+
+  function promptPasswordChange() {
+    const oldPwd = document.getElementById("loginPassword").value;
+    const newPwd = prompt(
+      "Welcome, " + CURRENT_USER.name + ".\n\n" +
+      "For security, please set a new password (minimum 6 characters)."
+    );
+    if (!newPwd || newPwd.length < 6) {
+      alert("Password must be at least 6 characters. Please log in again.");
+      doLogout();
+      return;
+    }
+    const confirmPwd = prompt("Re-enter the new password to confirm:");
+    if (confirmPwd !== newPwd) {
+      alert("Passwords do not match. Please log in again.");
+      doLogout();
+      return;
+    }
+
+    apiCall("changePassword",
+      { token: SESSION_TOKEN, oldPassword: oldPwd, newPassword: newPwd },
+      function (res) {
+        if (res && res.success) {
+          alert("Password updated. Welcome!");
+          CURRENT_USER.mustChangePassword = false;
+          showHome();
+        } else {
+          alert(res && res.message ? res.message : "Password change failed.");
+          doLogout();
+        }
+      },
+      function (err) {
+        alert(err && err.message ? err.message : "Password change failed.");
+        doLogout();
+      }
+    );
+  }
+
+  function showHome() {
+    document.getElementById("homeUserName").textContent =
+      CURRENT_USER ? CURRENT_USER.name : "—";
+    document.getElementById("homeUserRole").textContent =
+      CURRENT_USER ? CURRENT_USER.role : "—";
+
+    const isManager = CURRENT_USER &&
+      (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
+    const allIssuesTile = document.getElementById("allIssuesTile");
+    if (allIssuesTile) allIssuesTile.classList.toggle("hidden", !isManager);
+
+    const dashboardTile = document.getElementById("dashboardTile");
+    if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager);
+
+    const workTile = document.getElementById("workIntimationTile");
+    if (workTile) workTile.classList.toggle("hidden", !isManager);
+
+    const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
+    const adminTile = document.getElementById("adminTile");
+    if (adminTile) adminTile.classList.toggle("hidden", !isAdmin);
+
+    showScreen("homeScreen");
+    refreshTodayBadge();
+    if (isManager) refreshAllIssuesBadge();
+  }
+
+  function doLogout() {
+    if (SESSION_TOKEN) apiCall("logoutUser", { token: SESSION_TOKEN });
+    SESSION_TOKEN = null;
+    CURRENT_USER = null;
+    try { localStorage.removeItem("kct_token"); } catch (e) {}
+    document.getElementById("loginUserId").value = "";
+    document.getElementById("loginPassword").value = "";
+    clearLoginError();
+    showScreen("loginScreen");
+  }
+
+  function clearAppCache() {
+    if (!confirm("Refresh app?\n\nThis will clear cached data and reload the latest version.")) return;
+    showBusy("Refreshing…");
+
+    var cacheCleared = Promise.resolve();
+    if (typeof caches !== "undefined") {
+      cacheCleared = caches.keys().then(function (keys) {
+        return Promise.all(keys.map(function (k) { return caches.delete(k); }));
+      });
+    }
+
+    var swCleared = Promise.resolve();
+    if ("serviceWorker" in navigator) {
+      swCleared = navigator.serviceWorker.getRegistrations().then(function (regs) {
+        return Promise.all(regs.map(function (r) { return r.unregister(); }));
+      });
+    }
+
+    Promise.all([cacheCleared, swCleared])
+      .then(function () { location.reload(true); })
+      .catch(function () { location.reload(true); });
+  }
+
+  function refreshTodayBadge() {
+    if (!SESSION_TOKEN) return;
+    apiCall("getToday", { token: SESSION_TOKEN },
+      function (res) {
+        const badge = document.getElementById("todayBadge");
+        if (!badge) return;
+        if (res && res.success && res.badgeCount > 0) {
+          badge.textContent = res.badgeCount;
+          badge.classList.add("visible");
+        } else {
+          badge.classList.remove("visible");
+        }
+      }
+    );
+  }
+
+  function refreshAllIssuesBadge() {
+    if (!SESSION_TOKEN) return;
+    apiCall("getAllIssues",
+      { token: SESSION_TOKEN, filters: { scope: "all" } },
+      function (res) {
+        const badge = document.getElementById("allIssuesBadge");
+        if (!badge) return;
+        if (res && res.success) {
+          const openCount = res.items.filter(function (it) {
+            return it.status !== "Resolved";
+          }).length;
+          if (openCount > 0) {
+            badge.textContent = openCount;
+            badge.classList.add("visible");
+          } else {
+            badge.classList.remove("visible");
+          }
+        }
+      }
+    );
+  }
+
+  function openWorkForm() {
+    if (!CURRENT_USER ||
+        (CURRENT_USER.role !== "incharge" && CURRENT_USER.role !== "admin")) {
+      alert("Work Intimation is only available for Shift In-charges and Admins.");
+      return;
+    }
+    document.getElementById("workForm").reset();
+    document.getElementById("wfError").classList.remove("visible");
+    document.getElementById("wfCommon").classList.add("hidden");
+    document.getElementById("wfStartFields").classList.add("hidden");
+    document.getElementById("wfCompletionFields").classList.add("hidden");
+    showScreen("workScreen");
+  }
+
+  function changeWorkStatus() {
+    const status = document.getElementById("wfStatus").value;
+    document.getElementById("wfCommon").classList.add("hidden");
+    document.getElementById("wfStartFields").classList.add("hidden");
+    document.getElementById("wfCompletionFields").classList.add("hidden");
+
+    if (status === "WORK STARTING") {
+      document.getElementById("wfCommon").classList.remove("hidden");
+      document.getElementById("wfStartFields").classList.remove("hidden");
+    }
+    if (status === "WORK COMPLETED") {
+      document.getElementById("wfCommon").classList.remove("hidden");
+      document.getElementById("wfCompletionFields").classList.remove("hidden");
+    }
+  }
+
+  function showWorkError(msg) {
+    const box = document.getElementById("wfError");
+    box.textContent = msg;
+    box.classList.add("visible");
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function submitWorkForm(e) {
+    e.preventDefault();
+    document.getElementById("wfError").classList.remove("visible");
+    const btn = document.getElementById("wfSubmitBtn");
+    if (btn.disabled) return;
+
+    const status = document.getElementById("wfStatus").value;
+    if (!status) { alert("Please select Work Status."); return; }
+
+    const requiredCommon = [
+      ["wfEquipment", "Equipment"],
+      ["wfWorkType", "Type of Work"],
+      ["wfLocation", "Exact Work Location"],
+      ["wfShiftIncharge", "Shift In-charge"],
+      ["wfResponsible", "Responsible Person"]
+    ];
+    for (const item of requiredCommon) {
+      const v = document.getElementById(item[0]).value.trim();
+      if (!v) {
+        alert("Please enter/select " + item[1] + ".");
+        document.getElementById(item[0]).focus();
+        return;
+      }
+    }
+
+    if (status === "WORK STARTING") {
+      if (!document.getElementById("wfManpower").value) { alert("Please enter Number of Persons Engaged."); return; }
+      if (!document.getElementById("wfExpectedDuration").value) { alert("Please select Expected Duration."); return; }
+      if (!document.getElementById("wfStartTime").value) { alert("Please enter Actual Work Start Time."); return; }
+    }
+
+    if (status === "WORK COMPLETED") {
+      if (!document.getElementById("wfCompletionTime").value) { alert("Please enter Actual Work Completion Time."); return; }
+      if (!document.getElementById("wfCompletionStatus").value) { alert("Please select Completion Status."); return; }
+    }
+
+    btn.disabled = true;
+    btn.textContent = "SUBMITTING...";
+
+    const safetyItems = Array.from(
+      document.querySelectorAll('input[name="wfSafety"]:checked')
+    ).map(function (x) { return x.value; });
+
+    const cleanTime = function (v) { return v ? String(v).slice(0, 5) : ""; };
+
+    const data = {
+      clientId: "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10),
+      status: status,
+      equipment: document.getElementById("wfEquipment").value,
+      workType: document.getElementById("wfWorkType").value,
+      location: document.getElementById("wfLocation").value.toUpperCase(),
+      shiftIncharge: document.getElementById("wfShiftIncharge").value,
+      responsible: document.getElementById("wfResponsible").value.toUpperCase(),
+      manpower: document.getElementById("wfManpower").value,
+      expectedDuration: document.getElementById("wfExpectedDuration").value,
+      startTime: cleanTime(document.getElementById("wfStartTime").value),
+      completionTime: cleanTime(document.getElementById("wfCompletionTime").value),
+      safety: safetyItems.join(", "),
+      completionStatus: document.getElementById("wfCompletionStatus").value,
+      remarks: document.getElementById("wfRemarks").value
+    };
+
+    apiCall("submitWork",
+      { token: SESSION_TOKEN, formData: data },
+      function (result) {
+        btn.disabled = false;
+        btn.textContent = "SUBMIT";
+        showWorkSuccess(result, data, safetyItems);
+      },
+      function (err) {
+        btn.disabled = false;
+        btn.textContent = "SUBMIT";
+        const msg = err && err.message ? err.message : "Submission failed.";
+        if (msg === "SESSION_EXPIRED") {
+          alert("Your session has expired. Please log in again.");
+          doLogout();
+          return;
+        }
+        showWorkError(msg);
+      }
+    );
+  }
+
+  function showWorkSuccess(result, data, safetyItems) {
+    let message = "";
+
+    if (data.status === "WORK STARTING") {
+      const safetyText = safetyItems.length
+        ? safetyItems.map(function (x) { return "✅ " + x; }).join("\n")
+        : "✅ Not specified";
+      message =
+`🔴 *RUNNING PLANT WORK INTIMATION*
+✅ *STATUS: WORK STARTED*
+
+🗓️ *Date:* ${result.date}
+⏰ *Start Time:* ${result.startTime}
+
+🔧 *Work:* ${data.workType}
+🔩 *Equipment:* ${data.equipment}
+📍 *Location:* ${data.location}
+
+👷 *Shift In-charge:* ${data.shiftIncharge}
+👷 *Responsible:* ${data.responsible}
+👥 *Manpower:* ${data.manpower} Nos.
+⏳ *Expected Duration:* ${data.expectedDuration}
+
+*Safety Confirmation:*
+${safetyText}
+
+✅ *STATUS: WORK STARTED*`;
+    } else {
+      message =
+`🔵 *RUNNING PLANT WORK COMPLETION*
+🔵 *STATUS: WORK COMPLETED*
+
+🗓️ *Date:* ${result.date}
+⏰ *Start Time:* ${result.startTime || "Not available"}
+⏰ *Completion Time:* ${result.completionTime}
+
+⏳ *Total Work Duration:* ${result.duration}
+
+🔧 *Work:* ${data.workType}
+🔩 *Equipment:* ${data.equipment}
+📍 *Location:* ${data.location}
+
+👷 *Shift In-charge:* ${data.shiftIncharge}
+👷 *Responsible:* ${data.responsible}
+
+📌 *Completion Status:*
+${data.completionStatus}
+
+📝 *Remarks:*
+${data.remarks || "Not specified"}
+
+🔵 *STATUS: WORK COMPLETED*`;
+    }
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(message);
+    document.getElementById("whatsappLink").href = url;
+    document.getElementById("successTitle").textContent = "Data Saved Successfully";
+    document.getElementById("successMessage").textContent = "Your work intimation has been recorded.";
+    showScreen("successScreen");
+  }
+
+  let ALL_ISSUES_TAB = "open";
+  let CURRENT_ISSUE = null;
+  let CURRENT_ISSUE_BACK_TO = "home";
+
+  function openAllIssues() {
+    CURRENT_ISSUE_BACK_TO = "allIssues";
+    showScreen("allIssuesScreen");
+    if (!document.getElementById("aiEquipment").dataset.loaded) {
+      populateAllIssuesEquipment_();
+      document.getElementById("aiEquipment").dataset.loaded = "1";
+    }
+    allIssuesLoad();
+  }
+
+  function populateAllIssuesEquipment_() {
+    apiCall("getEquipmentList", {},
+      function (list) {
+        const sel = document.getElementById("aiEquipment");
+        (list || []).forEach(function (eq) {
+          const o = document.createElement("option");
+          o.value = eq; o.textContent = eq;
+          sel.appendChild(o);
+        });
+      }
+    );
+  }
+
+  function allIssuesSetTab(tab) {
+    ALL_ISSUES_TAB = tab;
+    ["open","inprogress","resolved","all"].forEach(function (t) {
+      const el = document.getElementById("aiTab-" + t);
+      if (el) el.classList.toggle("active", t === tab);
+    });
+    allIssuesLoad();
+  }
+
+  function allIssuesEsc_(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function allIssuesLoad() {
+    if (!SESSION_TOKEN) return;
+    const list = document.getElementById("allIssuesList");
+    list.innerHTML = "<div class='loading'>Loading…</div>";
+
+    let statusFilter = "";
+    if (ALL_ISSUES_TAB === "open")       statusFilter = "Open";
+    if (ALL_ISSUES_TAB === "inprogress") statusFilter = "In Progress";
+    if (ALL_ISSUES_TAB === "resolved")   statusFilter = "Resolved";
+
+    const filters = {
+      scope: "all",
+      status: statusFilter,
+      priority: document.getElementById("aiPriority").value,
+      equipment: document.getElementById("aiEquipment").value
+    };
+
+    apiCall("getAllIssues",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
+        if (!res || !res.success) {
+          list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+            (res && res.message ? res.message : "Failed to load.") + "</div>";
+          return;
+        }
+        allIssuesRender_(res.items);
+      },
+      function (err) {
+        list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+          (err && err.message ? err.message : "Failed to load.") + "</div>";
+      }
+    );
+  }
+
+  function allIssuesRender_(items) {
+    const list = document.getElementById("allIssuesList");
+    if (!items || !items.length) {
+      list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No issues in this view.</div>";
+      return;
+    }
+
+    list.innerHTML = items.map(function (it) {
+      const prio = String(it.priority || "").toLowerCase();
+      const statusClass = String(it.status || "").toLowerCase().replace(/\s+/g, "");
+      const statusPill = "<span class='pill " + statusClass + "'>" + allIssuesEsc_(it.status) + "</span>";
+      const prioPill = "<span class='pill " + allIssuesEsc_(prio) + "'>" + allIssuesEsc_(it.priority) + "</span>";
+
+      return (
+        "<div class='card clickable issue-" + allIssuesEsc_(prio) + "' onclick='openIssueDetail(" + it.rowNumber + ")'>" +
+          "<div class='card-head'>" +
+            "<div class='card-title issue'>" + allIssuesEsc_(it.issueType) + " — " + allIssuesEsc_(it.equipment) + "</div>" +
+            "<div class='card-date'>" + allIssuesEsc_(it.dateLabel) + "</div>" +
+          "</div>" +
+          "<div>" + prioPill + statusPill + "</div>" +
+          "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + allIssuesEsc_(it.location) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + allIssuesEsc_(it.reportedBy) + "</span></div>" +
+          "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" +
+            (it.assignedTo ? allIssuesEsc_(it.assignedTo) : "<i style='color:#d32f2f;'>Unassigned</i>") +
+          "</span></div>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  function openIssueDetail(rowNumber) {
+    showScreen("issueDetailScreen");
+    const body = document.getElementById("issueDetailBody");
+    body.innerHTML = "<div class='loading'>Loading…</div>";
+    document.getElementById("issueDetailActions").classList.add("hidden");
+    document.getElementById("issueDetailError").classList.remove("visible");
+
+    apiCall("getIssueDetail",
+      { token: SESSION_TOKEN, rowNumber: rowNumber },
+      function (res) {
+        if (!res || !res.success) {
+          body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+            (res && res.message ? res.message : "Failed to load.") + "</div>";
+          return;
+        }
+        CURRENT_ISSUE = res.issue;
+        CURRENT_ISSUE.canManage = res.canManage;
+        renderIssueDetail_();
+      },
+      function (err) {
+        body.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+          (err && err.message ? err.message : "Failed to load.") + "</div>";
+      }
+    );
+  }
+
+  function renderIssueDetail_() {
+    const it = CURRENT_ISSUE;
+    if (!it) return;
+    const body = document.getElementById("issueDetailBody");
+    const prio = String(it.priority || "").toLowerCase();
+    const statusClass = String(it.status || "").toLowerCase().replace(/\s+/g, "");
+
+    let html = "";
+    html += "<div class='card issue-" + allIssuesEsc_(prio) + "' style='border-left-width:6px;'>";
+    html += "  <div class='card-head'>";
+    html += "    <div class='card-title issue' style='font-size:17px;'>" +
+            allIssuesEsc_(it.issueType) + " — " + allIssuesEsc_(it.equipment) + "</div>";
+    html += "    <div class='card-date'>" + allIssuesEsc_(it.dateLabel) + "</div>";
+    html += "  </div>";
+    html += "  <div>";
+    html += "    <span class='pill " + allIssuesEsc_(prio) + "'>" + allIssuesEsc_(it.priority) + "</span>";
+    html += "    <span class='pill " + statusClass + "'>" + allIssuesEsc_(it.status) + "</span>";
+    html += "  </div>";
+    html += "  <div class='card-row'><span class='lbl'>Location</span><span class='val'>" + allIssuesEsc_(it.location) + "</span></div>";
+    html += "  <div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + allIssuesEsc_(it.reportedBy) + "</span></div>";
+    html += "  <div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" +
+            (it.assignedTo ? allIssuesEsc_(it.assignedTo) : "<i>Unassigned</i>") + "</span></div>";
+    if (it.assignedAt)
+      html += "  <div class='card-row'><span class='lbl'>Assigned At</span><span class='val'>" + allIssuesEsc_(it.assignedAt) + "</span></div>";
+    if (it.resolvedAt)
+      html += "  <div class='card-row'><span class='lbl'>Resolved At</span><span class='val'>" + allIssuesEsc_(it.resolvedAt) + "</span></div>";
+    if (it.resolvedBy)
+      html += "  <div class='card-row'><span class='lbl'>Resolved By</span><span class='val'>" + allIssuesEsc_(it.resolvedBy) + "</span></div>";
+    html += "</div>";
+
+    if (it.description) {
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Description</div>";
+      html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.description) + "</div></div>";
+    }
+
+    if (it.photoUrl) {
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Reported Photo</div>";
+      html += "<a href='" + allIssuesEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>";
+      html += "<img class='card-photo' src='" + allIssuesEsc_(it.photoUrl) + "' alt='issue photo'></a></div>";
+    }
+
+    if (it.resolvedPhotoUrl) {
+      html += "<div class='card' style='border-left-color:#0288d1;'><div class='section-heading' style='margin-top:0;'>Resolved Photo</div>";
+      html += "<a href='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'>";
+      html += "<img class='card-photo' src='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' alt='resolution photo'></a></div>";
+    }
+
+    if (it.resolutionNotes) {
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Resolution Notes</div>";
+      html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.resolutionNotes) + "</div></div>";
+    }
+
+    if (it.statusHistory && it.statusHistory.length) {
+      html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Timeline</div><div class='timeline'>";
+      it.statusHistory.forEach(function (h) {
+        let line = "";
+        if (h.action === "Created") line = "Created by " + (h.by || "");
+        else if (h.action === "Assigned") line = "Assigned to " + (h.to || "") + " by " + (h.by || "");
+        else if (h.action === "Status changed") line = (h.from || "") + " → " + (h.to || "") + " by " + (h.by || "");
+        else line = (h.action || "") + " by " + (h.by || "");
+        html += "<div class='timeline-item'><div>" + allIssuesEsc_(line) + "</div>";
+        html += "<div class='when'>" + allIssuesEsc_(h.at || "") + "</div></div>";
+      });
+      html += "</div></div>";
+    }
+
+    body.innerHTML = html;
+
+    if (it.canManage) {
+      document.getElementById("issueDetailActions").classList.remove("hidden");
+      const isResolved = it.status === "Resolved";
+      const isInProgress = it.status === "In Progress";
+      document.getElementById("assignBtn").disabled = isResolved;
+      document.getElementById("inProgressBtn").disabled = isResolved || isInProgress;
+      document.getElementById("resolveBtn").disabled = isResolved;
+    } else {
+      document.getElementById("issueDetailActions").classList.add("hidden");
+    }
+  }
+
+  function openAssignModal() {
+    if (!CURRENT_ISSUE) return;
+    document.getElementById("assignError").classList.remove("visible");
+    document.getElementById("assignModal").classList.remove("hidden");
+
+    const sel = document.getElementById("assignUser");
+    sel.innerHTML = "<option value=''>Loading…</option>";
+
+    apiCall("getAssignableUsers", { token: SESSION_TOKEN },
+      function (res) {
+        if (!res || !res.success) {
+          sel.innerHTML = "<option value=''>Failed to load users</option>";
+          return;
+        }
+        sel.innerHTML = "<option value=''>Select Person</option>";
+        (res.users || []).forEach(function (u) {
+          const o = document.createElement("option");
+          o.value = u.name;
+          o.textContent = u.name + " (" + u.role + ")";
+          sel.appendChild(o);
+        });
+        if (CURRENT_ISSUE.assignedTo) sel.value = CURRENT_ISSUE.assignedTo;
+      }
+    );
+  }
+
+  function closeAssignModal() {
+    document.getElementById("assignModal").classList.add("hidden");
+  }
+
+  function submitAssign() {
+    const name = document.getElementById("assignUser").value;
+    if (!name) {
+      const e = document.getElementById("assignError");
+      e.textContent = "Please pick a person.";
+      e.classList.add("visible");
+      return;
+    }
+    const btn = document.getElementById("assignSubmitBtn");
+    btn.disabled = true; btn.textContent = "Assigning…";
+
+    apiCall("assignIssue",
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, assigneeName: name },
+      function (res) {
+        btn.disabled = false; btn.textContent = "Assign";
+        if (!res || !res.success) {
+          const e = document.getElementById("assignError");
+          e.textContent = res && res.message ? res.message : "Failed.";
+          e.classList.add("visible");
+          return;
+        }
+        closeAssignModal();
+        openIssueDetail(CURRENT_ISSUE.rowNumber);
+      },
+      function (err) {
+        btn.disabled = false; btn.textContent = "Assign";
+        const e = document.getElementById("assignError");
+        e.textContent = err && err.message ? err.message : "Failed.";
+        e.classList.add("visible");
+      }
+    );
+  }
+
+  function markInProgress() {
+    if (!CURRENT_ISSUE) return;
+    if (!confirm("Mark this issue as In Progress?")) return;
+    apiCall("updateIssueStatus",
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "In Progress", notes: "", resolvedPhotoBase64: null, resolvedPhotoMime: null },
+      function (res) {
+        if (!res || !res.success) { alert(res && res.message ? res.message : "Failed."); return; }
+        openIssueDetail(CURRENT_ISSUE.rowNumber);
+      }
+    );
+  }
+
+  let RESOLVE_PHOTO_B64 = null;
+  let RESOLVE_PHOTO_MIME = "image/jpeg";
+
+  function openResolveModal() {
+    if (!CURRENT_ISSUE) return;
+    RESOLVE_PHOTO_B64 = null;
+    document.getElementById("resolveNotes").value = "";
+    document.getElementById("resolvePhotoArea").classList.add("hidden");
+    document.getElementById("resolvePhotoPicker").classList.remove("hidden");
+    document.getElementById("resolvePhotoPreview").src = "";
+    document.getElementById("resolveError").classList.remove("visible");
+    document.getElementById("resolveModal").classList.remove("hidden");
+  }
+
+  function closeResolveModal() { document.getElementById("resolveModal").classList.add("hidden"); }
+  function resolvePhotoCamera() { document.getElementById("resolveCameraInput").click(); }
+  function resolvePhotoGallery() { document.getElementById("resolveGalleryInput").click(); }
+
+  function onResolvePhotoChosen(evt) {
+    const file = evt.target.files && evt.target.files[0];
+    if (!file) return;
+    RESOLVE_PHOTO_MIME = file.type || "image/jpeg";
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      compressImage_(e.target.result, 1200, 0.7, function (compressed) {
+        const comma = compressed.indexOf(",");
+        RESOLVE_PHOTO_B64 = compressed.substring(comma + 1);
+        document.getElementById("resolvePhotoPreview").src = compressed;
+        document.getElementById("resolvePhotoArea").classList.remove("hidden");
+        document.getElementById("resolvePhotoPicker").classList.add("hidden");
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function submitResolve() {
+    const notes = document.getElementById("resolveNotes").value.trim();
+    const errBox = document.getElementById("resolveError");
+
+    if (!RESOLVE_PHOTO_B64) { errBox.textContent = "A photo is required to mark resolved."; errBox.classList.add("visible"); return; }
+    if (!notes) { errBox.textContent = "Please add resolution notes."; errBox.classList.add("visible"); return; }
+
+    const btn = document.getElementById("resolveSubmitBtn");
+    btn.disabled = true; btn.textContent = "Resolving…";
+    showBusy("Uploading resolved photo…");
+
+    apiCall("updateIssueStatus",
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
+        newStatus: "Resolved", notes: notes,
+        resolvedPhotoBase64: RESOLVE_PHOTO_B64, resolvedPhotoMime: RESOLVE_PHOTO_MIME },
+      function (res) {
+        hideBusy();
+        btn.disabled = false; btn.textContent = "Resolve";
+        if (!res || !res.success) {
+          errBox.textContent = res && res.message ? res.message : "Failed.";
+          errBox.classList.add("visible");
+          return;
+        }
+        closeResolveModal();
+        openIssueDetail(CURRENT_ISSUE.rowNumber);
+      },
+      function (err) {
+        hideBusy();
+        btn.disabled = false; btn.textContent = "Resolve";
+        errBox.textContent = err && err.message ? err.message : "Failed.";
+        errBox.classList.add("visible");
+      }
+    );
+  }
+
+  function showBusy(text) {
+    document.getElementById("busyText").textContent = text || "Working…";
+    document.getElementById("busyOverlay").classList.remove("hidden");
+  }
+  function hideBusy() { document.getElementById("busyOverlay").classList.add("hidden"); }
+
+  window.addEventListener("pageshow", function () {
+    let saved = null;
+    try { saved = localStorage.getItem("kct_token"); } catch (e) {}
+    if (!saved) { showScreen("loginScreen"); return; }
+
+    apiCall("validateSession", { token: saved },
+      function (res) {
+        if (res && res.success) {
+          SESSION_TOKEN = saved;
+          CURRENT_USER = res.user;
+          showHome();
+        } else {
+          try { localStorage.removeItem("kct_token"); } catch (e) {}
+          showScreen("loginScreen");
+        }
+      },
+      function () { showScreen("loginScreen"); }
+    );
+  });
+
+  /* ============================================================
+     ISSUES fragment (inlined)
+     ============================================================ */
+  let capturedPhotoBase64 = null;
+  let capturedPhotoMime = "image/jpeg";
+  let capturedPhotoName = "photo.jpg";
+  let capturedPhotoRawDataUrl = null;
+
+  function openIssuesScreen() { resetIssueForm(); showScreen("issuesScreen"); }
+
+  function resetIssueForm() {
+    capturedPhotoBase64 = null;
+    capturedPhotoRawDataUrl = null;
+    document.getElementById("photoArea").classList.add("hidden");
+    document.getElementById("photoPicker").classList.remove("hidden");
+    document.getElementById("photoActions").classList.add("hidden");
+    document.getElementById("photoPreview").src = "";
+    const markBtn = document.getElementById("markSpotBtn");
+    if (markBtn) markBtn.classList.add("hidden");
+    document.getElementById("isIssueType").value = "";
+    document.getElementById("isEquipment").value = "";
+    document.getElementById("isLocation").value = "";
+    document.getElementById("isPriority").value = "";
+    document.getElementById("isDescription").value = "";
+    document.getElementById("isError").classList.remove("visible");
+    try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+    try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+  }
+
+  function openCamera()  { document.getElementById("cameraInput").click(); }
+  function openGallery() { document.getElementById("galleryInput").click(); }
+
+  function removePhoto() {
+    capturedPhotoBase64 = null;
+    capturedPhotoRawDataUrl = null;
+    document.getElementById("photoArea").classList.add("hidden");
+    document.getElementById("photoPicker").classList.remove("hidden");
+    document.getElementById("photoActions").classList.add("hidden");
+    document.getElementById("photoPreview").src = "";
+    const markBtn = document.getElementById("markSpotBtn");
+    if (markBtn) markBtn.classList.add("hidden");
+    try { document.getElementById("cameraInput").value = ""; } catch (e) {}
+    try { document.getElementById("galleryInput").value = ""; } catch (e) {}
+  }
+
+  function onPhotoChosen(evt) {
+    const file = evt.target.files && evt.target.files[0];
+    if (!file) return;
+    capturedPhotoMime = file.type || "image/jpeg";
+    capturedPhotoName = file.name || "photo.jpg";
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const dataUrl = e.target.result;
+      compressImage_(dataUrl, 1600, 0.85, function (compressedDataUrl) {
+        capturedPhotoRawDataUrl = compressedDataUrl;
+        openAnnotateModal(compressedDataUrl, function (annotatedDataUrl) {
+          applyAnnotatedPhoto_(annotatedDataUrl);
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyAnnotatedPhoto_(dataUrl) {
+    compressImage_(dataUrl, 1400, 0.78, function (final) {
+      const comma = final.indexOf(",");
+      capturedPhotoBase64 = final.substring(comma + 1);
+      capturedPhotoMime = "image/jpeg";
+      capturedPhotoName = "photo-marked.jpg";
+      document.getElementById("photoPreview").src = final;
+      document.getElementById("photoArea").classList.remove("hidden");
+      document.getElementById("photoPicker").classList.add("hidden");
+      document.getElementById("photoActions").classList.remove("hidden");
+      const markBtn = document.getElementById("markSpotBtn");
+      if (markBtn) markBtn.classList.remove("hidden");
+    });
+  }
+
+  function reAnnotateIssue() {
+    if (!capturedPhotoRawDataUrl) {
+      if (!capturedPhotoBase64) return;
+      capturedPhotoRawDataUrl = "data:image/jpeg;base64," + capturedPhotoBase64;
+    }
+    openAnnotateModal(capturedPhotoRawDataUrl, function (annotatedDataUrl) {
+      applyAnnotatedPhoto_(annotatedDataUrl);
+    });
+  }
+
+  function compressImage_(dataUrl, maxWidth, quality, callback) {
+    const img = new Image();
+    img.onload = function () {
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+      try { callback(canvas.toDataURL("image/jpeg", quality)); }
+      catch (err) { callback(dataUrl); }
+    };
+    img.onerror = function () { callback(dataUrl); };
+    img.src = dataUrl;
+  }
+
+  function isShowError(msg) {
+    const box = document.getElementById("isError");
+    box.textContent = msg;
+    box.classList.add("visible");
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function submitIssueForm() {
+    document.getElementById("isError").classList.remove("visible");
+    if (!capturedPhotoBase64) { alert("Please take or choose a photo of the issue."); return; }
+
+    const issueType   = document.getElementById("isIssueType").value;
+    const equipment   = document.getElementById("isEquipment").value;
+    const location    = document.getElementById("isLocation").value.trim();
+    const priority    = document.getElementById("isPriority").value;
+    const description = document.getElementById("isDescription").value.trim();
+
+    if (!issueType)   { alert("Please select Issue Type."); return; }
+    if (!equipment)   { alert("Please select Equipment.");  return; }
+    if (!location)    { alert("Please enter Location.");    return; }
+    if (!priority)    { alert("Please select Priority.");   return; }
+    if (!description) { alert("Please enter Description."); return; }
+
+    const btn = document.getElementById("isSubmitBtn");
+    btn.disabled = true;
+    showBusy("Uploading photo…");
+
+    const payload = {
+      clientId: "is-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10),
+      issueType: issueType, equipment: equipment, location: location.toUpperCase(),
+      priority: priority, description: description,
+      photoBase64: capturedPhotoBase64, photoMime: capturedPhotoMime, photoName: capturedPhotoName
+    };
+
+    if (!SESSION_TOKEN) { hideBusy(); btn.disabled = false; alert("Session lost. Please log in again."); return; }
+
+    apiCall("submitIssue",
+      { token: SESSION_TOKEN, payload: payload },
+      function (result) {
+        hideBusy();
+        btn.disabled = false;
+        if (!result || !result.success) {
+          isShowError(result && result.message ? result.message : "Submission failed.");
+          return;
+        }
+        showIssueSuccess(result, payload);
+      },
+      function (err) {
+        hideBusy();
+        btn.disabled = false;
+        const msg = err && err.message ? err.message : "Submission failed.";
+        if (msg === "SESSION_EXPIRED") { alert("Your session has expired. Please log in again."); return; }
+        isShowError(msg);
+      }
+    );
+  }
+
+  function showIssueSuccess(result, data) {
+    const message =
+`🔴 *NEW PLANT ISSUE REPORTED*
+
+🏷️ *Issue Type:* ${data.issueType}
+🔩 *Equipment:* ${data.equipment}
+📍 *Location:* ${data.location}
+⚠️ *Priority:* ${data.priority}
+
+📝 *Description:*
+${data.description}
+
+👤 *Reported By:* ${result.reportedBy}
+🗓️ *Reported At:* ${result.reportedAt}
+
+📷 *Photo:* ${result.photoUrl}
+
+Please review and take action.`;
+
+    document.getElementById("issueWhatsappLink").href =
+      "https://wa.me/?text=" + encodeURIComponent(message);
+    showScreen("issueSuccessScreen");
+  }
+
+  /* ============================================================
+     HISTORY fragment (inlined)
+     ============================================================ */
+  let HISTORY_TAB = "work";
+  let HISTORY_EQUIP_LOADED = false;
+
+  function openHistory() {
+    showScreen("historyScreen");
+    if (!HISTORY_EQUIP_LOADED) { populateHistoryEquipment_(); HISTORY_EQUIP_LOADED = true; }
+    historyReload();
+  }
+
+  function populateHistoryEquipment_() {
+    apiCall("getEquipmentList", {},
+      function (list) {
+        const sel = document.getElementById("hEquipment");
+        (list || []).forEach(function (eq) {
+          const o = document.createElement("option");
+          o.value = eq; o.textContent = eq;
+          sel.appendChild(o);
+        });
+      }
+    );
+  }
+
+  function historyShowTab(name) {
+    HISTORY_TAB = name;
+    document.getElementById("tabWork").classList.toggle("active", name === "work");
+    document.getElementById("tabIssues").classList.toggle("active", name === "issues");
+    document.getElementById("historyWorkList").classList.toggle("hidden", name !== "work");
+    document.getElementById("historyIssueList").classList.toggle("hidden", name !== "issues");
+  }
+
+  function historyReload() {
+    if (!SESSION_TOKEN) {
+      document.getElementById("historyWorkList").innerHTML =
+        "<div class='empty'><div class='icon'>🔒</div>Session lost. Please log in again.</div>";
+      return;
+    }
+
+    document.getElementById("historyWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+    document.getElementById("historyIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+
+    const filters = {
+      dateRange: document.getElementById("hDateRange").value,
+      equipment: document.getElementById("hEquipment").value
+    };
+
+    apiCall("getHistory",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
+        if (!res || !res.success) {
+          const msg = res && res.message ? res.message : "Failed to load.";
+          document.getElementById("historyWorkList").innerHTML =
+            "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+          return;
+        }
+
+        document.getElementById("cntWork").textContent = res.workCount;
+        document.getElementById("cntIssues").textContent = res.issueCount;
+        document.getElementById("historyPageTitle").textContent = res.ownOnly ? "My History" : "Plant History";
+
+        historyRenderWork_(res.work);
+        historyRenderIssues_(res.issues);
+      },
+      function (err) {
+        const msg = err && err.message ? err.message : "Failed to load.";
+        document.getElementById("historyWorkList").innerHTML =
+          "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+      }
+    );
+  }
+
+  function historyEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function historyRenderWork_(items) {
+    const el = document.getElementById("historyWorkList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work records in this range.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const cls = it.isPending ? "pending" : "complete";
+      const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+      return "<div class='card " + cls + "'>" +
+        "<div class='card-head'><div class='card-title'>" + historyEsc_(it.equipment) + " — " + historyEsc_(it.workType) + "</div>" +
+        "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div></div>" +
+        "<div>" + pill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + historyEsc_(it.responsible) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Shift In-charge</span><span class='val'>" + historyEsc_(it.shiftIncharge) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + historyEsc_(it.startTime || "—") + "</span></div>" +
+        (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + historyEsc_(it.completionTime) + "</span></div>" : "") +
+        (it.duration ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + historyEsc_(it.duration) + "</span></div>" : "") +
+        "</div>";
+    }).join("");
+  }
+
+  function historyRenderIssues_(items) {
+    const el = document.getElementById("historyIssueList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues in this range.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const prio = String(it.priority || "").toLowerCase();
+      const status = String(it.status || "Open").toLowerCase();
+      const statusClass = status.replace(/\s+/g, "");
+      const statusPill = "<span class='pill " + statusClass + "'>" + historyEsc_(it.status) + "</span>";
+      return "<div class='card issue-" + historyEsc_(prio) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + historyEsc_(it.issueType) + " — " + historyEsc_(it.equipment) + "</div>" +
+        "<div class='card-date'>" + historyEsc_(it.dateLabel) + "</div></div>" +
+        "<div><span class='pill " + historyEsc_(prio) + "'>" + historyEsc_(it.priority) + "</span>" + statusPill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + historyEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + historyEsc_(it.reportedBy) + "</span></div>" +
+        (it.assignedTo ? "<div class='card-row'><span class='lbl'>Assigned To</span><span class='val'>" + historyEsc_(it.assignedTo) + "</span></div>" : "") +
+        (it.description ? "<div class='card-desc'>" + historyEsc_(it.description) + "</div>" : "") +
+        (it.photoUrl ? "<a href='" + historyEsc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + historyEsc_(it.photoUrl) + "' alt='issue photo'></a>" : "") +
+        "</div>";
+    }).join("");
+  }
+
+  /* ============================================================
+     TODAY fragment (inlined)
+     ============================================================ */
+  function openToday() { showScreen("todayScreen"); todayLoad(); }
+
+  function todayEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function todayLoad() {
+    if (!SESSION_TOKEN) {
+      document.getElementById("todayWorkList").innerHTML =
+        "<div class='empty'><div class='icon'>🔒</div>Session lost. Please log in again.</div>";
+      return;
+    }
+    document.getElementById("todayWorkList").innerHTML = "<div class='loading'>Loading…</div>";
+    document.getElementById("todayIssueList").innerHTML = "<div class='loading'>Loading…</div>";
+
+    apiCall("getToday", { token: SESSION_TOKEN },
+      function (res) {
+        if (!res || !res.success) {
+          const msg = res && res.message ? res.message : "Failed to load.";
+          document.getElementById("todayWorkList").innerHTML =
+            "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+          document.getElementById("todayIssueList").innerHTML = "";
+          return;
+        }
+        document.getElementById("todayDateLabel").textContent = res.dateLabel || "";
+        document.getElementById("tWorkCount").textContent = res.workCount;
+        document.getElementById("tIssueCount").textContent = res.issueCount;
+        document.getElementById("tBadge").textContent = res.badgeCount;
+        todayRenderWork_(res.work);
+        todayRenderIssues_(res.issues);
+      },
+      function (err) {
+        const msg = err && err.message ? err.message : "Failed to load.";
+        document.getElementById("todayWorkList").innerHTML =
+          "<div class='empty'><div class='icon'>⚠️</div>" + msg + "</div>";
+      }
+    );
+  }
+
+  function todayRenderWork_(items) {
+    const el = document.getElementById("todayWorkList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>🔧</div>No work logged today yet.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const cls = it.isPending ? "pending" : "complete";
+      const pill = it.isPending ? "<span class='pill pending'>Pending</span>" : "<span class='pill complete'>Completed</span>";
+      return "<div class='card " + cls + "'>" +
+        "<div class='card-head'><div class='card-title'>" + todayEsc_(it.equipment) + " — " + todayEsc_(it.workType) + "</div></div>" +
+        "<div>" + pill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Responsible</span><span class='val'>" + todayEsc_(it.responsible) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Start</span><span class='val'>" + todayEsc_(it.startTime || "—") + "</span></div>" +
+        (it.completionTime ? "<div class='card-row'><span class='lbl'>Completion</span><span class='val'>" + todayEsc_(it.completionTime) + "</span></div>" : "") +
+        (it.duration ? "<div class='card-row'><span class='lbl'>Duration</span><span class='val'>" + todayEsc_(it.duration) + "</span></div>" : "") +
+        "</div>";
+    }).join("");
+  }
+
+  function todayRenderIssues_(items) {
+    const el = document.getElementById("todayIssueList");
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='empty'><div class='icon'>📷</div>No issues reported today.</div>";
+      return;
+    }
+    el.innerHTML = items.map(function (it) {
+      const prio = String(it.priority || "").toLowerCase();
+      const status = String(it.status || "Open").toLowerCase();
+      const statusPill = (status === "resolved" || status === "closed")
+        ? "<span class='pill resolved'>Resolved</span>"
+        : "<span class='pill open'>Open</span>";
+      return "<div class='card issue-" + todayEsc_(prio) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + todayEsc_(it.issueType) + " — " + todayEsc_(it.equipment) + "</div></div>" +
+        "<div><span class='pill " + todayEsc_(prio) + "'>" + todayEsc_(it.priority) + "</span>" + statusPill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + todayEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + todayEsc_(it.reportedBy) + "</span></div>" +
+        (it.description ? "<div class='card-desc'>" + todayEsc_(it.description) + "</div>" : "") +
+        (it.photoUrl ? "<a href='" + todayEsc_(it.photoUrl) + "' target='_blank' rel='noopener'><img class='card-photo' src='" + todayEsc_(it.photoUrl) + "' alt='issue photo'></a>" : "") +
+        "</div>";
+    }).join("");
+  }
+
+  /* ============================================================
+     ANNOTATE fragment (inlined)
+     ============================================================ */
+  const ANNOTATE = {
+    img: null, canvas: null, ctx: null,
+    tool: "circle", color: "#e53935", width: 6,
+    drawing: false, startX: 0, startY: 0, lastX: 0, lastY: 0,
+    history: [], maxHistory: 12, zoomLevel: 1, dpr: 1, onSave: null
+  };
+
+  function openAnnotateModal(dataUrl, onSave) {
+    ANNOTATE.onSave = onSave;
+    const modal = document.getElementById("annotateModal");
+    const img = document.getElementById("annotateImg");
+    const canvas = document.getElementById("annotateCanvas");
+
+    modal.classList.remove("hidden");
+    ANNOTATE.history = [];
+    ANNOTATE.zoomLevel = 1;
+    document.getElementById("annotateWrap").style.transform = "scale(1)";
+
+    img.onload = function () { setupCanvas_(); };
+    img.src = dataUrl;
+
+    canvas.replaceWith(canvas.cloneNode(true));
+    ANNOTATE.canvas = document.getElementById("annotateCanvas");
+    ANNOTATE.ctx = ANNOTATE.canvas.getContext("2d");
+    bindCanvasEvents_();
+  }
+
+  function annotateCancel() {
+    document.getElementById("annotateModal").classList.add("hidden");
+    ANNOTATE.onSave = null;
+  }
+
+  function annotateDone() {
+    const canvas = ANNOTATE.canvas;
+    const img = ANNOTATE.img;
+    if (!canvas || !img) return;
+
+    const out = document.createElement("canvas");
+    out.width = img.naturalWidth;
+    out.height = img.naturalHeight;
+    const octx = out.getContext("2d");
+    octx.drawImage(img, 0, 0, out.width, out.height);
+
+    const scaleX = img.naturalWidth  / canvas.width;
+    const scaleY = img.naturalHeight / canvas.height;
+    octx.save(); octx.scale(scaleX, scaleY);
+    octx.drawImage(canvas, 0, 0); octx.restore();
+
+    const result = out.toDataURL("image/jpeg", 0.85);
+
+    document.getElementById("annotateModal").classList.add("hidden");
+    if (typeof ANNOTATE.onSave === "function") ANNOTATE.onSave(result);
+    ANNOTATE.onSave = null;
+  }
+
+  function annotateSetTool(tool) {
+    ANNOTATE.tool = tool;
+    document.querySelectorAll(".annotate-toolbar .ann-tool[data-tool]").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.tool === tool);
+    });
+  }
+  function annotateSetColor(color) {
+    ANNOTATE.color = color;
+    document.querySelectorAll(".ann-swatch").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.color === color);
+    });
+  }
+  function annotateSetWidth(w) {
+    ANNOTATE.width = w;
+    document.querySelectorAll(".annotate-toolbar .ann-tool[data-width]").forEach(function (b) {
+      b.classList.toggle("active", Number(b.dataset.width) === w);
+    });
+  }
+  function annotateUndo() {
+    if (!ANNOTATE.history.length) return;
+    const last = ANNOTATE.history.pop();
+    ANNOTATE.ctx.putImageData(last, 0, 0);
+  }
+  function annotateClear() {
+    pushHistory_();
+    const c = ANNOTATE.canvas;
+    ANNOTATE.ctx.clearRect(0, 0, c.width, c.height);
+  }
+  function annotateZoom() {
+    ANNOTATE.zoomLevel = ANNOTATE.zoomLevel >= 2 ? 1 : ANNOTATE.zoomLevel + 0.5;
+    document.getElementById("annotateWrap").style.transform = "scale(" + ANNOTATE.zoomLevel + ")";
+  }
+
+  function setupCanvas_() {
+    const img = document.getElementById("annotateImg");
+    const canvas = document.getElementById("annotateCanvas");
+    ANNOTATE.img = img;
+    ANNOTATE.dpr = window.devicePixelRatio || 1;
+
+    requestAnimationFrame(function () {
+      canvas.style.transform = "none";
+      const rect = img.getBoundingClientRect();
+      const cssW = Math.round(rect.width);
+      const cssH = Math.round(rect.height);
+      canvas.style.width  = cssW + "px";
+      canvas.style.height = cssH + "px";
+      canvas.width  = Math.round(cssW * ANNOTATE.dpr);
+      canvas.height = Math.round(cssH * ANNOTATE.dpr);
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ANNOTATE.dpr, ANNOTATE.dpr);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ANNOTATE.ctx = ctx;
+      ANNOTATE.canvas = canvas;
+      bindCanvasEvents_();
+    });
+  }
+
+  function bindCanvasEvents_() {
+    const canvas = ANNOTATE.canvas;
+    if (!canvas) return;
+
+    const getPos = function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const src = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+      return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+    };
+
+    const start = function (e) {
+      e.preventDefault();
+      if (ANNOTATE.tool === "text") {
+        const p = getPos(e);
+        const txt = prompt("Enter text:");
+        if (txt && txt.trim()) {
+          pushHistory_();
+          const ctx = ANNOTATE.ctx;
+          ctx.fillStyle = ANNOTATE.color;
+          ctx.font = "bold " + Math.max(14, ANNOTATE.width * 3) + "px sans-serif";
+          ctx.fillText(txt.trim(), p.x, p.y);
+        }
+        return;
+      }
+      pushHistory_();
+      ANNOTATE.drawing = true;
+      const p = getPos(e);
+      ANNOTATE.startX = p.x; ANNOTATE.startY = p.y;
+      ANNOTATE.lastX = p.x; ANNOTATE.lastY = p.y;
+    };
+
+    const move = function (e) {
+      if (!ANNOTATE.drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      const ctx = ANNOTATE.ctx;
+
+      if (ANNOTATE.tool === "freehand") {
+        ctx.strokeStyle = ANNOTATE.color;
+        ctx.lineWidth = ANNOTATE.width;
+        ctx.beginPath();
+        ctx.moveTo(ANNOTATE.lastX, ANNOTATE.lastY);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        ANNOTATE.lastX = p.x; ANNOTATE.lastY = p.y;
+      } else {
+        restoreLastHistory_();
+        ctx.strokeStyle = ANNOTATE.color;
+        ctx.lineWidth = ANNOTATE.width;
+
+        if (ANNOTATE.tool === "circle") {
+          const rx = Math.abs(p.x - ANNOTATE.startX) / 2;
+          const ry = Math.abs(p.y - ANNOTATE.startY) / 2;
+          const cx = (p.x + ANNOTATE.startX) / 2;
+          const cy = (p.y + ANNOTATE.startY) / 2;
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (ANNOTATE.tool === "rect") {
+          ctx.beginPath();
+          ctx.rect(ANNOTATE.startX, ANNOTATE.startY, p.x - ANNOTATE.startX, p.y - ANNOTATE.startY);
+          ctx.stroke();
+        } else if (ANNOTATE.tool === "arrow") {
+          drawArrow_(ctx, ANNOTATE.startX, ANNOTATE.startY, p.x, p.y, ANNOTATE.width);
+        }
+      }
+    };
+
+    const end = function () { ANNOTATE.drawing = false; };
+
+    canvas.addEventListener("mousedown", start);
+    canvas.addEventListener("mousemove", move);
+    canvas.addEventListener("mouseup", end);
+    canvas.addEventListener("mouseleave", end);
+    canvas.addEventListener("touchstart", start, { passive: false });
+    canvas.addEventListener("touchmove", move, { passive: false });
+    canvas.addEventListener("touchend", end);
+    canvas.addEventListener("touchcancel", end);
+  }
+
+  function pushHistory_() {
+    const c = ANNOTATE.canvas;
+    if (!c) return;
+    try {
+      ANNOTATE.history.push(ANNOTATE.ctx.getImageData(0, 0, c.width, c.height));
+      if (ANNOTATE.history.length > ANNOTATE.maxHistory) ANNOTATE.history.shift();
+    } catch (e) {}
+  }
+  function restoreLastHistory_() {
+    const c = ANNOTATE.canvas;
+    if (!c || !ANNOTATE.history.length) return;
+    const last = ANNOTATE.history[ANNOTATE.history.length - 1];
+    ANNOTATE.ctx.putImageData(last, 0, 0);
+  }
+  function drawArrow_(ctx, x1, y1, x2, y2, w) {
+    const headLen = Math.max(14, w * 3);
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 7), y2 - headLen * Math.sin(angle - Math.PI / 7));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 7), y2 - headLen * Math.sin(angle + Math.PI / 7));
+    ctx.closePath();
+    ctx.fillStyle = ANNOTATE.color;
+    ctx.fill();
+  }
+
+  /* ============================================================
+     DASHBOARD
+     ============================================================ */
+  let DASHBOARD_EQUIP_LOADED = false;
+
+  const PRIORITY_COLORS = { "Low": "#9e9e9e", "Medium": "#1976d2", "High": "#f57c00", "Critical": "#d32f2f" };
+  const STATUS_COLORS = { "Open": "#f57c00", "In Progress": "#1976d2", "Resolved": "#0288d1" };
+
+  function openDashboard() {
+    showScreen("dashboardScreen");
+    if (!DASHBOARD_EQUIP_LOADED) {
+      apiCall("getEquipmentList", {},
+        function (list) {
+          const sel = document.getElementById("dbEquipment");
+          (list || []).forEach(function (eq) {
+            const o = document.createElement("option");
+            o.value = eq; o.textContent = eq;
+            sel.appendChild(o);
+          });
+          DASHBOARD_EQUIP_LOADED = true;
+        }
+      );
+    }
+    dashboardLoad();
+  }
+
+  function dashboardLoad() {
+    if (!SESSION_TOKEN) return;
+    const filters = {
+      dateRange: document.getElementById("dbRange").value,
+      equipment: document.getElementById("dbEquipment").value
+    };
+
+    ["kpiOpen","kpiMttr","kpiMonth","kpiPending"].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = "…";
+    });
+
+    apiCall("getDashboard",
+      { token: SESSION_TOKEN, filters: filters },
+      function (res) {
+        if (!res || !res.success) {
+          alert(res && res.message ? res.message : "Failed to load dashboard.");
+          return;
+        }
+        renderDashboard_(res);
+      },
+      function (err) {
+        alert(err && err.message ? err.message : "Failed to load dashboard.");
+      }
+    );
+  }
+
+  function renderDashboard_(d) {
+    document.getElementById("kpiOpen").textContent    = d.kpis.openIssues;
+    document.getElementById("kpiMttr").textContent    = d.kpis.mttrLabel;
+    document.getElementById("kpiMttrSub").textContent =
+      d.kpis.mttrCount ? "over " + d.kpis.mttrCount + " issue" + (d.kpis.mttrCount === 1 ? "" : "s") : "";
+    document.getElementById("kpiMonth").textContent   = d.kpis.monthDurationLabel || "—";
+    document.getElementById("kpiPending").textContent = d.kpis.pendingWork;
+
+    renderBarChart_("equipChart", d.charts.equipment);
+    renderBarChart_("typeChart",  d.charts.type);
+    renderPillChart_("priorityChart", d.charts.priority, PRIORITY_COLORS);
+    renderPillChart_("statusChart",   d.charts.status,   STATUS_COLORS);
+    renderLineChart_("trendChart", d.charts.trend);
+    renderBarChart_("topReportersChart", d.topReporters);
+
+    renderShiftTable_(d.shiftTable);
+    renderAgingTable_(d.aging);
+
+    if (typeof _renderExtraCharts_ === "function") {
+      _renderExtraCharts_(d.charts);
+    }
+  }
+
+  function dashboardEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function renderBarChart_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data in this range.</div>"; return; }
+    const max = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
+    el.innerHTML = items.map(function (it) {
+      const pct = Math.round((it.value / max) * 100);
+      return "<div class='bar-row'><div class='bar-label'>" + dashboardEsc_(it.label) + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct + "%'></div></div>" +
+        "<div class='bar-value'>" + it.value + "</div></div>";
+    }).join("");
+  }
+
+  function renderPillChart_(containerId, items, colors) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+    el.innerHTML = "<div class='pill-chart'>" +
+      items.map(function (it) {
+        const color = (colors && colors[it.label]) || "#999";
+        return "<div class='pill-chart-item'><span class='dot' style='background:" + color + "'></span>" +
+          "<span>" + dashboardEsc_(it.label) + "</span><span class='num'>" + it.value + "</span></div>";
+      }).join("") + "</div>";
+  }
+
+  function renderLineChart_(containerId, days) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!days || !days.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const W = 640, H = 180, PAD_L = 28, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, days.map(function (d) { return d.count; })) || 1;
+    const stepX = innerW / Math.max(days.length - 1, 1);
+
+    let path = "";
+    const points = [];
+    days.forEach(function (d, i) {
+      const x = PAD_L + i * stepX;
+      const y = PAD_T + innerH - (d.count / maxVal) * innerH;
+      points.push({ x: x, y: y, d: d });
+      path += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    });
+
+    let grid = "";
+    [0, 0.5, 1].forEach(function (frac) {
+      const y = PAD_T + innerH - frac * innerH;
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) + "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) + "' text-anchor='end' font-size='9' fill='#999'>" +
+        Math.round(maxVal * frac) + "</text>";
+    });
+
+    let xLabels = "";
+    days.forEach(function (d, i) {
+      if (i % 5 === 0 || i === days.length - 1) {
+        const x = PAD_L + i * stepX;
+        xLabels += "<text x='" + x + "' y='" + (H - 8) + "' text-anchor='middle' font-size='9' fill='#999'>" +
+          d.label + "</text>";
+      }
+    });
+
+    let dots = "";
+    points.forEach(function (p) {
+      if (p.d.count > 0) {
+        dots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#0288d1'/>";
+      }
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid + "<path d='" + path + "' fill='none' stroke='#0288d1' stroke-width='2'/>" +
+      dots + xLabels + "</svg>";
+  }
+
+  function renderShiftTable_(rows) {
+    const el = document.getElementById("shiftTable");
+    if (!el) return;
+    if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No shift data in this range.</div>"; return; }
+    el.innerHTML = "<table class='dash-table'><thead><tr>" +
+      "<th>Shift In-charge</th><th class='num'>Jobs</th><th class='num'>Manpower</th><th class='num'>Duration</th><th class='num'>Pending</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr><td>" + dashboardEsc_(r.label) + "</td>" +
+          "<td class='num'>" + r.jobs + "</td>" +
+          "<td class='num'>" + r.manpower + "</td>" +
+          "<td class='num'>" + dashboardEsc_(r.durationLabel || "—") + "</td>" +
+          "<td class='num'>" + r.pending + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  function renderAgingTable_(rows) {
+    const el = document.getElementById("agingTable");
+    if (!el) return;
+    if (!rows || !rows.length) { el.innerHTML = "<div class='no-data'>No aging issues. 👍</div>"; return; }
+    el.innerHTML = "<table class='dash-table'><thead><tr>" +
+      "<th>Days</th><th>Equipment</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        return "<tr onclick='openIssueDetail(" + r.rowNumber + ")' style='cursor:pointer;'>" +
+          "<td><b>" + r.daysOpen + "d</b></td>" +
+          "<td>" + dashboardEsc_(r.equipment) + "</td>" +
+          "<td>" + dashboardEsc_(r.issueType) + "</td>" +
+          "<td>" + dashboardEsc_(r.priority) + "</td>" +
+          "<td>" + dashboardEsc_(r.status) + "</td>" +
+          "<td>" + (r.assignedTo ? dashboardEsc_(r.assignedTo) : "<i style='color:#d32f2f;'>—</i>") + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }
+
+  /* ============================================================
+     EXTRA CHART RENDERERS
+     ============================================================ */
+  function _renderExtraCharts_(charts) {
+    if (!charts) return;
+    _renderMTTRTrend_("mttrTrendChart", charts.mttrTrend || []);
+    _renderStartVsComplete_("startVsCompleteChart", charts.startVsComplete || []);
+    _renderDowntimeChart_("downtimeChart", charts.downtime || []);
+    _renderParetoChart_("paretoChart", charts.pareto || []);
+    _renderHeatmap_("heatmapChart", charts.heatmap || null);
+    _renderMTBF_("mtbfChart", charts.mtbf || []);
+    _renderShiftCompare_("shiftCompareChart", charts.shiftComparison || null);
+    _renderLeaderboard_("leaderboardChart", charts.leaderboard || []);
+    _renderRecurringHeatmap_("recurringHeatmapChart", charts.recurringHeatmap || null);
+    _renderPriorityAccuracy_("priorityAccuracyChart", charts.priorityAccuracy || []);
+  }
+
+  function _extChartEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function _renderMTTRTrend_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const hasData = items.some(function (it) { return it.avgMin > 0; });
+    if (!hasData) { el.innerHTML = "<div class='no-data'>No resolved issues yet.</div>"; return; }
+
+    const W = 640, H = 180, PAD_L = 42, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) { return d.avgMin; })) || 1;
+    const stepX = innerW / Math.max(items.length - 1, 1);
+
+    let path = "";
+    const points = [];
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * stepX;
+      const y = PAD_T + innerH - (d.avgMin / maxVal) * innerH;
+      points.push({ x: x, y: y, d: d });
+      path += (i === 0 ? "M" : "L") + x + "," + y + " ";
+    });
+
+    let grid = "";
+    [0, 0.5, 1].forEach(function (frac) {
+      const y = PAD_T + innerH - frac * innerH;
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) +
+              "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) +
+              "' text-anchor='end' font-size='9' fill='#999'>" + Math.round(maxVal * frac) + "m</text>";
+    });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      if (i % 5 === 0 || i === items.length - 1) {
+        const x = PAD_L + i * stepX;
+        xLabels += "<text x='" + x + "' y='" + (H - 8) +
+                   "' text-anchor='middle' font-size='9' fill='#999'>" + d.label + "</text>";
+      }
+    });
+
+    let dots = "";
+    points.forEach(function (p) {
+      if (p.d.avgMin > 0) dots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#f57c00'/>";
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid + "<path d='" + path + "' fill='none' stroke='#f57c00' stroke-width='2'/>" +
+      dots + xLabels + "</svg>";
+  }
+
+  function _renderStartVsComplete_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const W = 640, H = 200, PAD_L = 34, PAD_R = 10, PAD_T = 12, PAD_B = 28;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) {
+      return Math.max(d.started, d.completed);
+    })) || 1;
+    const stepX = innerW / Math.max(items.length - 1, 1);
+
+    let startedPath = "", completedPath = "";
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * stepX;
+      const yS = PAD_T + innerH - (d.started / maxVal) * innerH;
+      const yC = PAD_T + innerH - (d.completed / maxVal) * innerH;
+      startedPath += (i === 0 ? "M" : "L") + x + "," + yS + " ";
+      completedPath += (i === 0 ? "M" : "L") + x + "," + yC + " ";
+    });
+
+    let grid = "";
+    [0, 0.5, 1].forEach(function (frac) {
+      const y = PAD_T + innerH - frac * innerH;
+      grid += "<line x1='" + PAD_L + "' y1='" + y + "' x2='" + (PAD_L + innerW) + "' y2='" + y + "' stroke='#eee'/>";
+      grid += "<text x='" + (PAD_L - 5) + "' y='" + (y + 4) +
+              "' text-anchor='end' font-size='9' fill='#999'>" + Math.round(maxVal * frac) + "</text>";
+    });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      if (i % 5 === 0 || i === items.length - 1) {
+        const x = PAD_L + i * stepX;
+        xLabels += "<text x='" + x + "' y='" + (H - 8) + "' text-anchor='middle' font-size='9' fill='#999'>" + d.label + "</text>";
+      }
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      grid +
+      "<path d='" + startedPath + "' fill='none' stroke='#0288d1' stroke-width='2'/>" +
+      "<path d='" + completedPath + "' fill='none' stroke='#2e7d32' stroke-width='2'/>" +
+      xLabels + "</svg>" +
+      "<div style='display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:12px;color:#555;'>" +
+        "<div><span style='display:inline-block;width:12px;height:12px;background:#0288d1;border-radius:3px;margin-right:6px;'></span>Started</div>" +
+        "<div><span style='display:inline-block;width:12px;height:12px;background:#2e7d32;border-radius:3px;margin-right:6px;'></span>Completed</div>" +
+      "</div>";
+  }
+
+  function _renderDowntimeChart_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No completed work.</div>"; return; }
+    const max = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
+    el.innerHTML = items.map(function (it) {
+      const pct = Math.round((it.value / max) * 100);
+      const hrs = (it.value / 60).toFixed(1);
+      return "<div class='bar-row'>" +
+        "<div class='bar-label'>" + _extChartEsc_(it.label) + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct +
+          "%;background:linear-gradient(90deg,#ffb74d,#e65100);'></div></div>" +
+        "<div class='bar-value' style='color:#e65100;'>" + hrs + "h</div>" +
+        "</div>";
+    }).join("");
+  }
+
+  function _renderParetoChart_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) { el.innerHTML = "<div class='no-data'>No issues.</div>"; return; }
+
+    const W = 640, H = 240, PAD_L = 34, PAD_R = 34, PAD_T = 16, PAD_B = 60;
+    const innerW = W - PAD_L - PAD_R;
+    const innerH = H - PAD_T - PAD_B;
+    const maxVal = Math.max.apply(null, items.map(function (d) { return d.value; })) || 1;
+    const barW = innerW / items.length;
+
+    let bars = "", cumPath = "";
+    const cumPoints = [];
+    items.forEach(function (d, i) {
+      const barH = (d.value / maxVal) * innerH;
+      const x = PAD_L + i * barW;
+      const y = PAD_T + innerH - barH;
+      bars += "<rect x='" + (x + barW * 0.1) + "' y='" + y + "' width='" + (barW * 0.8) +
+              "' height='" + barH + "' fill='#0288d1' rx='2'/>";
+      bars += "<text x='" + (x + barW / 2) + "' y='" + (y - 3) +
+              "' text-anchor='middle' font-size='10' fill='#0288d1' font-weight='bold'>" + d.value + "</text>";
+      const cumY = PAD_T + innerH - (d.cumulativePct / 100) * innerH;
+      const cumX = x + barW / 2;
+      cumPoints.push({ x: cumX, y: cumY });
+    });
+
+    cumPoints.forEach(function (p, i) { cumPath += (i === 0 ? "M" : "L") + p.x + "," + p.y + " "; });
+
+    let cumDots = "";
+    cumPoints.forEach(function (p) { cumDots += "<circle cx='" + p.x + "' cy='" + p.y + "' r='2.5' fill='#d32f2f'/>"; });
+
+    let xLabels = "";
+    items.forEach(function (d, i) {
+      const x = PAD_L + i * barW + barW / 2;
+      const shortLabel = d.label.length > 10 ? d.label.substring(0, 9) + "…" : d.label;
+      xLabels += "<text x='" + x + "' y='" + (PAD_T + innerH + 14) +
+                 "' text-anchor='end' font-size='9' fill='#666' " +
+                 "transform='rotate(-35 " + x + " " + (PAD_T + innerH + 14) + ")'>" +
+                 _extChartEsc_(shortLabel) + "</text>";
+    });
+
+    el.innerHTML = "<svg class='line-chart-svg' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='xMidYMid meet'>" +
+      "<line x1='" + PAD_L + "' y1='" + (PAD_T + innerH) + "' x2='" + (PAD_L + innerW) +
+      "' y2='" + (PAD_T + innerH) + "' stroke='#ccc'/>" +
+      bars + "<path d='" + cumPath + "' fill='none' stroke='#d32f2f' stroke-width='2'/>" +
+      cumDots + xLabels + "</svg>" +
+      "<div style='text-align:center;font-size:11px;color:#666;margin-top:6px;'>Bars = count · Line = cumulative %</div>";
+  }
+
+  function _renderHeatmap_(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el || !data || !data.matrix) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const max = data.max || 1;
+    let html = "<div style='display:grid;grid-template-columns:60px repeat(4,1fr);gap:4px;font-size:11px;'>";
+    html += "<div></div>";
+    data.buckets.forEach(function (b) {
+      html += "<div style='text-align:center;color:#666;font-weight:bold;'>" + b + "</div>";
+    });
+    data.days.forEach(function (day, di) {
+      html += "<div style='color:#666;font-weight:bold;text-align:right;padding-right:6px;'>" + day + "</div>";
+      data.buckets.forEach(function (_, bi) {
+        const v = data.matrix[di][bi];
+        const intensity = v / max;
+        const r = Math.round(225 - intensity * 225);
+        const g = Math.round(240 - intensity * 160);
+        const b = Math.round(255 - intensity * 60);
+        const bg = "rgb(" + r + "," + g + "," + b + ")";
+        const color = intensity > 0.6 ? "white" : "#222";
+        html += "<div style='background:" + bg + ";color:" + color +
+                ";padding:10px 4px;border-radius:6px;text-align:center;font-weight:bold;'>" +
+                (v > 0 ? v : "") + "</div>";
+      });
+    });
+    html += "</div>";
+    html += "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>Darker = more work started in that slot</div>";
+    el.innerHTML = html;
+  }
+
+  function _renderMTBF_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='no-data'>Need at least 2 issues per equipment to compute MTBF.</div>";
+      return;
+    }
+    const maxVal = Math.max.apply(null, items.map(function (it) { return it.value; })) || 1;
+    el.innerHTML = items.map(function (it) {
+      const pct = Math.round((it.value / maxVal) * 100);
+      const hue = Math.min(120, Math.round((it.value / maxVal) * 120));
+      const bg = "linear-gradient(90deg, hsl(" + hue + ",60%,65%), hsl(" + hue + ",70%,45%))";
+      return "<div class='bar-row'>" +
+        "<div class='bar-label'>" + _extChartEsc_(it.label) + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct + "%;background:" + bg + ";'></div></div>" +
+        "<div class='bar-value' style='color:#2e7d32;'>" + it.value + "d</div>" +
+        "</div>";
+    }).join("") +
+    "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>Higher = more reliable (avg days between issues)</div>";
+  }
+
+  function _renderShiftCompare_(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el || !data) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
+
+    const labels = ["Jobs", "Manpower", "Duration (hr)"];
+    const dayVals = [data.jobs[0], data.manpower[0], data.durationHrs[0]];
+    const nightVals = [data.jobs[1], data.manpower[1], data.durationHrs[1]];
+
+    let html = "<div style='display:flex;flex-direction:column;gap:14px;'>";
+    labels.forEach(function (lbl, i) {
+      const max = Math.max(dayVals[i], nightVals[i], 1);
+      const dayPct = Math.round((dayVals[i] / max) * 100);
+      const nightPct = Math.round((nightVals[i] / max) * 100);
+
+      html += "<div>" +
+        "<div style='font-size:12px;color:#666;font-weight:bold;margin-bottom:6px;'>" + lbl + "</div>" +
+        "<div class='bar-row' style='margin-bottom:4px;'>" +
+          "<div class='bar-label' style='color:#0288d1;font-size:11px;'>Day</div>" +
+          "<div class='bar-track'><div class='bar-fill' style='width:" + dayPct +
+            "%;background:linear-gradient(90deg,#4fc3f7,#0288d1);'></div></div>" +
+          "<div class='bar-value'>" + dayVals[i] + "</div>" +
+        "</div>" +
+        "<div class='bar-row'>" +
+          "<div class='bar-label' style='color:#5e35b1;font-size:11px;'>Night</div>" +
+          "<div class='bar-track'><div class='bar-fill' style='width:" + nightPct +
+            "%;background:linear-gradient(90deg,#9575cd,#5e35b1);'></div></div>" +
+          "<div class='bar-value' style='color:#5e35b1;'>" + nightVals[i] + "</div>" +
+        "</div>" +
+      "</div>";
+    });
+    html += "</div>";
+    el.innerHTML = html;
+  }
+
+  function _renderLeaderboard_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='no-data'>No work recorded.</div>";
+      return;
+    }
+    el.innerHTML = "<table class='dash-table'>" +
+      "<thead><tr>" +
+        "<th>#</th><th>Responsible</th>" +
+        "<th class='num'>Jobs</th>" +
+        "<th class='num'>Avg Duration</th>" +
+        "<th class='num'>Completion %</th>" +
+      "</tr></thead><tbody>" +
+      items.map(function (r, i) {
+        const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
+        const pctColor = r.completionPct >= 90 ? "#2e7d32"
+                       : r.completionPct >= 70 ? "#f57c00"
+                       : "#d32f2f";
+        return "<tr>" +
+          "<td>" + medal + "</td>" +
+          "<td>" + _extChartEsc_(r.label) + "</td>" +
+          "<td class='num'>" + r.jobs + "</td>" +
+          "<td class='num'>" + (r.avgMin > 0 ? r.avgMin + "m" : "—") + "</td>" +
+          "<td class='num' style='color:" + pctColor + ";font-weight:bold;'>" +
+            r.completionPct + "%</td>" +
+        "</tr>";
+      }).join("") +
+      "</tbody></table>";
+  }
+
+  function _renderRecurringHeatmap_(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el || !data || !data.matrix) {
+      el.innerHTML = "<div class='no-data'>No data.</div>";
+      return;
+    }
+    if (!data.equipment.length || !data.types.length) {
+      el.innerHTML = "<div class='no-data'>No issues in this range.</div>";
+      return;
+    }
+    const max = data.max || 1;
+    const cols = data.types.length;
+
+    let html = "<div style='overflow-x:auto;'>";
+    html += "<div style='display:grid;grid-template-columns:70px repeat(" +
+      cols + ",minmax(40px,1fr));gap:4px;font-size:11px;min-width:" +
+      (70 + cols * 44) + "px;'>";
+
+    html += "<div></div>";
+    data.types.forEach(function (tp) {
+      const short = tp.length > 6 ? tp.substring(0, 5) + "…" : tp;
+      html += "<div style='text-align:center;color:#666;font-weight:bold;writing-mode:vertical-rl;" +
+              "transform:rotate(180deg);height:70px;font-size:10px;' title='" +
+              _extChartEsc_(tp) + "'>" + _extChartEsc_(short) + "</div>";
+    });
+
+    data.equipment.forEach(function (eq, ei) {
+      html += "<div style='color:#666;font-weight:bold;text-align:right;padding-right:6px;" +
+              "padding-top:8px;'>" + _extChartEsc_(eq) + "</div>";
+      data.types.forEach(function (_, ti) {
+        const v = data.matrix[ei][ti];
+        const intensity = v / max;
+        const r = Math.round(255 - intensity * 55);
+        const g = Math.round(235 - intensity * 200);
+        const b = Math.round(235 - intensity * 200);
+        const bg = "rgb(" + r + "," + g + "," + b + ")";
+        const color = intensity > 0.6 ? "white" : "#222";
+        html += "<div style='background:" + bg + ";color:" + color +
+                ";padding:8px 4px;border-radius:6px;text-align:center;font-weight:bold;' title='" +
+                _extChartEsc_(eq + " × " + data.types[ti] + " = " + v) + "'>" +
+                (v > 0 ? v : "") + "</div>";
+      });
+    });
+
+    html += "</div></div>";
+    html += "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>" +
+            "Darker = more recurring issues</div>";
+
+    el.innerHTML = html;
+  }
+
+  function _renderPriorityAccuracy_(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!items || !items.length) {
+      el.innerHTML = "<div class='no-data'>No data.</div>";
+      return;
+    }
+
+    el.innerHTML = "<table class='dash-table'>" +
+      "<thead><tr>" +
+        "<th>Priority</th>" +
+        "<th class='num'>Total</th>" +
+        "<th class='num'>Resolved</th>" +
+        "<th class='num'>Avg Time</th>" +
+        "<th class='num'>Within SLA</th>" +
+      "</tr></thead><tbody>" +
+      items.map(function (r) {
+        const prioClass = String(r.label).toLowerCase();
+        const pctColor = r.pctWithin >= 80 ? "#2e7d32"
+                       : r.pctWithin >= 50 ? "#f57c00"
+                       : r.resolved === 0 ? "#999"
+                       : "#d32f2f";
+        return "<tr>" +
+          "<td><span class='pill " + prioClass + "'>" + _extChartEsc_(r.label) + "</span></td>" +
+          "<td class='num'>" + r.total + "</td>" +
+          "<td class='num'>" + r.resolved + "</td>" +
+          "<td class='num'>" + (r.avgMin > 0 ? r.avgMin + "m" : "—") + "</td>" +
+          "<td class='num' style='color:" + pctColor + ";font-weight:bold;'>" +
+            (r.resolved > 0 ? r.pctWithin + "%" : "—") +
+            "<div style='font-size:9px;color:#999;font-weight:normal;'>" +
+            "(≤" + r.thresholdHours + "h)</div></td>" +
+        "</tr>";
+      }).join("") +
+      "</tbody></table>" +
+      "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>" +
+        "SLA: Low ≤ 7d · Medium ≤ 3d · High ≤ 1d · Critical ≤ 6h</div>";
+  }
+
+  /* ============================================================
+     ADMIN
+     ============================================================ */
+  function openAdminPanel() {
+    if (!CURRENT_USER || CURRENT_USER.role !== "admin") { alert("Admin access required."); return; }
+    showScreen("adminScreen");
+    loadAdminUsers();
+  }
+
+  function adminEsc_(s) {
+    return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function loadAdminUsers() {
+    const list = document.getElementById("adminUserList");
+    const errBox = document.getElementById("adminError");
+    errBox.classList.remove("visible");
+    list.innerHTML = "<div class='loading'>Loading users…</div>";
+
+    apiCall("adminListUsers", { token: SESSION_TOKEN },
+      function (res) {
+        if (!res || !res.success) {
+          list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+            (res && res.message ? res.message : "Failed to load.") + "</div>";
+          return;
+        }
+        renderAdminUsers_(res.users);
+      },
+      function (err) {
+        list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+          (err && err.message ? err.message : "Failed to load.") + "</div>";
+      }
+    );
+  }
+
+  function renderAdminUsers_(users) {
+    const list = document.getElementById("adminUserList");
+    if (!users || !users.length) { list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No users.</div>"; return; }
+
+    list.innerHTML = users.map(function (u) {
+      const roleClass = u.role === "admin" ? "critical" : u.role === "incharge" ? "high" :
+                        u.role === "technician" ? "medium" : "low";
+      const isMe = CURRENT_USER && u.userId === CURRENT_USER.userId;
+
+      return "<div class='card issue-" + adminEsc_(roleClass) + "'>" +
+        "<div class='card-head'><div class='card-title issue'>" + adminEsc_(u.name) +
+          (isMe ? " <span style='color:#0288d1;font-size:11px;'>(you)</span>" : "") +
+        "</div><div class='card-date'>" +
+          (u.active ? "Active" : "<span style='color:#c62828;'>Disabled</span>") + "</div></div>" +
+        "<div><span class='pill " + adminEsc_(roleClass) + "'>" + adminEsc_(u.role) + "</span>" +
+          (u.mustChange ? "<span class='pill pending'>Must Change Pwd</span>" : "") + "</div>" +
+        "<div class='card-row'><span class='lbl'>User ID</span><span class='val'>" + adminEsc_(u.userId) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Email</span><span class='val'>" +
+          (u.email ? adminEsc_(u.email) : "<i>—</i>") + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Last Login</span><span class='val'>" + adminEsc_(u.lastLogin) + "</span></div>" +
+        (isMe ? "" :
+          "<div style='margin-top:12px;display:flex;gap:8px;'>" +
+            "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;' " +
+              "onclick=\"adminConfirmReset('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "')\">🔑 Reset Password</button>" +
+            "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;' " +
+              "onclick=\"adminConfirmToggle('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "', " + u.active + ")\">" +
+              (u.active ? "🚫 Disable" : "✅ Enable") + "</button>" +
+          "</div>") + "</div>";
+    }).join("");
+  }
+
+  function adminConfirmReset(userId, name) {
+    if (!confirm("Reset password for " + name + "?")) return;
+    const errBox = document.getElementById("adminError");
+    errBox.classList.remove("visible");
+    showBusy("Resetting…");
+    apiCall("adminResetPassword", { token: SESSION_TOKEN, targetUserId: userId },
+      function (res) {
+        hideBusy();
+        if (!res || !res.success) {
+          errBox.textContent = res && res.message ? res.message : "Reset failed.";
+          errBox.classList.add("visible");
+          return;
+        }
+        alert("✅ " + res.message + "\n\nTemporary password: " + res.tempPassword);
+        loadAdminUsers();
+      },
+      function (err) {
+        hideBusy();
+        errBox.textContent = err && err.message ? err.message : "Reset failed.";
+        errBox.classList.add("visible");
+      }
+    );
+  }
+
+  function adminConfirmToggle(userId, name, currentlyActive) {
+    const action = currentlyActive ? "DISABLE" : "ENABLE";
+    if (!confirm(action + " account for " + name + "?")) return;
+    const errBox = document.getElementById("adminError");
+    errBox.classList.remove("visible");
+    apiCall("adminSetUserActive", { token: SESSION_TOKEN, targetUserId: userId, active: !currentlyActive },
+      function (res) {
+        if (!res || !res.success) {
+          errBox.textContent = res && res.message ? res.message : "Failed.";
+          errBox.classList.add("visible");
+          return;
+        }
+        loadAdminUsers();
+      },
+      function (err) {
+        errBox.textContent = err && err.message ? err.message : "Failed.";
+        errBox.classList.add("visible");
+      }
+    );
+  }
+
+  /* ============================================================
+     SERVICE WORKER (disabled to avoid caching issues with Firebase)
+     ============================================================ */
+  // Note: SW registration disabled — Firebase already serves fresh content.
+  // The "Refresh App" button clears caches manually.
+</script>
+
 </body>
 </html>
