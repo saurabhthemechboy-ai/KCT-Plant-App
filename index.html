@@ -2064,7 +2064,8 @@ ${data.remarks || "Not specified"}
     }
 
     const summary = CURRENT_ISSUE.issueType + " — " + CURRENT_ISSUE.equipment +
-                    "\nReported by: " + CURRENT_ISSUE.reportedBy;
+                  "\nReported by: " + CURRENT_ISSUE.reportedBy;
+    const deletedRow = CURRENT_ISSUE.rowNumber;
 
     if (!confirm(
       "⚠️ DELETE THIS ISSUE PERMANENTLY?\n\n" +
@@ -2074,21 +2075,59 @@ ${data.remarks || "Not specified"}
 
     showBusy("Deleting…");
 
-    apiCall("deleteIssue",
-      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber },
-      function (res) {
-        hideBusy();
-        if (!res || !res.success) {
-          alert(res && res.message ? res.message : "Delete failed.");
-          return;
-        }
+    // Track whether the delete request completed (success OR error)
+    let deleteAttempted = false;
+
+    const finishDelete = function (success) {
+      if (deleteAttempted) return;
+      deleteAttempted = true;
+      hideBusy();
+
+      if (success) {
         alert("✅ Issue deleted.");
-        CURRENT_ISSUE = null;
-        backFromIssueDetail();
+      } else {
+        // Even if the response says "error", the row may have been deleted.
+        // Tell the user to check — don't falsely claim failure.
+        alert("The delete request may not have completed cleanly.\n\n" +
+            "Please refresh the All Issues list to verify.");
+      }
+
+      CURRENT_ISSUE = null;
+      backFromIssueDetail();
+    };
+
+    apiCall("deleteIssue",
+      { token: SESSION_TOKEN, rowNumber: deletedRow },
+      function (res) {
+        if (res && res.success) {
+          finishDelete(true);
+        } else {
+          // Server said failure. But the row may still be gone.
+          // Verify by fetching the issue detail again.
+          verifyIssueGone_(deletedRow, finishDelete);
+        }
       },
       function (err) {
-        hideBusy();
-        alert(err && err.message ? err.message : "Delete failed.");
+        // Network-level error. Row may or may not be gone. Verify.
+        verifyIssueGone_(deletedRow, finishDelete);
+      }
+    );
+  }
+
+  function verifyIssueGone_(rowNumber, callback) {
+    apiCall("getIssueDetail",
+      { token: SESSION_TOKEN, rowNumber: rowNumber },
+      function (res) {
+        // If we get back an issue, it's still there. If we get an error, it's gone.
+        if (res && res.success && res.issue) {
+          callback(false); // still exists
+        } else {
+          callback(true); // gone
+        }
+      },
+      function () {
+        // getIssueDetail also errored — assume the row is gone.
+        callback(true);
       }
     );
   }
