@@ -81,8 +81,8 @@ jobs:
                   applicationId "com.kct.plantapp"
                   minSdk 21
                   targetSdk 34
-                  versionCode 2
-                  versionName "1.1.0"
+                  versionCode 3
+                  versionName "1.2.0"
               }
 
               signingConfigs {
@@ -105,10 +105,17 @@ jobs:
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
+
+              sourceSets {
+                  main {
+                      java.srcDirs = ['src/main/java']
+                  }
+              }
           }
 
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'androidx.activity:activity:1.8.2'
           }
           EOF
 
@@ -131,31 +138,31 @@ jobs:
           </resources>
           EOF
 
-          cat > src/main/res/xml/file_paths.xml <<'EOF'
+          cat > src/main/res/values/themes.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <paths xmlns:android="http://schemas.android.com/apk/res/android">
-              <external-path name="external_files" path="."/>
-              <cache-path name="cache_files" path="."/>
-          </paths>
+          <resources>
+              <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+                  <item name="colorPrimary">@color/colorPrimary</item>
+                  <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+                  <item name="android:windowNoTitle">true</item>
+              </style>
+          </resources>
           EOF
 
           cat > src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
-              <uses-permission android:name="android.permission.CAMERA"/>
-              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
               <application
                   android:label="@string/app_name"
                   android:icon="@mipmap/ic_launcher"
                   android:usesCleartextTraffic="false"
-                  android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">
+                  android:theme="@style/AppTheme">
                   <activity
-                      android:name=".MainActivity"
+                      android:name="com.kct.plantapp.MainActivity"
                       android:exported="true"
-                      android:configChanges="orientation|screenSize|keyboardHidden">
+                      android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN"/>
                           <category android:name="android.intent.category.LAUNCHER"/>
@@ -179,9 +186,7 @@ jobs:
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
-          import android.view.KeyEvent;
 
-          import androidx.activity.OnBackPressedCallback;
           import androidx.appcompat.app.AppCompatActivity;
 
           public class MainActivity extends AppCompatActivity {
@@ -209,28 +214,23 @@ jobs:
                   ws.setUseWideViewPort(true);
                   ws.setAllowFileAccess(true);
                   ws.setAllowContentAccess(true);
-                  ws.setMediaPlaybackRequiresUserGesture(false);
                   ws.setJavaScriptCanOpenWindowsAutomatically(true);
-                  ws.setSupportMultipleWindows(false);
 
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                       ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
                   }
 
-                  // Keep all in-app navigation inside the WebView
                   webView.setWebViewClient(new WebViewClient() {
                       @Override
                       public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                          return false; // load everything inside WebView
+                          return false;
                       }
-
                       @Override
                       public boolean shouldOverrideUrlLoading(WebView view, String url) {
                           return false;
                       }
                   });
 
-                  // File chooser (for <input type="file">) — critical for photo upload
                   webView.setWebChromeClient(new WebChromeClient() {
                       @Override
                       public boolean onShowFileChooser(WebView webView,
@@ -249,19 +249,6 @@ jobs:
                   });
 
                   webView.loadUrl(START_URL);
-
-                  // Handle hardware back button: go back in WebView history if possible
-                  getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-                      @Override
-                      public void handleOnBackPressed() {
-                          if (webView.canGoBack()) {
-                              webView.goBack();
-                          } else {
-                              setEnabled(false);
-                              getOnBackPressedDispatcher().onBackPressed();
-                          }
-                      }
-                  });
               }
 
               @Override
@@ -289,19 +276,17 @@ jobs:
               }
 
               @Override
-              public boolean onKeyDown(int keyCode, KeyEvent event) {
-                  if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
+              @SuppressWarnings("deprecation")
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
                       webView.goBack();
-                      return true;
+                  } else {
+                      super.onBackPressed();
                   }
-                  return super.onKeyDown(keyCode, event);
               }
           }
           EOF
 
-      # ============================================================
-      # BLOCKER FIX — normalize icons to true PNG with ImageMagick
-      # ============================================================
       - name: Download and normalize launcher icons
         run: |
           if ! command -v convert &> /dev/null; then
@@ -341,7 +326,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
           cd twa-project
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
