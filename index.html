@@ -746,22 +746,20 @@
   </div>
 </div>
 
+<!-- ===== WORK INTIMATION ===== -->
 <div id="workScreen" class="hidden">
   <div class="page-header">
     <div class="back" onclick="goHome()">←</div>
     <div class="title">Work Intimation</div>
   </div>
-
   <div class="page-body">
     <form id="workForm" autocomplete="off" onsubmit="submitWorkForm(event)">
-
       <label class="form-label" for="wfStatus">Work Status *</label>
       <select id="wfStatus" class="form-select" required onchange="changeWorkStatus()">
         <option value="" selected>Select Status</option>
         <option value="WORK STARTING">🟢 WORK STARTING</option>
         <option value="WORK COMPLETED">🔵 WORK COMPLETED</option>
       </select>
-
       <div id="wfCommon" class="hidden">
         <label class="form-label" for="wfEquipment">Equipment / Conveyor *</label>
         <select id="wfEquipment" class="form-select" required>
@@ -775,7 +773,6 @@
           <option>TT1</option><option>TT2</option><option>TT3</option>
           <option>TT4</option><option>TT5</option><option>TT6</option>
         </select>
-
         <label class="form-label" for="wfWorkType">Type of Work *</label>
         <select id="wfWorkType" class="form-select" required>
           <option value="">Select Work</option>
@@ -789,10 +786,8 @@
           <option>Minor Hot Work</option>
           <option>Skirt Rubber Adjustment</option>
         </select>
-
         <label class="form-label" for="wfLocation">Exact Work Location *</label>
         <input type="text" id="wfLocation" class="form-input" required>
-
         <label class="form-label" for="wfShiftIncharge">Shift In-charge *</label>
         <select id="wfShiftIncharge" class="form-select" required>
           <option value="">Select Shift In-charge</option>
@@ -804,17 +799,13 @@
           <option>Raj Kumar</option>
           <option>Vamsi Krishna</option>
         </select>
-
         <label class="form-label" for="wfResponsible">Responsible Person *</label>
         <input type="text" id="wfResponsible" class="form-input" required>
       </div>
-
       <div id="wfStartFields" class="hidden">
         <div class="section-title">🟢 WORK STARTING DETAILS</div>
-
         <label class="form-label" for="wfManpower">Number of Persons Engaged *</label>
         <input type="number" id="wfManpower" class="form-input" min="1">
-
         <label class="form-label" for="wfExpectedDuration">Expected Duration *</label>
         <select id="wfExpectedDuration" class="form-select">
           <option value="">Select Expected Duration</option>
@@ -822,12 +813,9 @@
           <option>15-30 Minutes</option>
           <option>More Than 30 Minutes</option>
         </select>
-
         <label class="form-label" for="wfStartTime">Actual Work Start Time *</label>
         <input type="time" id="wfStartTime" class="form-input">
-
         <label class="form-label">Safety Confirmation</label>
-
         <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
           <input type="checkbox" name="wfSafety" value="Control Room Informed">
           <span>Control Room Informed</span>
@@ -845,13 +833,10 @@
           <span>Work Area Checked and Made Safe</span>
         </div>
       </div>
-
       <div id="wfCompletionFields" class="hidden">
         <div class="section-title">🔵 WORK COMPLETION DETAILS</div>
-
         <label class="form-label" for="wfCompletionTime">Actual Work Completion Time *</label>
         <input type="time" id="wfCompletionTime" class="form-input">
-
         <label class="form-label" for="wfCompletionStatus">Completion Status *</label>
         <select id="wfCompletionStatus" class="form-select">
           <option value="">Select Status</option>
@@ -860,11 +845,9 @@
           <option>Work Stopped / Suspended</option>
           <option>Further Work Required</option>
         </select>
-
         <label class="form-label" for="wfRemarks">Completion Remarks</label>
         <textarea id="wfRemarks" class="form-textarea"></textarea>
       </div>
-
       <button type="submit" id="wfSubmitBtn" class="primary-btn">SUBMIT</button>
       <div class="error-box" id="wfError"></div>
     </form>
@@ -894,7 +877,6 @@
     <div class="back" onclick="goHome()">←</div>
     <div class="title">All Issues</div>
   </div>
-
   <div class="page-body">
     <div class="filters">
       <div class="filter-row">
@@ -916,14 +898,12 @@
         </div>
       </div>
     </div>
-
     <div class="tabs">
       <div id="aiTab-open"       class="tab active" onclick="allIssuesSetTab('open')">Open</div>
       <div id="aiTab-inprogress" class="tab"        onclick="allIssuesSetTab('inprogress')">In Progress</div>
       <div id="aiTab-resolved"   class="tab"        onclick="allIssuesSetTab('resolved')">Resolved</div>
       <div id="aiTab-all"        class="tab"        onclick="allIssuesSetTab('all')">All</div>
     </div>
-
     <div id="allIssuesList" class="list">
       <div class="loading">Loading…</div>
     </div>
@@ -935,12 +915,10 @@
     <div class="back" onclick="backFromIssueDetail()">←</div>
     <div class="title">Issue Detail</div>
   </div>
-
   <div class="page-body">
     <div id="issueDetailBody">
       <div class="loading">Loading…</div>
     </div>
-
     <div id="issueDetailActions" class="hidden" style="margin-top:20px;">
       <button id="assignBtn" class="secondary-btn" onclick="openAssignModal()">
         🔧 ASSIGN ISSUE
@@ -955,7 +933,6 @@
         🗑️ DELETE ISSUE (ADMIN)
       </button>
     </div>
-
     <div class="error-box" id="issueDetailError"></div>
   </div>
 </div>
@@ -965,7 +942,6 @@
     <div class="back" onclick="goHome()">←</div>
     <div class="title">Dashboard</div>
   </div>
-
   <div class="page-body">
     <div class="filters">
       <div class="filter-row">
@@ -986,7 +962,6 @@
         </div>
       </div>
     </div>
-
     <div class="kpi-grid">
       <div class="kpi-tile">
         <div class="kpi-value" id="kpiOpen">—</div>
@@ -1006,7 +981,6 @@
         <div class="kpi-label">Pending Work</div>
       </div>
     </div>
-
     <div class="chart-card"><div class="chart-title">📈 Issues Trend (Last 30 Days)</div><div id="trendChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">🔧 Issues by Equipment</div><div id="equipChart" class="chart-body"></div></div>
     <div class="chart-row">
@@ -1035,7 +1009,6 @@
     <div class="back" onclick="goHome()">←</div>
     <div class="title">Admin — Users</div>
   </div>
-
   <div class="page-body">
     <div id="adminUserList" class="list">
       <div class="loading">Loading users…</div>
@@ -1049,19 +1022,16 @@
     <div class="back" onclick="goHome()">←</div>
     <div class="title">Report Issue</div>
   </div>
-
   <div class="page-body">
     <div id="photoArea" class="photo-area hidden">
       <img id="photoPreview" alt="Issue photo">
     </div>
-
     <div id="photoPicker">
       <div class="photo-area" style="border-style:dashed;cursor:default;">
         <div class="cam-icon">📷</div>
         <div class="hint">ADD A PHOTO</div>
         <div class="sub">Required — take or choose a photo of the issue</div>
       </div>
-
       <div class="photo-buttons">
         <button type="button" class="photo-btn camera" onclick="openCamera()">
           <span class="ic">📷</span>
@@ -1073,22 +1043,18 @@
         </button>
       </div>
     </div>
-
     <input type="file" id="cameraInput" accept="image/*" capture="environment"
            style="display:none" onchange="onPhotoChosen(event)">
     <input type="file" id="galleryInput" accept="image/*"
            style="display:none" onchange="onPhotoChosen(event)">
-
     <div id="photoActions" class="photo-actions hidden">
       <button type="button" class="retake-btn" onclick="openCamera()">🔄 RETAKE</button>
       <button type="button" class="remove-btn" onclick="removePhoto()">🗑️ REMOVE</button>
     </div>
-
     <button type="button" id="markSpotBtn" class="secondary-btn hidden"
             style="margin-top:10px;" onclick="reAnnotateIssue()">
       ✏️ MARK SPOT AGAIN
     </button>
-
     <label class="form-label" for="isIssueType">Issue Type *</label>
     <select id="isIssueType" class="form-select">
       <option value="">Select Issue Type</option>
@@ -1099,7 +1065,6 @@
       <option>Housekeeping</option>
       <option>Other</option>
     </select>
-
     <label class="form-label" for="isEquipment">Equipment *</label>
     <select id="isEquipment" class="form-select">
       <option value="">Select Equipment</option>
@@ -1112,11 +1077,9 @@
       <option>TT1</option><option>TT2</option><option>TT3</option>
       <option>TT4</option><option>TT5</option><option>TT6</option>
     </select>
-
     <label class="form-label" for="isLocation">Location *</label>
     <input type="text" id="isLocation" class="form-input"
            placeholder="e.g. Pillar 24, Boom conveyor">
-
     <label class="form-label" for="isPriority">Priority *</label>
     <select id="isPriority" class="form-select">
       <option value="">Select Priority</option>
@@ -1125,15 +1088,12 @@
       <option>High</option>
       <option>Critical</option>
     </select>
-
     <label class="form-label" for="isDescription">Description *</label>
     <textarea id="isDescription" class="form-textarea"
               placeholder="What's the issue? Any relevant detail."></textarea>
-
     <button type="button" id="isSubmitBtn" class="primary-btn" onclick="submitIssueForm()">
       SUBMIT ISSUE
     </button>
-
     <div class="error-box" id="isError"></div>
   </div>
 </div>
@@ -1163,7 +1123,6 @@
     <div class="back" onclick="goHome()">←</div>
     <div class="title" id="historyPageTitle">My History</div>
   </div>
-
   <div class="page-body">
     <div class="filters">
       <div class="filter-row">
@@ -1184,7 +1143,6 @@
         </div>
       </div>
     </div>
-
     <div class="tabs">
       <div id="tabWork" class="tab active" onclick="historyShowTab('work')">
         Work <span class="count" id="cntWork">0</span>
@@ -1193,7 +1151,6 @@
         Issues <span class="count" id="cntIssues">0</span>
       </div>
     </div>
-
     <div id="historyWorkList" class="list">
       <div class="loading">Loading…</div>
     </div>
@@ -1211,17 +1168,14 @@
       <div class="subtitle" id="todayDateLabel">—</div>
     </div>
   </div>
-
   <div class="page-body">
     <div class="summary-grid">
       <div class="summary-tile"><div class="num" id="tWorkCount">0</div><div class="lbl">Work Items</div></div>
       <div class="summary-tile"><div class="num" id="tIssueCount">0</div><div class="lbl">Issues</div></div>
       <div class="summary-tile alert"><div class="num" id="tBadge">0</div><div class="lbl">Open / Critical</div></div>
     </div>
-
     <div class="section-heading">Today's Work</div>
     <div id="todayWorkList"><div class="loading">Loading…</div></div>
-
     <div class="section-heading">Today's Issues</div>
     <div id="todayIssueList"><div class="loading">Loading…</div></div>
   </div>
@@ -1233,36 +1187,29 @@
     <div class="annotate-title">Mark the spot</div>
     <button class="ann-btn-done" onclick="annotateDone()">✓ Done</button>
   </div>
-
   <div class="annotate-toolbar">
     <button class="ann-tool active" data-tool="circle"    onclick="annotateSetTool('circle')">⭕</button>
     <button class="ann-tool"        data-tool="arrow"     onclick="annotateSetTool('arrow')">➡️</button>
     <button class="ann-tool"        data-tool="rect"      onclick="annotateSetTool('rect')">🔲</button>
     <button class="ann-tool"        data-tool="freehand"  onclick="annotateSetTool('freehand')">✏️</button>
     <button class="ann-tool"        data-tool="text"      onclick="annotateSetTool('text')">🅰️</button>
-
     <span class="ann-sep"></span>
-
     <button class="ann-swatch active" data-color="#e53935" style="background:#e53935" onclick="annotateSetColor('#e53935')"></button>
     <button class="ann-swatch"        data-color="#fdd835" style="background:#fdd835" onclick="annotateSetColor('#fdd835')"></button>
     <button class="ann-swatch"        data-color="#ffffff" style="background:#ffffff" onclick="annotateSetColor('#ffffff')"></button>
     <button class="ann-swatch"        data-color="#1e88e5" style="background:#1e88e5" onclick="annotateSetColor('#1e88e5')"></button>
     <button class="ann-swatch"        data-color="#000000" style="background:#000000" onclick="annotateSetColor('#000000')"></button>
-
     <span class="ann-sep"></span>
-
     <button class="ann-tool" data-width="3"  onclick="annotateSetWidth(3)">•</button>
     <button class="ann-tool active" data-width="6"  onclick="annotateSetWidth(6)">●</button>
     <button class="ann-tool" data-width="12" onclick="annotateSetWidth(12)">⬤</button>
   </div>
-
   <div class="annotate-stage">
     <div class="annotate-canvas-wrap" id="annotateWrap">
       <img id="annotateImg" class="annotate-img" alt="to annotate">
       <canvas id="annotateCanvas" class="annotate-canvas"></canvas>
     </div>
   </div>
-
   <div class="annotate-bottombar">
     <button class="ann-btn" onclick="annotateUndo()">↩️ Undo</button>
     <button class="ann-btn" onclick="annotateClear()">🗑️ Clear</button>
@@ -1288,7 +1235,6 @@
 <div id="resolveModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3>Mark Resolved</h3>
-
     <label class="form-label">Resolution Photo *</label>
     <div id="resolvePhotoArea" class="photo-area hidden" style="margin-top:6px;">
       <img id="resolvePhotoPreview" alt="Resolution photo">
@@ -1309,11 +1255,9 @@
     </div>
     <input type="file" id="resolveCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onResolvePhotoChosen(event)">
     <input type="file" id="resolveGalleryInput" accept="image/*" style="display:none" onchange="onResolvePhotoChosen(event)">
-
     <label class="form-label" for="resolveNotes">Resolution Notes *</label>
     <textarea id="resolveNotes" class="form-textarea"
               placeholder="What was done to resolve the issue?"></textarea>
-
     <div class="error-box" id="resolveError"></div>
     <div class="modal-actions">
       <button class="secondary-btn" onclick="closeResolveModal()">Cancel</button>
@@ -1334,9 +1278,11 @@
   let CURRENT_USER = null;
   let FIRST_SCREEN_SHOWN = false;
 
-  const WORKER_URL = "https://kct-api.saurabhthemechboy.workers.dev";
-
   const ROOT_SCREENS = ["loginScreen", "homeScreen"];
+
+  /* ============================================================
+     API CALL — uses google.script.run (page served by Apps Script)
+     ============================================================ */
 
   function apiCall(action, payload, onSuccess, onFail) {
     onSuccess = onSuccess || function () {};
@@ -1344,39 +1290,30 @@
       alert("Network error: " + (err && err.message ? err.message : err));
     };
 
-    if (typeof google !== "undefined" && google.script && google.script.run) {
-      const args = buildArgsForAction_(action, payload);
-      const runner = google.script.run
-        .withSuccessHandler(onSuccess)
-        .withFailureHandler(onFail);
-      runner[action].apply(runner, args);
+    if (typeof google === "undefined" || !google.script || !google.script.run) {
+      onFail(new Error("This app must be opened from the KCT Plant App link."));
       return;
     }
 
-    fetch(WORKER_URL + "/" + encodeURIComponent(action), {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload || {})
-    })
-      .then(function (r) {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.text();
-      })
-      .then(function (text) {
-        let res;
-        try { res = JSON.parse(text); }
-        catch (e) {
-          const m = text.match(/\{[\s\S]*\}/);
-          if (m) res = JSON.parse(m[0]);
-          else throw new Error("Invalid response from server");
+    const args = buildArgsForAction_(action, payload);
+    const runner = google.script.run
+      .withSuccessHandler(onSuccess)
+      .withFailureHandler(function (err) {
+        const msg = err && err.message ? err.message : String(err);
+
+        // Auto-logout on session expiry for a clean re-login experience
+        if (msg === "SESSION_EXPIRED") {
+          try { localStorage.removeItem("kct_token"); } catch (e) {}
+          SESSION_TOKEN = null;
+          CURRENT_USER = null;
+          alert("Your session has expired. Please log in again.");
+          showScreen("loginScreen");
+          return;
         }
-        if (res && res.error) onFail(new Error(res.error));
-        else onSuccess(res);
-      })
-      .catch(function (err) {
-        console.error("[KCT API] fetch error:", err);
+
         onFail(err);
       });
+    runner[action].apply(runner, args);
   }
 
   function buildArgsForAction_(action, payload) {
@@ -1404,6 +1341,7 @@
       case "adminListUsers":       return [p.token];
       case "adminResetPassword":   return [p.token, p.targetUserId];
       case "adminSetUserActive":   return [p.token, p.targetUserId, p.active];
+      case "deleteIssue":          return [p.token, p.rowNumber];
       default:                     return [p];
     }
   }
@@ -1642,6 +1580,10 @@
     );
   }
 
+  /* ============================================================
+     WORK INTIMATION
+     ============================================================ */
+
   function openWorkForm() {
     if (!CURRENT_USER ||
         (CURRENT_USER.role !== "incharge" && CURRENT_USER.role !== "admin")) {
@@ -1751,13 +1693,7 @@
       function (err) {
         btn.disabled = false;
         btn.textContent = "SUBMIT";
-        const msg = err && err.message ? err.message : "Submission failed.";
-        if (msg === "SESSION_EXPIRED") {
-          alert("Your session has expired. Please log in again.");
-          doLogout();
-          return;
-        }
-        showWorkError(msg);
+        showWorkError(err && err.message ? err.message : "Submission failed.");
       }
     );
   }
@@ -1822,6 +1758,10 @@ ${data.remarks || "Not specified"}
     document.getElementById("successMessage").textContent = "Your work intimation has been recorded.";
     showScreen("successScreen");
   }
+
+  /* ============================================================
+     ALL ISSUES
+     ============================================================ */
 
   let ALL_ISSUES_TAB = "open";
   let CURRENT_ISSUE = null;
@@ -1930,6 +1870,10 @@ ${data.remarks || "Not specified"}
     }).join("");
   }
 
+  /* ============================================================
+     ISSUE DETAIL
+     ============================================================ */
+
   function openIssueDetail(rowNumber) {
     showScreen("issueDetailScreen");
     const body = document.getElementById("issueDetailBody");
@@ -2032,7 +1976,6 @@ ${data.remarks || "Not specified"}
       document.getElementById("inProgressBtn").disabled = isResolved || isInProgress;
       document.getElementById("resolveBtn").disabled = isResolved;
 
-      // Show DELETE button only for admins
       const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
       const delBtn = document.getElementById("deleteBtn");
       if (delBtn) delBtn.style.display = isAdmin ? "block" : "none";
@@ -2040,6 +1983,10 @@ ${data.remarks || "Not specified"}
       document.getElementById("issueDetailActions").classList.add("hidden");
     }
   }
+
+  /* ============================================================
+     ASSIGN
+     ============================================================ */
 
   function openAssignModal() {
     if (!CURRENT_ISSUE) return;
@@ -2104,6 +2051,10 @@ ${data.remarks || "Not specified"}
     );
   }
 
+  /* ============================================================
+     DELETE ISSUE (ADMIN ONLY)
+     ============================================================ */
+
   function deleteCurrentIssue() {
     if (!CURRENT_ISSUE) return;
 
@@ -2142,6 +2093,9 @@ ${data.remarks || "Not specified"}
     );
   }
 
+  /* ============================================================
+     MARK IN PROGRESS
+     ============================================================ */
 
   function markInProgress() {
     if (!CURRENT_ISSUE) return;
@@ -2155,6 +2109,10 @@ ${data.remarks || "Not specified"}
       }
     );
   }
+
+  /* ============================================================
+     RESOLVE
+     ============================================================ */
 
   let RESOLVE_PHOTO_B64 = null;
   let RESOLVE_PHOTO_MIME = "image/jpeg";
@@ -2226,11 +2184,19 @@ ${data.remarks || "Not specified"}
     );
   }
 
+  /* ============================================================
+     BUSY OVERLAY
+     ============================================================ */
+
   function showBusy(text) {
     document.getElementById("busyText").textContent = text || "Working…";
     document.getElementById("busyOverlay").classList.remove("hidden");
   }
   function hideBusy() { document.getElementById("busyOverlay").classList.add("hidden"); }
+
+  /* ============================================================
+     SESSION RESTORE
+     ============================================================ */
 
   window.addEventListener("pageshow", function () {
     let saved = null;
@@ -2251,6 +2217,10 @@ ${data.remarks || "Not specified"}
       function () { showScreen("loginScreen"); }
     );
   });
+
+  /* ============================================================
+     ISSUE REPORTING
+     ============================================================ */
 
   let capturedPhotoBase64 = null;
   let capturedPhotoMime = "image/jpeg";
@@ -2403,9 +2373,7 @@ ${data.remarks || "Not specified"}
       function (err) {
         hideBusy();
         btn.disabled = false;
-        const msg = err && err.message ? err.message : "Submission failed.";
-        if (msg === "SESSION_EXPIRED") { alert("Your session has expired. Please log in again."); return; }
-        isShowError(msg);
+        isShowError(err && err.message ? err.message : "Submission failed.");
       }
     );
   }
@@ -2433,6 +2401,10 @@ Please review and take action.`;
       "https://wa.me/?text=" + encodeURIComponent(message);
     showScreen("issueSuccessScreen");
   }
+
+  /* ============================================================
+     HISTORY
+     ============================================================ */
 
   let HISTORY_TAB = "work";
   let HISTORY_EQUIP_LOADED = false;
@@ -2556,6 +2528,10 @@ Please review and take action.`;
     }).join("");
   }
 
+  /* ============================================================
+     TODAY
+     ============================================================ */
+
   function openToday() { showScreen("todayScreen"); todayLoad(); }
 
   function todayEsc_(s) {
@@ -2639,6 +2615,10 @@ Please review and take action.`;
         "</div>";
     }).join("");
   }
+
+  /* ============================================================
+     ANNOTATE
+     ============================================================ */
 
   const ANNOTATE = {
     img: null, canvas: null, ctx: null,
@@ -2860,6 +2840,10 @@ Please review and take action.`;
     ctx.fillStyle = ANNOTATE.color;
     ctx.fill();
   }
+
+  /* ============================================================
+     DASHBOARD
+     ============================================================ */
 
   let DASHBOARD_EQUIP_LOADED = false;
 
@@ -3434,6 +3418,10 @@ Please review and take action.`;
       "<div style='text-align:center;font-size:11px;color:#666;margin-top:8px;'>" +
         "SLA: Low ≤ 7d · Medium ≤ 3d · High ≤ 1d · Critical ≤ 6h</div>";
   }
+
+  /* ============================================================
+     ADMIN USERS
+     ============================================================ */
 
   function openAdminPanel() {
     if (!CURRENT_USER || CURRENT_USER.role !== "admin") { alert("Admin access required."); return; }
