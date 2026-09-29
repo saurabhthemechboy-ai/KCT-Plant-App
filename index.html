@@ -1124,7 +1124,6 @@
     <div class="title" id="historyPageTitle">My History</div>
   </div>
   <div class="page-body">
-    
     <div class="filters">
       <div class="filter-row">
         <div>
@@ -1154,6 +1153,22 @@
         </div>
         <div></div>
       </div>
+    </div>
+
+    <div class="tabs">
+      <div id="tabWork" class="tab active" onclick="historyShowTab('work')">
+        Work <span class="count" id="cntWork">0</span>
+      </div>
+      <div id="tabIssues" class="tab" onclick="historyShowTab('issues')">
+        Issues <span class="count" id="cntIssues">0</span>
+      </div>
+    </div>
+
+    <div id="historyWorkList" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+    <div id="historyIssueList" class="list hidden">
+      <div class="loading">Loading…</div>
     </div>
   </div>
 </div>
