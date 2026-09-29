@@ -1124,6 +1124,7 @@
     <div class="title" id="historyPageTitle">My History</div>
   </div>
   <div class="page-body">
+    
     <div class="filters">
       <div class="filter-row">
         <div>
@@ -1142,20 +1143,17 @@
           </select>
         </div>
       </div>
-    </div>
-    <div class="tabs">
-      <div id="tabWork" class="tab active" onclick="historyShowTab('work')">
-        Work <span class="count" id="cntWork">0</span>
+      <div class="filter-row" style="margin-top:10px;">
+        <div>
+          <label class="filter-label">Work Status</label>
+          <select id="hWorkStatus" class="filter-input" onchange="historyReload()">
+            <option value="">All</option>
+            <option value="pending">Pending only</option>
+            <option value="completed">Completed only</option>
+          </select>
+        </div>
+        <div></div>
       </div>
-      <div id="tabIssues" class="tab" onclick="historyShowTab('issues')">
-        Issues <span class="count" id="cntIssues">0</span>
-      </div>
-    </div>
-    <div id="historyWorkList" class="list">
-      <div class="loading">Loading…</div>
-    </div>
-    <div id="historyIssueList" class="list hidden">
-      <div class="loading">Loading…</div>
     </div>
   </div>
 </div>
@@ -2449,6 +2447,7 @@ Please review and take action.`;
     const filters = {
       dateRange: document.getElementById("hDateRange").value,
       equipment: document.getElementById("hEquipment").value
+      workStatus: document.getElementById("hWorkStatus") ? document.getElementById("hWorkStatus").value : ""
     };
 
     apiCall("getHistory",
