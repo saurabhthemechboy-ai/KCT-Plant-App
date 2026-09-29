@@ -2031,6 +2031,11 @@ ${data.remarks || "Not specified"}
       document.getElementById("assignBtn").disabled = isResolved;
       document.getElementById("inProgressBtn").disabled = isResolved || isInProgress;
       document.getElementById("resolveBtn").disabled = isResolved;
+
+      // Show DELETE button only for admins
+      const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
+      const delBtn = document.getElementById("deleteBtn");
+      if (delBtn) delBtn.style.display = isAdmin ? "block" : "none";
     } else {
       document.getElementById("issueDetailActions").classList.add("hidden");
     }
@@ -2098,6 +2103,45 @@ ${data.remarks || "Not specified"}
       }
     );
   }
+
+  function deleteCurrentIssue() {
+    if (!CURRENT_ISSUE) return;
+
+    if (!CURRENT_USER || CURRENT_USER.role !== "admin") {
+      alert("Only admins can delete issues.");
+      return;
+    }
+
+    const summary = CURRENT_ISSUE.issueType + " — " + CURRENT_ISSUE.equipment +
+                    "\nReported by: " + CURRENT_ISSUE.reportedBy;
+
+    if (!confirm(
+      "⚠️ DELETE THIS ISSUE PERMANENTLY?\n\n" +
+      summary + "\n\n" +
+      "This cannot be undone."
+    )) return;
+
+    showBusy("Deleting…");
+
+    apiCall("deleteIssue",
+      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber },
+      function (res) {
+        hideBusy();
+        if (!res || !res.success) {
+          alert(res && res.message ? res.message : "Delete failed.");
+          return;
+        }
+        alert("✅ Issue deleted.");
+        CURRENT_ISSUE = null;
+        backFromIssueDetail();
+      },
+      function (err) {
+        hideBusy();
+        alert(err && err.message ? err.message : "Delete failed.");
+      }
+    );
+  }
+
 
   function markInProgress() {
     if (!CURRENT_ISSUE) return;
