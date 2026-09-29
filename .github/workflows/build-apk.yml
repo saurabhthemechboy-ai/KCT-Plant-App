@@ -116,6 +116,18 @@ jobs:
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
               implementation 'androidx.activity:activity:1.8.2'
+
+              // Force a single Kotlin stdlib version to avoid duplicate classes
+              implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+              implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+          }
+
+          configurations.all {
+              resolutionStrategy {
+                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+              }
           }
           EOF
 
