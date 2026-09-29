@@ -2064,7 +2064,8 @@ ${data.remarks || "Not specified"}
     }
 
     const summary = CURRENT_ISSUE.issueType + " — " + CURRENT_ISSUE.equipment +
-                  "\nReported by: " + CURRENT_ISSUE.reportedBy;
+                    "\nReported by: " + CURRENT_ISSUE.reportedBy;
+    const rowToDelete = CURRENT_ISSUE.rowNumber;
 
     if (!confirm(
       "⚠️ DELETE THIS ISSUE PERMANENTLY?\n\n" +
@@ -2074,30 +2075,24 @@ ${data.remarks || "Not specified"}
 
     showBusy("Deleting…");
 
-    apiCall("deleteIssue",
-      { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber },
-      function (res) {
-        hideBusy();
-        if (res && res.success) {
-          alert("✅ Issue deleted.");
-        } else {
-          alert("Delete failed: " + (res && res.message ? res.message : "Unknown error."));
-        }
-        CURRENT_ISSUE = null;
-        backFromIssueDetail();
-      },
-      function (err) {
-        hideBusy();
-        // google.script.run occasionally reports false errors. Ask user to verify.
-        alert("⚠️ The delete request reported an error.\n\n" +
-            "Please refresh the All Issues list to verify whether it was actually deleted.\n\n" +
-            "Error: " + (err && err.message ? err.message : "unknown"));
-        CURRENT_ISSUE = null;
-        backFromIssueDetail();
-      }
-    );
-  }
+    // Fire the delete request. Do NOT wait for a response.
+    google.script.run
+      .withSuccessHandler(function () {})
+      .withFailureHandler(function () {})
+      .deleteIssue(SESSION_TOKEN, rowToDelete);
 
+    // Close the detail screen immediately and refresh the list.
+    CURRENT_ISSUE = null;
+    setTimeout(function () {
+      hideBusy();
+      backFromIssueDetail();
+      // Give the server a moment, then refresh the list to reflect reality.
+      setTimeout(function () {
+        if (typeof allIssuesLoad === "function") allIssuesLoad();
+      }, 800);
+    }, 300);
+  }
+    
   /* ============================================================
      MARK IN PROGRESS
      ============================================================ */
