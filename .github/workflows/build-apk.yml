@@ -19,7 +19,7 @@ jobs:
 
       - name: Prepare Android project skeleton
         run: |
-          mkdir -p twa-project/app/src/main
+          mkdir -p twa-project/app/src/main/java/com/kct/plantapp
           cd twa-project
 
           cat > build.gradle <<'EOF'
@@ -81,8 +81,8 @@ jobs:
                   applicationId "com.kct.plantapp"
                   minSdk 21
                   targetSdk 34
-                  versionCode 1
-                  versionName "1.0.0"
+                  versionCode 2
+                  versionName "1.1.0"
               }
 
               signingConfigs {
@@ -108,26 +108,18 @@ jobs:
           }
 
           dependencies {
-              implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
               implementation 'androidx.appcompat:appcompat:1.6.1'
           }
           EOF
 
           mkdir -p src/main/res/values
+          mkdir -p src/main/res/xml
+          mkdir -p src/main/java/com/kct/plantapp
 
           cat > src/main/res/values/strings.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <string name="app_name">KCT Plant</string>
-              <string name="asset_statements">
-                  [{
-                    \"relation\": [\"delegate_permission/common.handle_all_urls\"],
-                    \"target\": {
-                      \"namespace\": \"web\",
-                      \"site\": \"https://script.google.com\"
-                    }
-                  }]
-              </string>
           </resources>
           EOF
 
@@ -139,23 +131,31 @@ jobs:
           </resources>
           EOF
 
+          cat > src/main/res/xml/file_paths.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <external-path name="external_files" path="."/>
+              <cache-path name="cache_files" path="."/>
+          </paths>
+          EOF
+
           cat > src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
+              <uses-permission android:name="android.permission.CAMERA"/>
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
               <application
                   android:label="@string/app_name"
                   android:icon="@mipmap/ic_launcher"
+                  android:usesCleartextTraffic="false"
                   android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">
-                  <meta-data
-                      android:name="asset_statements"
-                      android:resource="@string/asset_statements"/>
                   <activity
-                      android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
-                      android:exported="true">
-                      <meta-data
-                          android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                          android:value="https://kct-plant-app.web.app"/>
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN"/>
                           <category android:name="android.intent.category.LAUNCHER"/>
@@ -165,12 +165,145 @@ jobs:
           </manifest>
           EOF
 
+          cat > src/main/java/com/kct/plantapp/MainActivity.java <<'EOF'
+          package com.kct.plantapp;
+
+          import android.annotation.SuppressLint;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.view.KeyEvent;
+
+          import androidx.activity.OnBackPressedCallback;
+          import androidx.appcompat.app.AppCompatActivity;
+
+          public class MainActivity extends AppCompatActivity {
+
+              private WebView webView;
+              private ValueCallback<Uri[]> filePathCallback;
+              private static final int FILE_CHOOSER_REQUEST = 1001;
+
+              private static final String START_URL =
+                  "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
+
+              @SuppressLint("SetJavaScriptEnabled")
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings ws = webView.getSettings();
+                  ws.setJavaScriptEnabled(true);
+                  ws.setDomStorageEnabled(true);
+                  ws.setDatabaseEnabled(true);
+                  ws.setLoadWithOverviewMode(true);
+                  ws.setUseWideViewPort(true);
+                  ws.setAllowFileAccess(true);
+                  ws.setAllowContentAccess(true);
+                  ws.setMediaPlaybackRequiresUserGesture(false);
+                  ws.setJavaScriptCanOpenWindowsAutomatically(true);
+                  ws.setSupportMultipleWindows(false);
+
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                      ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+                  }
+
+                  // Keep all in-app navigation inside the WebView
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                          return false; // load everything inside WebView
+                      }
+
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                          return false;
+                      }
+                  });
+
+                  // File chooser (for <input type="file">) — critical for photo upload
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView webView,
+                                                       ValueCallback<Uri[]> callback,
+                                                       FileChooserParams params) {
+                          filePathCallback = callback;
+                          Intent intent = params.createIntent();
+                          try {
+                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                          } catch (Exception e) {
+                              filePathCallback = null;
+                              return false;
+                          }
+                          return true;
+                      }
+                  });
+
+                  webView.loadUrl(START_URL);
+
+                  // Handle hardware back button: go back in WebView history if possible
+                  getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+                      @Override
+                      public void handleOnBackPressed() {
+                          if (webView.canGoBack()) {
+                              webView.goBack();
+                          } else {
+                              setEnabled(false);
+                              getOnBackPressedDispatcher().onBackPressed();
+                          }
+                      }
+                  });
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  if (requestCode == FILE_CHOOSER_REQUEST) {
+                      if (filePathCallback != null) {
+                          Uri[] results = null;
+                          if (resultCode == RESULT_OK && data != null) {
+                              if (data.getClipData() != null) {
+                                  int count = data.getClipData().getItemCount();
+                                  results = new Uri[count];
+                                  for (int i = 0; i < count; i++) {
+                                      results[i] = data.getClipData().getItemAt(i).getUri();
+                                  }
+                              } else if (data.getData() != null) {
+                                  results = new Uri[]{ data.getData() };
+                              }
+                          }
+                          filePathCallback.onReceiveValue(results);
+                          filePathCallback = null;
+                      }
+                  } else {
+                      super.onActivityResult(requestCode, resultCode, data);
+                  }
+              }
+
+              @Override
+              public boolean onKeyDown(int keyCode, KeyEvent event) {
+                  if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
+                      webView.goBack();
+                      return true;
+                  }
+                  return super.onKeyDown(keyCode, event);
+              }
+          }
+          EOF
+
       # ============================================================
       # BLOCKER FIX — normalize icons to true PNG with ImageMagick
       # ============================================================
       - name: Download and normalize launcher icons
         run: |
-          # Ensure ImageMagick is available
           if ! command -v convert &> /dev/null; then
             sudo apt-get update -qq
             sudo apt-get install -y -qq imagemagick
@@ -182,16 +315,9 @@ jobs:
           mkdir -p twa-project/app/src/main/res/mipmap-xxhdpi
           mkdir -p twa-project/app/src/main/res/mipmap-xxxhdpi
 
-          # Download the icon (whatever its true format is)
           curl -sSLo /tmp/kct-icon-source \
             https://kct-plant-app.web.app/icon-512.png
 
-          echo "=== Source format check ==="
-          file /tmp/kct-icon-source
-          echo "=== First bytes (hex) ==="
-          xxd /tmp/kct-icon-source | head -2
-
-          # Normalize to real PNG at each density (works JPEG → PNG too)
           convert /tmp/kct-icon-source -background none -flatten \
             -strip -define png:color-type=6 -define png:bit-depth=8 \
             -resize 48x48   twa-project/app/src/main/res/mipmap-mdpi/ic_launcher.png
@@ -208,10 +334,6 @@ jobs:
             -strip -define png:color-type=6 -define png:bit-depth=8 \
             -resize 192x192 twa-project/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-          echo "=== Output files (all should be PNG) ==="
-          find twa-project/app/src/main/res -name "ic_launcher.png" -exec ls -la {} \;
-          find twa-project/app/src/main/res -name "ic_launcher.png" -exec file {} \;
-
       - name: Build APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -220,11 +342,6 @@ jobs:
         run: |
           cd twa-project
           ./gradlew assembleRelease --no-daemon
-
-      - name: Find APK
-        run: |
-          echo "=== APK file ==="
-          find twa-project -name "*.apk" -type f -exec ls -la {} \;
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
