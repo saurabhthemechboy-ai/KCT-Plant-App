@@ -19,7 +19,7 @@ jobs:
 
       - name: Prepare Android project skeleton
         run: |
-          mkdir -p twa-project/app/src/main/java/com/kct/plantapp
+          mkdir -p twa-project/app/src/main
           cd twa-project
 
           cat > build.gradle <<'EOF'
@@ -81,8 +81,8 @@ jobs:
                   applicationId "com.kct.plantapp"
                   minSdk 21
                   targetSdk 34
-                  versionCode 3
-                  versionName "1.2.0"
+                  versionCode 5
+                  versionName "1.4.0"
               }
 
               signingConfigs {
@@ -105,40 +105,29 @@ jobs:
                   sourceCompatibility JavaVersion.VERSION_17
                   targetCompatibility JavaVersion.VERSION_17
               }
-
-              sourceSets {
-                  main {
-                      java.srcDirs = ['src/main/java']
-                  }
-              }
           }
 
           dependencies {
+              implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
               implementation 'androidx.appcompat:appcompat:1.6.1'
-              implementation 'androidx.activity:activity:1.8.2'
-
-              // Force a single Kotlin stdlib version to avoid duplicate classes
-              implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
-              implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-          }
-
-          configurations.all {
-              resolutionStrategy {
-                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-              }
           }
           EOF
 
           mkdir -p src/main/res/values
-          mkdir -p src/main/res/xml
-          mkdir -p src/main/java/com/kct/plantapp
 
           cat > src/main/res/values/strings.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
               <string name="app_name">KCT Plant</string>
+              <string name="asset_statements">
+                  [{
+                    \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+                    \"target\": {
+                      \"namespace\": \"web\",
+                      \"site\": \"https://kct-plant-app.web.app\"
+                    }
+                  }]
+              </string>
           </resources>
           EOF
 
@@ -150,31 +139,23 @@ jobs:
           </resources>
           EOF
 
-          cat > src/main/res/values/themes.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-                  <item name="colorPrimary">@color/colorPrimary</item>
-                  <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-                  <item name="android:windowNoTitle">true</item>
-              </style>
-          </resources>
-          EOF
-
           cat > src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
-
               <application
                   android:label="@string/app_name"
                   android:icon="@mipmap/ic_launcher"
-                  android:usesCleartextTraffic="false"
-                  android:theme="@style/AppTheme">
+                  android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar">
+                  <meta-data
+                      android:name="asset_statements"
+                      android:resource="@string/asset_statements"/>
                   <activity
-                      android:name="com.kct.plantapp.MainActivity"
-                      android:exported="true"
-                      android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode">
+                      android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+                      android:exported="true">
+                      <meta-data
+                          android:name="android.support.customtabs.trusted.DEFAULT_URL"
+                          android:value="https://kct-plant-app.web.app"/>
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN"/>
                           <category android:name="android.intent.category.LAUNCHER"/>
@@ -182,121 +163,6 @@ jobs:
                   </activity>
               </application>
           </manifest>
-          EOF
-
-          cat > src/main/java/com/kct/plantapp/MainActivity.java <<'EOF'
-          package com.kct.plantapp;
-
-          import android.annotation.SuppressLint;
-          import android.content.Intent;
-          import android.net.Uri;
-          import android.os.Build;
-          import android.os.Bundle;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebResourceRequest;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-
-          import androidx.appcompat.app.AppCompatActivity;
-
-          public class MainActivity extends AppCompatActivity {
-
-              private WebView webView;
-              private ValueCallback<Uri[]> filePathCallback;
-              private static final int FILE_CHOOSER_REQUEST = 1001;
-
-              private static final String START_URL =
-                  "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec";
-
-              @SuppressLint("SetJavaScriptEnabled")
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
-
-                  webView = new WebView(this);
-                  setContentView(webView);
-
-                  WebSettings ws = webView.getSettings();
-                  ws.setJavaScriptEnabled(true);
-                  ws.setDomStorageEnabled(true);
-                  ws.setDatabaseEnabled(true);
-                  ws.setLoadWithOverviewMode(true);
-                  ws.setUseWideViewPort(true);
-                  ws.setAllowFileAccess(true);
-                  ws.setAllowContentAccess(true);
-                  ws.setJavaScriptCanOpenWindowsAutomatically(true);
-
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                      ws.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-                  }
-
-                  webView.setWebViewClient(new WebViewClient() {
-                      @Override
-                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                          return false;
-                      }
-                      @Override
-                      public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                          return false;
-                      }
-                  });
-
-                  webView.setWebChromeClient(new WebChromeClient() {
-                      @Override
-                      public boolean onShowFileChooser(WebView webView,
-                                                       ValueCallback<Uri[]> callback,
-                                                       FileChooserParams params) {
-                          filePathCallback = callback;
-                          Intent intent = params.createIntent();
-                          try {
-                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                          } catch (Exception e) {
-                              filePathCallback = null;
-                              return false;
-                          }
-                          return true;
-                      }
-                  });
-
-                  webView.loadUrl(START_URL);
-              }
-
-              @Override
-              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                  if (requestCode == FILE_CHOOSER_REQUEST) {
-                      if (filePathCallback != null) {
-                          Uri[] results = null;
-                          if (resultCode == RESULT_OK && data != null) {
-                              if (data.getClipData() != null) {
-                                  int count = data.getClipData().getItemCount();
-                                  results = new Uri[count];
-                                  for (int i = 0; i < count; i++) {
-                                      results[i] = data.getClipData().getItemAt(i).getUri();
-                                  }
-                              } else if (data.getData() != null) {
-                                  results = new Uri[]{ data.getData() };
-                              }
-                          }
-                          filePathCallback.onReceiveValue(results);
-                          filePathCallback = null;
-                      }
-                  } else {
-                      super.onActivityResult(requestCode, resultCode, data);
-                  }
-              }
-
-              @Override
-              @SuppressWarnings("deprecation")
-              public void onBackPressed() {
-                  if (webView != null && webView.canGoBack()) {
-                      webView.goBack();
-                  } else {
-                      super.onBackPressed();
-                  }
-              }
-          }
           EOF
 
       - name: Download and normalize launcher icons
