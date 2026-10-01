@@ -2,7 +2,7 @@
   "name": "KCT Plant App",
   "short_name": "KCT Plant",
   "description": "Kakinada Coal Terminal work intimation and issue management",
-  "start_url": "/https://kct-plant-app.web.app",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -28,32 +28,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Work Intimation",
-      "short_name": "Work",
-      "url": "/?action=work",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
-    },
-    {
-      "name": "Report Issue",
-      "short_name": "Issue",
-      "url": "/?action=issue",
-      "icons": [
-        {
-          "src": "icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
     }
   ]
 }
