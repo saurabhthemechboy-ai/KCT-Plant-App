@@ -1,34 +1,14 @@
 {
   "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      "**/node_modules/**",
-      ".github/**",
-      "README.md"
-    ],
-    "redirects": [
-      {
-        "source": "/",
-        "destination": "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec",
-        "type": 302
-      }
-    ],
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }],
     "headers": [
       {
-        "source": "/.well-known/assetlinks.json",
+        "source": "/index.html",
         "headers": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Cache-Control", "value": "no-cache" }
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
         ]
-      },
-      {
-        "source": "/service-worker.js",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
-      },
-      {
-        "source": "/manifest.json",
-        "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }]
       }
     ]
   }
