@@ -11,7 +11,7 @@
       {
         "source": "/",
         "destination": "https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec",
-        "type": 302
+        "type": 307
       }
     ],
     "headers": [
