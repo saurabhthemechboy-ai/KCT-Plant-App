@@ -1055,14 +1055,14 @@
     </div>
 
     <div id="issueDetailActions" class="hidden" style="margin-top:20px;">
+      <button id="logStartBtn" class="primary-btn" onclick="logWorkStartPrompt()" data-i18n="issue_detail_log_start">
+        ▶ LOG WORK START
+      </button>
+      <button id="logFinishBtn" class="primary-btn" onclick="openLogFinishModal()" data-i18n="issue_detail_log_finish">
+        ✓ LOG WORK FINISH
+      </button>
       <button id="assignBtn" class="secondary-btn" onclick="openAssignModal()" data-i18n="issue_detail_assign_btn">
         🔧 ASSIGN ISSUE
-      </button>
-      <button id="inProgressBtn" class="secondary-btn" onclick="markInProgress()" data-i18n="issue_detail_inprogress_btn">
-        ⏳ MARK IN PROGRESS
-      </button>
-      <button id="resolveBtn" class="primary-btn" onclick="openResolveModal()" data-i18n="issue_detail_resolve_btn">
-        ✅ MARK RESOLVED
       </button>
       <button id="deleteBtn" class="danger-btn" onclick="deleteCurrentIssue()" data-i18n="issue_detail_delete_btn">
         🗑️ DELETE ISSUE (ADMIN)
@@ -1410,6 +1410,63 @@
   </div>
 </div>
 
+<div id="logStartModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3 data-i18n="log_start_title">Log Work Start</h3>
+    <p style="font-size:13px;color:#555;margin-top:0;">
+      <span data-i18n="log_start_hint">Starting work on this issue now.</span>
+    </p>
+    <label class="form-label" for="logStartTime" data-i18n="log_start_time">Start Time</label>
+    <input type="time" id="logStartTime" class="form-input">
+    <div class="error-box" id="logStartError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeLogStartModal()" data-i18n="cancel">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitLogStart()" id="logStartSubmitBtn" data-i18n="log_start_btn">Start Work</button>
+    </div>
+  </div>
+</div>
+
+<div id="logFinishModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3 data-i18n="log_finish_title">Log Work Finish</h3>
+
+    <label class="form-label" data-i18n="resolve_photo">Resolution Photo *</label>
+    <div id="lfPhotoArea" class="photo-area hidden" style="margin-top:6px;">
+      <img id="lfPhotoPreview" alt="Completion photo">
+    </div>
+    <div id="lfPhotoPicker" style="margin-top:6px;">
+      <div class="photo-area" style="border-style:dashed;cursor:default;min-height:120px;">
+        <div class="cam-icon" style="font-size:32px;">📷</div>
+        <div class="hint" style="font-size:13px;" data-i18n="resolve_photo_hint">Add a photo of the resolved state</div>
+      </div>
+      <div class="photo-buttons">
+        <button type="button" class="photo-btn camera" onclick="lfPhotoCamera()">
+          <span class="ic">📷</span><span data-i18n="issue_take_photo">Take Photo</span>
+        </button>
+        <button type="button" class="photo-btn gallery" onclick="lfPhotoGallery()">
+          <span class="ic">🖼️</span><span data-i18n="issue_gallery">Choose from Gallery</span>
+        </button>
+      </div>
+    </div>
+    <input type="file" id="lfCameraInput" accept="image/*" capture="environment" style="display:none" onchange="onLfPhotoChosen(event)">
+    <input type="file" id="lfGalleryInput" accept="image/*" style="display:none" onchange="onLfPhotoChosen(event)">
+
+    <label class="form-label" for="lfNotes" data-i18n="resolve_notes">Resolution Notes *</label>
+    <textarea id="lfNotes" class="form-textarea"
+              data-i18n-placeholder="resolve_notes_placeholder"
+              placeholder="What was done to resolve the issue?"></textarea>
+
+    <label class="form-label" for="lfFinishTime" data-i18n="log_finish_time">Finish Time</label>
+    <input type="time" id="lfFinishTime" class="form-input">
+
+    <div class="error-box" id="lfError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeLogFinishModal()" data-i18n="cancel">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitLogFinish()" id="lfSubmitBtn" data-i18n="log_finish_btn">Finish Work</button>
+    </div>
+  </div>
+</div>
+
 <div id="assignModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3 data-i18n="assign_title">Assign Issue</h3>
@@ -1528,23 +1585,38 @@ const TRANSLATIONS = {
     logout: "Logout",
     refresh_app: "🔄 Refresh App",
     refresh_confirm: "Refresh app?\n\nThis will clear cached data and reload the latest version.",
+    my_assignments_title: "My Assignments",
+    my_assignments_tab_active: "Active",
+    my_assignments_tab_resolved: "Resolved",
+    my_assignments_tab_all: "All",
     refreshing: "Refreshing…",
+    issue_detail_log_start: "▶ LOG WORK START",
+    issue_detail_log_finish: "✓ LOG WORK FINISH",
+    log_start_title: "Log Work Start",
+    log_start_hint: "Starting work on this issue now. You can adjust the time if you started earlier.",
+    log_start_time: "Start Time",
+    log_start_btn: "Start Work",
+    log_finish_title: "Log Work Finish",
+    log_finish_time: "Finish Time",
+    log_finish_btn: "Finish Work",
+    tile_my_assignments: "MY<br>ASSIGNMENTS",
+    tile_my_assignments_sub: "Issues on me",
     tile_work: "WORK<br>INTIMATION",
-    tile_work_sub: "Start / Complete work",
+    tile_work_sub: "Start / Complete Work",
     tile_issue: "REPORT<br>ISSUE",
-    tile_issue_sub: "Snap & submit",
+    tile_issue_sub: "Snap & Submit",
     tile_history: "MY<br>HISTORY",
-    tile_history_sub: "View past records",
+    tile_history_sub: "View past Records",
     tile_today: "TODAY",
-    tile_today_sub: "Live plant status",
+    tile_today_sub: "Live Plant Status",
     tile_all_issues: "ALL<br>ISSUES",
     tile_all_issues_sub: "Manage & resolve",
     tile_dashboard: "DASH<br>BOARD",
-    tile_dashboard_sub: "Analytics & trends",
+    tile_dashboard_sub: "Analytics & Trends",
     tile_admin: "ADMIN<br>USERS",
-    tile_admin_sub: "Manage accounts",
+    tile_admin_sub: "Manage Accounts",
     loading: "Loading…",
-    no_data: "No data.",
+    no_data: "No Data.",
     cancel: "Cancel",
     submit: "SUBMIT",
     submitting: "SUBMITTING...",
@@ -1755,6 +1827,18 @@ const TRANSLATIONS = {
     logout: "లాగ్ అవుట్",
     refresh_app: "🔄 యాప్ రిఫ్రెష్ చేయండి",
     refresh_confirm: "యాప్ రిఫ్రెష్ చేయాలా?\n\nఇది కాష్ చేసిన డేటాను క్లియర్ చేసి తాజా వెర్షన్‌ను లోడ్ చేస్తుంది.",
+    // Piece 4 additions
+    issue_detail_log_start: "▶ పని ప్రారంభించండి",
+    issue_detail_log_finish: "✓ పని పూర్తి చేయండి",
+    log_start_title: "పని ప్రారంభాన్ని నమోదు చేయండి",
+    log_start_hint: "ఇప్పుడు ఈ సమస్యపై పని ప్రారంభిస్తున్నారు. మీరు ముందే ప్రారంభించి ఉంటే సమయాన్ని సర్దుబాటు చేయవచ్చు.",
+    log_start_time: "ప్రారంభ సమయం",
+    log_start_btn: "పని ప్రారంభించండి",
+    log_finish_title: "పని పూర్తిని నమోదు చేయండి",
+    log_finish_time: "పూర్తి సమయం",
+    log_finish_btn: "పని పూర్తి చేయండి",
+    tile_my_assignments: "నా<br>అసైన్‌మెంట్లు",
+    tile_my_assignments_sub: "నాకు కేటాయించిన సమస్యలు",
     refreshing: "రిఫ్రెష్ అవుతోంది…",
     tile_work: "పని<br>సమాచారం",
     tile_work_sub: "పని ప్రారంభించండి / పూర్తి చేయండి",
@@ -1815,6 +1899,10 @@ const TRANSLATIONS = {
     work_success_message: "మీ పని సమాచారం నమోదు చేయబడింది.",
     work_open_whatsapp: "📱 WhatsApp తెరవండి",
     work_success_footer: "పూర్తయినప్పుడు వెనుక బాణం లేదా లాగ్ అవుట్ నొక్కండి.",
+    my_assignments_title: "నా అసైన్‌మెంట్లు",
+    my_assignments_tab_active: "క్రియాశీలం",
+    my_assignments_tab_resolved: "పరిష్కరించబడింది",
+    my_assignments_tab_all: "అన్నీ",
     wt_idler: "ఐడ్లర్ రీప్లేస్‌మెంట్",
     wt_chute: "చూట్ క్లీనింగ్",
     wt_takeup: "టేక్-అప్ క్లీనింగ్",
@@ -1982,6 +2070,12 @@ const TRANSLATIONS = {
     logout: "लॉग आउट",
     refresh_app: "🔄 ऐप रीफ़्रेश करें",
     refresh_confirm: "ऐप रीफ़्रेश करें?\n\nयह कैश्ड डेटा साफ़ करेगा और नवीनतम संस्करण लोड करेगा।",
+    my_assignments_title: "मेरे कार्य",
+    my_assignments_tab_active: "सक्रिय",
+    my_assignments_tab_resolved: "हल",
+    my_assignments_tab_all: "सभी",
+    tile_my_assignments: "मेरे<br>कार्य",
+    tile_my_assignments_sub: "मुझे सौंपी गई समस्याएँ",
     refreshing: "रीफ़्रेश हो रहा है…",
     tile_work: "कार्य<br>सूचना",
     tile_work_sub: "कार्य शुरू करें / पूरा करें",
@@ -2029,6 +2123,15 @@ const TRANSLATIONS = {
     work_expected_duration_select: "अपेक्षित अवधि चुनें",
     work_start_time: "वास्तविक कार्य प्रारंभ समय *",
     work_safety: "सुरक्षा पुष्टि",
+    issue_detail_log_start: "▶ कार्य प्रारंभ करें",
+    issue_detail_log_finish: "✓ कार्य पूर्ण करें",
+    log_start_title: "कार्य प्रारंभ दर्ज करें",
+    log_start_hint: "अब इस समस्या पर कार्य शुरू हो रहा है। यदि आपने पहले शुरू किया था, तो समय बदल सकते हैं।",
+    log_start_time: "प्रारंभ समय",
+    log_start_btn: "कार्य प्रारंभ करें",
+    log_finish_title: "कार्य पूर्णता दर्ज करें",
+    log_finish_time: "पूर्णता समय",
+    log_finish_btn: "कार्य पूर्ण करें",
     work_safety_control: "कंट्रोल रूम को सूचित किया गया",
     work_safety_team: "कार्य टीम को बताया गया",
     work_safety_ppe: "आवश्यक PPE सुनिश्चित",
@@ -2209,6 +2312,12 @@ const TRANSLATIONS = {
     logout: "ଲଗ ଆଉଟ୍",
     refresh_app: "🔄 ଆପ୍ ରିଫ୍ରେସ୍ କରନ୍ତୁ",
     refresh_confirm: "ଆପ୍ ରିଫ୍ରେସ୍ କରିବେ?\n\nଏହା କ୍ୟାଶେଡ୍ ଡାଟା ସଫା କରି ସର୍ବଶେଷ ସଂସ୍କରଣ ଲୋଡ୍ କରିବ।",
+    my_assignments_title: "ମୋ ନ୍ୟସ୍ତ",
+    my_assignments_tab_active: "ସକ୍ରିୟ",
+    my_assignments_tab_resolved: "ସମାଧାନ",
+    my_assignments_tab_all: "ସମସ୍ତ",
+    tile_my_assignments: "ମୋ<br>ନ୍ୟସ୍ତ",
+    tile_my_assignments_sub: "ମୋତେ ନ୍ୟସ୍ତ ସମସ୍ୟା",
     refreshing: "ରିଫ୍ରେସ୍ ହେଉଛି…",
     tile_work: "କାର୍ଯ୍ୟ<br>ସୂଚନା",
     tile_work_sub: "କାର୍ଯ୍ୟ ଆରମ୍ଭ / ସମାପ୍ତ",
@@ -2237,6 +2346,15 @@ const TRANSLATIONS = {
     delete: "ବିଲୋପ",
     edit: "ସମ୍ପାଦନା",
     ok: "ଠିକ୍",
+    issue_detail_log_start: "▶ କାର୍ଯ୍ୟ ଆରମ୍ଭ କରନ୍ତୁ",
+    issue_detail_log_finish: "✓ କାର୍ଯ୍ୟ ସମାପ୍ତ କରନ୍ତୁ",
+    log_start_title: "କାର୍ଯ୍ୟ ଆରମ୍ଭ ଲଗ୍ କରନ୍ତୁ",
+    log_start_hint: "ବର୍ତ୍ତମାନ ଏହି ସମସ୍ୟା ଉପରେ କାର୍ଯ୍ୟ ଆରମ୍ଭ ହେଉଛି। ଯଦି ଆପଣ ପୂର୍ବରୁ ଆରମ୍ଭ କରିଥିଲେ, ସମୟ ବଦଳାଇ ପାରିବେ।",
+    log_start_time: "ଆରମ୍ଭ ସମୟ",
+    log_start_btn: "କାର୍ଯ୍ୟ ଆରମ୍ଭ କରନ୍ତୁ",
+    log_finish_title: "କାର୍ଯ୍ୟ ସମାପ୍ତି ଲଗ୍ କରନ୍ତୁ",
+    log_finish_time: "ସମାପ୍ତି ସମୟ",
+    log_finish_btn: "କାର୍ଯ୍ୟ ସମାପ୍ତ କରନ୍ତୁ",
     work_title: "କାର୍ଯ୍ୟ ସୂଚନା",
     work_status: "କାର୍ଯ୍ୟ ସ୍ଥିତି *",
     work_status_select: "ସ୍ଥିତି ଚୟନ କରନ୍ତୁ",
@@ -3161,43 +3279,65 @@ function renderIssueDetail_() {
           (it.assignedTo ? allIssuesEsc_(it.assignedTo) : "<i>Unassigned</i>") + "</span></div>";
   if (it.assignedAt)
     html += "  <div class='card-row'><span class='lbl'>Assigned At</span><span class='val'>" + allIssuesEsc_(it.assignedAt) + "</span></div>";
-  if (it.resolvedAt)
-    html += "  <div class='card-row'><span class='lbl'>Resolved At</span><span class='val'>" + allIssuesEsc_(it.resolvedAt) + "</span></div>";
-  if (it.resolvedBy)
-    html += "  <div class='card-row'><span class='lbl'>Resolved By</span><span class='val'>" + allIssuesEsc_(it.resolvedBy) + "</span></div>";
+  if (it.workStartedAt)
+    html += "  <div class='card-row'><span class='lbl'>Work Started</span><span class='val'>" + allIssuesEsc_(it.workStartedAt) + " by " + allIssuesEsc_(it.workStartedBy) + "</span></div>";
+  if (it.workFinishedAt)
+    html += "  <div class='card-row'><span class='lbl'>Work Finished</span><span class='val'>" + allIssuesEsc_(it.workFinishedAt) + " by " + allIssuesEsc_(it.workFinishedBy) + "</span></div>";
   html += "</div>";
 
+  // Description
   if (it.description) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Description</div>";
     html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.description) + "</div></div>";
   }
 
+  // Reported photo
   if (it.photoUrl) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Reported Photo</div>";
     html += "<a href='" + allIssuesEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>";
     html += "<img class='card-photo' src='" + allIssuesEsc_(it.photoUrl) + "' alt='issue photo'></a></div>";
   }
 
+  // Resolved photo
   if (it.resolvedPhotoUrl) {
     html += "<div class='card' style='border-left-color:#0288d1;'><div class='section-heading' style='margin-top:0;'>Resolved Photo</div>";
     html += "<a href='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'>";
     html += "<img class='card-photo' src='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' alt='resolution photo'></a></div>";
   }
 
+  // Notes
   if (it.resolutionNotes) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Resolution Notes</div>";
     html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.resolutionNotes) + "</div></div>";
   }
 
+  // Time Metrics card — only if we have at least reported + one other
+  html += renderTimeMetrics_(it);
+
+  // Timeline
   if (it.statusHistory && it.statusHistory.length) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Timeline</div><div class='timeline'>";
     it.statusHistory.forEach(function (h) {
       let line = "";
-      if (h.action === "Created") line = "Created by " + (h.by || "");
-      else if (h.action === "Assigned") line = "Assigned to " + (h.to || "") + " by " + (h.by || "");
-      else if (h.action === "Status changed") line = (h.from || "") + " → " + (h.to || "") + " by " + (h.by || "");
-      else line = (h.action || "") + " by " + (h.by || "");
-      html += "<div class='timeline-item'><div>" + allIssuesEsc_(line) + "</div>";
+      let dotColor = "#0288d1";
+      if (h.action === "Created") {
+        line = "🟠 Reported by " + (h.by || "");
+        dotColor = "#f57c00";
+      } else if (h.action === "Assigned") {
+        line = "🔵 Assigned to " + (h.to || "") + " by " + (h.by || "");
+      } else if (h.action === "Work started") {
+        line = "🟢 Work started by " + (h.by || "");
+        dotColor = "#2e7d32";
+      } else if (h.action === "Work finished") {
+        line = "✅ Work finished by " + (h.by || "");
+        dotColor = "#2e7d32";
+      } else if (h.action === "Status changed") {
+        line = (h.from || "") + " → " + (h.to || "") + " by " + (h.by || "");
+      } else {
+        line = (h.action || "") + " by " + (h.by || "");
+      }
+      html += "<div class='timeline-item' style='border-left-color:" + dotColor + ";'>";
+      html += "<div>" + allIssuesEsc_(line) + "</div>";
       html += "<div class='when'>" + allIssuesEsc_(h.at || "") + "</div></div>";
     });
     html += "</div></div>";
@@ -3205,20 +3345,108 @@ function renderIssueDetail_() {
 
   body.innerHTML = html;
 
-  if (it.canManage) {
-    document.getElementById("issueDetailActions").classList.remove("hidden");
-    const isResolved = it.status === "Resolved";
-    const isInProgress = it.status === "In Progress";
-    document.getElementById("assignBtn").disabled = isResolved;
-    document.getElementById("inProgressBtn").disabled = isResolved || isInProgress;
-    document.getElementById("resolveBtn").disabled = isResolved;
+  // Show/hide action buttons based on status + role
+  const actionsEl = document.getElementById("issueDetailActions");
+  const isResolved = it.status === "Resolved";
+  const isInProgress = it.status === "In Progress";
 
-    const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
-    const delBtn = document.getElementById("deleteBtn");
-    if (delBtn) delBtn.style.display = isAdmin ? "block" : "none";
-  } else {
-    document.getElementById("issueDetailActions").classList.add("hidden");
+  // Legacy compat: if In Progress but workStartedAt is empty, treat as startable (from old data)
+  const canStart = !isResolved && !it.workStartedAt;
+  const canFinish = !isResolved && (it.workStartedAt || isInProgress);
+
+  const logStartBtn = document.getElementById("logStartBtn");
+  const logFinishBtn = document.getElementById("logFinishBtn");
+  const assignBtn = document.getElementById("assignBtn");
+  const delBtn = document.getElementById("deleteBtn");
+
+  if (logStartBtn) logStartBtn.style.display = canStart ? "block" : "none";
+  if (logFinishBtn) logFinishBtn.style.display = canFinish ? "block" : "none";
+
+  // Assign button: incharge/admin only, and only when not resolved
+  const isPrivileged = CURRENT_USER &&
+    (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
+  if (assignBtn) {
+    if (isPrivileged && !isResolved) {
+      assignBtn.style.display = "block";
+    } else {
+      assignBtn.style.display = "none";
+    }
   }
+
+  // Delete: admin only
+  const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
+  if (delBtn) delBtn.style.display = isAdmin ? "block" : "none";
+
+  // Show actions container if any button is visible
+  const anyVisible = (canStart || canFinish || (isPrivileged && !isResolved) || isAdmin);
+  if (anyVisible) {
+    actionsEl.classList.remove("hidden");
+  } else {
+    actionsEl.classList.add("hidden");
+  }
+}
+
+function renderTimeMetrics_(it) {
+  const fmt = function (v) { return v || "—"; };
+  const fmtGap = function (fromStr, toStr) {
+    if (!fromStr || !toStr) return "—";
+    const a = parseSheetDateTime_(fromStr);
+    const b = parseSheetDateTime_(toStr);
+    if (!a || !b) return "—";
+    const ms = b.getTime() - a.getTime();
+    if (ms < 0) return "—";
+    const mins = Math.floor(ms / 60000);
+    const hrs = Math.floor(mins / 60);
+    const days = Math.floor(hrs / 24);
+    if (days > 0) return days + "d " + (hrs % 24) + "h";
+    if (hrs > 0) return hrs + "h " + (mins % 60) + "m";
+    return mins + "m";
+  };
+
+  // Format is "dd-MM-yyyy HH:mm" (from backend) — parse accordingly
+  function parseSheetDateTime_(s) {
+    if (!s) return null;
+    const m = String(s).match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})$/);
+    if (!m) return null;
+    return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]));
+  }
+
+  const hasReported = !!it.reportedAt;
+  const hasAssigned = !!it.assignedAt;
+  const hasStarted = !!it.workStartedAt;
+  const hasFinished = !!it.workFinishedAt;
+
+  // Readable timestamps already rendered elsewhere; here we show gaps
+  let html = "<div class='card'><div class='section-heading' style='margin-top:0;'>Time Metrics</div>";
+  html += "<table class='dash-table'>";
+  html += "<thead><tr><th>Stage</th><th>Timestamp</th><th class='num'>Duration</th></tr></thead><tbody>";
+
+  html += "<tr><td>Reported</td><td>" + allIssuesEsc_(fmt(it.reportedAt)) + "</td><td class='num'>—</td></tr>";
+
+  if (hasAssigned) {
+    html += "<tr><td>Assigned</td><td>" + allIssuesEsc_(fmt(it.assignedAt)) + "</td>" +
+            "<td class='num'>" + fmtGap(it.reportedAt, it.assignedAt) + "</td></tr>";
+  }
+  if (hasStarted) {
+    const prev = hasAssigned ? it.assignedAt : it.reportedAt;
+    html += "<tr><td>Work Started</td><td>" + allIssuesEsc_(fmt(it.workStartedAt)) + "</td>" +
+            "<td class='num'>" + fmtGap(prev, it.workStartedAt) + "</td></tr>";
+  }
+  if (hasFinished) {
+    const prev = hasStarted ? it.workStartedAt : (hasAssigned ? it.assignedAt : it.reportedAt);
+    html += "<tr><td>Work Finished</td><td>" + allIssuesEsc_(fmt(it.workFinishedAt)) + "</td>" +
+            "<td class='num'>" + fmtGap(prev, it.workFinishedAt) + "</td></tr>";
+  }
+
+  html += "</tbody></table>";
+
+  if (hasReported && hasFinished) {
+    html += "<div style='margin-top:10px;font-size:13px;color:#555;'>Total end-to-end: <b>" +
+            fmtGap(it.reportedAt, it.workFinishedAt) + "</b></div>";
+  }
+
+  html += "</div>";
+  return html;
 }
 
 /* ============================================================
@@ -3325,95 +3553,6 @@ function deleteCurrentIssue() {
       if (typeof allIssuesLoad === "function") allIssuesLoad();
     }, 800);
   }, 300);
-}
-
-/* ============================================================
-   MARK IN PROGRESS
-   ============================================================ */
-function markInProgress() {
-  if (!CURRENT_ISSUE) return;
-  if (!confirm("Mark this issue as In Progress?")) return;
-  apiCall("updateIssueStatus",
-    { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
-      newStatus: "In Progress", notes: "", resolvedPhotoBase64: null, resolvedPhotoMime: null },
-    function (res) {
-      if (!res || !res.success) { alert(res && res.message ? res.message : "Failed."); return; }
-      openIssueDetail(CURRENT_ISSUE.rowNumber);
-    }
-  );
-}
-
-/* ============================================================
-   RESOLVE
-   ============================================================ */
-let RESOLVE_PHOTO_B64 = null;
-let RESOLVE_PHOTO_MIME = "image/jpeg";
-
-function openResolveModal() {
-  if (!CURRENT_ISSUE) return;
-  RESOLVE_PHOTO_B64 = null;
-  document.getElementById("resolveNotes").value = "";
-  document.getElementById("resolvePhotoArea").classList.add("hidden");
-  document.getElementById("resolvePhotoPicker").classList.remove("hidden");
-  document.getElementById("resolvePhotoPreview").src = "";
-  document.getElementById("resolveError").classList.remove("visible");
-  document.getElementById("resolveModal").classList.remove("hidden");
-}
-
-function closeResolveModal() { document.getElementById("resolveModal").classList.add("hidden"); }
-function resolvePhotoCamera() { document.getElementById("resolveCameraInput").click(); }
-function resolvePhotoGallery() { document.getElementById("resolveGalleryInput").click(); }
-
-function onResolvePhotoChosen(evt) {
-  const file = evt.target.files && evt.target.files[0];
-  if (!file) return;
-  RESOLVE_PHOTO_MIME = file.type || "image/jpeg";
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    compressImage_(e.target.result, 1200, 0.7, function (compressed) {
-      const comma = compressed.indexOf(",");
-      RESOLVE_PHOTO_B64 = compressed.substring(comma + 1);
-      document.getElementById("resolvePhotoPreview").src = compressed;
-      document.getElementById("resolvePhotoArea").classList.remove("hidden");
-      document.getElementById("resolvePhotoPicker").classList.add("hidden");
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-function submitResolve() {
-  const notes = document.getElementById("resolveNotes").value.trim();
-  const errBox = document.getElementById("resolveError");
-
-  if (!RESOLVE_PHOTO_B64) { errBox.textContent = "A photo is required to mark resolved."; errBox.classList.add("visible"); return; }
-  if (!notes) { errBox.textContent = "Please add resolution notes."; errBox.classList.add("visible"); return; }
-
-  const btn = document.getElementById("resolveSubmitBtn");
-  btn.disabled = true; btn.textContent = "Resolving…";
-  showBusy("Uploading resolved photo…");
-
-  apiCall("updateIssueStatus",
-    { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber,
-      newStatus: "Resolved", notes: notes,
-      resolvedPhotoBase64: RESOLVE_PHOTO_B64, resolvedPhotoMime: RESOLVE_PHOTO_MIME },
-    function (res) {
-      hideBusy();
-      btn.disabled = false; btn.textContent = "Resolve";
-      if (!res || !res.success) {
-        errBox.textContent = res && res.message ? res.message : "Failed.";
-        errBox.classList.add("visible");
-        return;
-      }
-      closeResolveModal();
-      openIssueDetail(CURRENT_ISSUE.rowNumber);
-    },
-    function (err) {
-      hideBusy();
-      btn.disabled = false; btn.textContent = "Resolve";
-      errBox.textContent = err && err.message ? err.message : "Failed.";
-      errBox.classList.add("visible");
-    }
-  );
 }
 
 /* ============================================================
@@ -4859,6 +4998,144 @@ function myAssignmentsRender_(items) {
       "</div>"
     );
   }).join("");
+}
+
+/* ============================================================
+   LOG WORK START / FINISH
+   ============================================================ */
+
+function logWorkStartPrompt() {
+  if (!CURRENT_ISSUE) return;
+  document.getElementById("logStartError").classList.remove("visible");
+  // Default the time input to now
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("logStartTime").value = hh + ":" + mm;
+  document.getElementById("logStartModal").classList.remove("hidden");
+}
+
+function closeLogStartModal() {
+  document.getElementById("logStartModal").classList.add("hidden");
+}
+
+function submitLogStart() {
+  if (!CURRENT_ISSUE) return;
+  const t = document.getElementById("logStartTime").value || "";
+  const btn = document.getElementById("logStartSubmitBtn");
+  const errBox = document.getElementById("logStartError");
+  btn.disabled = true; btn.textContent = "Starting…";
+  errBox.classList.remove("visible");
+
+  apiCall("logWorkStart",
+    { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, startTime: t },
+    function (res) {
+      btn.disabled = false; btn.textContent = "Start Work";
+      if (!res || !res.success) {
+        errBox.textContent = res && res.message ? res.message : "Failed.";
+        errBox.classList.add("visible");
+        return;
+      }
+      closeLogStartModal();
+      openIssueDetail(CURRENT_ISSUE.rowNumber);
+    },
+    function (err) {
+      btn.disabled = false; btn.textContent = "Start Work";
+      errBox.textContent = err && err.message ? err.message : "Failed.";
+      errBox.classList.add("visible");
+    }
+  );
+}
+
+/* --- Log Finish modal --- */
+
+let LF_PHOTO_B64 = null;
+let LF_PHOTO_MIME = "image/jpeg";
+
+function openLogFinishModal() {
+  if (!CURRENT_ISSUE) return;
+  LF_PHOTO_B64 = null;
+  document.getElementById("lfNotes").value = "";
+  document.getElementById("lfPhotoArea").classList.add("hidden");
+  document.getElementById("lfPhotoPicker").classList.remove("hidden");
+  document.getElementById("lfPhotoPreview").src = "";
+  document.getElementById("lfError").classList.remove("visible");
+  // Default finish time to now
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("lfFinishTime").value = hh + ":" + mm;
+  document.getElementById("logFinishModal").classList.remove("hidden");
+}
+
+function closeLogFinishModal() {
+  document.getElementById("logFinishModal").classList.add("hidden");
+}
+
+function lfPhotoCamera()  { document.getElementById("lfCameraInput").click(); }
+function lfPhotoGallery() { document.getElementById("lfGalleryInput").click(); }
+
+function onLfPhotoChosen(evt) {
+  const file = evt.target.files && evt.target.files[0];
+  if (!file) return;
+  LF_PHOTO_MIME = file.type || "image/jpeg";
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    compressImage_(e.target.result, 1200, 0.7, function (compressed) {
+      const comma = compressed.indexOf(",");
+      LF_PHOTO_B64 = compressed.substring(comma + 1);
+      document.getElementById("lfPhotoPreview").src = compressed;
+      document.getElementById("lfPhotoArea").classList.remove("hidden");
+      document.getElementById("lfPhotoPicker").classList.add("hidden");
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitLogFinish() {
+  if (!CURRENT_ISSUE) return;
+  const notes = document.getElementById("lfNotes").value.trim();
+  const t = document.getElementById("lfFinishTime").value || "";
+  const errBox = document.getElementById("lfError");
+
+  if (!LF_PHOTO_B64) {
+    errBox.textContent = "A photo is required.";
+    errBox.classList.add("visible"); return;
+  }
+  if (!notes) {
+    errBox.textContent = "Please add completion notes.";
+    errBox.classList.add("visible"); return;
+  }
+
+  const btn = document.getElementById("lfSubmitBtn");
+  btn.disabled = true; btn.textContent = "Finishing…";
+  showBusy("Uploading completion photo…");
+
+  apiCall("logWorkFinish",
+    { token: SESSION_TOKEN,
+      rowNumber: CURRENT_ISSUE.rowNumber,
+      finishTime: t,
+      notes: notes,
+      resolvedPhotoBase64: LF_PHOTO_B64,
+      resolvedPhotoMime: LF_PHOTO_MIME },
+    function (res) {
+      hideBusy();
+      btn.disabled = false; btn.textContent = "Finish Work";
+      if (!res || !res.success) {
+        errBox.textContent = res && res.message ? res.message : "Failed.";
+        errBox.classList.add("visible");
+        return;
+      }
+      closeLogFinishModal();
+      openIssueDetail(CURRENT_ISSUE.rowNumber);
+    },
+    function (err) {
+      hideBusy();
+      btn.disabled = false; btn.textContent = "Finish Work";
+      errBox.textContent = err && err.message ? err.message : "Failed.";
+      errBox.classList.add("visible");
+    }
+  );
 }
 
 </script>
