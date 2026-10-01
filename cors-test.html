@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CORS Test</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 20px; }
+    button { padding: 12px 20px; margin: 5px; font-size: 16px; cursor: pointer; background: #0288d1; color: white; border: 0; border-radius: 8px; }
+    button:disabled { opacity: 0.5; }
+    pre { background: #f5f5f5; padding: 12px; border-radius: 8px; white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+    .ok { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+    .pending { color: orange; }
+  </style>
+</head>
+<body>
+  <h1>KCT CORS Test</h1>
+  <p>Tests whether Firebase can fetch Apps Script directly.</p>
+
+  <button id="btnPost" onclick="testSmallPost()">Test 1: Small POST</button>
+  <button id="btnGet" onclick="testGet()">Test 2: GET</button>
+  <button id="btnBig" onclick="testBigPost()">Test 3: Large POST (~2MB)</button>
+
+  <pre id="out">Ready. Tap a test button.</pre>
+
+  <script>
+    // ⚠️ REPLACE THIS with your new test deployment URL
+    const API = "https://script.google.com/macros/s/AKfycbyjO3iZK2gQ7_o2dWVuO9OHKWx4RKfe_s0Mqm7dY4XobcSlcOmgROMH5UXio7ouHw7E/exec";
+
+    const out = document.getElementById("out");
+    function log(msg) { out.textContent += "\n" + msg; }
+    function reset() { out.textContent = ""; }
+
+    async function testSmallPost() {
+      reset();
+      log("Test 1: Small POST with text/plain");
+      try {
+        const r = await fetch(API, {
+          method: "POST",
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ msg: "hello" })
+        });
+        log("HTTP: " + r.status);
+        log("Type: " + r.type);
+        log("URL: " + r.url);
+        const text = await r.text();
+        log("Body: " + text);
+        if (r.ok && text.indexOf('"ok":true') !== -1) {
+          log("✅ TEST 1 PASSED");
+        } else {
+          log("❌ TEST 1 FAILED");
+        }
+      } catch (err) {
+        log("❌ EXCEPTION: " + err.message);
+      }
+    }
+
+    async function testGet() {
+      reset();
+      log("Test 2: GET");
+      try {
+        const r = await fetch(API, { redirect: "follow" });
+        log("HTTP: " + r.status);
+        const text = await r.text();
+        log("Body: " + text);
+        if (r.ok && text.indexOf('"ok":true') !== -1) {
+          log("✅ TEST 2 PASSED");
+        } else {
+          log("❌ TEST 2 FAILED");
+        }
+      } catch (err) {
+        log("❌ EXCEPTION: " + err.message);
+      }
+    }
+
+    async function testBigPost() {
+      reset();
+      log("Test 3: Large POST (~2 MB base64)");
+      const big = "A".repeat(2800000); // ~2.8 MB string, ~2.1 MB decoded
+      try {
+        const r = await fetch(API, {
+          method: "POST",
+          redirect: "follow",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ msg: "big", photo: big })
+        });
+        log("HTTP: " + r.status);
+        log("Type: " + r.type);
+        const text = await r.text();
+        log("Body: " + text);
+        if (r.ok && text.indexOf('"ok":true') !== -1) {
+          log("✅ TEST 3 PASSED");
+        } else {
+          log("❌ TEST 3 FAILED");
+        }
+      } catch (err) {
+        log("❌ EXCEPTION: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
