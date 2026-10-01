@@ -1,5 +1,7 @@
-{
-  "projects": {
-    "default": "kct-plant-app"
-  }
-}
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://kct-plant-app.web.app/cors-test.html",
+        "type": 302
+      }
+    ],
