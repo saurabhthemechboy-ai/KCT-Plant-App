@@ -800,11 +800,37 @@
       <div class="sublabel" data-i18n="tile_today_sub">Live plant status</div>
     </div>
 
-    <div class="home-tile hidden" id="allIssuesTile" onclick="openAllIssues()">
+    <div class="home-tile hidden" id="myAssignmentsTile" onclick="openMyAssignments()">
+      <div class="icon">📌</div>
+      <div class="label" data-i18n-html="tile_my_assignments">MY<br>ASSIGNMENTS</div>
+      <div class="badge" id="myAssignmentsBadge">0</div>
+      <div class="sublabel" data-i18n="tile_my_assignments_sub">Issues on me</div>
+    </div>
+
+    <div class="home-tile" id="allIssuesTile" onclick="openAllIssues()">
       <div class="icon">🗂️</div>
       <div class="label" data-i18n-html="tile_all_issues">ALL<br>ISSUES</div>
       <div class="badge" id="allIssuesBadge">0</div>
       <div class="sublabel" data-i18n="tile_all_issues_sub">Manage &amp; resolve</div>
+    </div>
+
+    <div id="myAssignmentsScreen" class="hidden">
+      <div class="page-header">
+        <div class="back" onclick="goHome()">←</div>
+        <div class="title" data-i18n="my_assignments_title">My Assignments</div>
+      </div>
+
+      <div class="page-body">
+        <div class="tabs">
+          <div id="maTab-active"   class="tab active" onclick="myAssignmentsSetTab('active')"   data-i18n="my_assignments_tab_active">Active</div>
+          <div id="maTab-resolved" class="tab"        onclick="myAssignmentsSetTab('resolved')" data-i18n="my_assignments_tab_resolved">Resolved</div>
+          <div id="maTab-all"      class="tab"        onclick="myAssignmentsSetTab('all')"      data-i18n="my_assignments_tab_all">All</div>
+        </div>
+
+        <div id="myAssignmentsList" class="list">
+          <div class="loading" data-i18n="loading">Loading…</div>
+        </div>
+      </div>
     </div>
 
     <div class="home-tile hidden" id="dashboardTile" onclick="openDashboard()">
@@ -2528,7 +2554,7 @@ function apiCall(action, payload, onSuccess, onFail) {
 const SCREENS = [
   "loginScreen", "homeScreen", "workScreen", "successScreen",
   "historyScreen", "todayScreen", "issuesScreen", "issueSuccessScreen",
-  "allIssuesScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
+  "allIssuesScreen", "myAssignmentsScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
 ];
 
 function showScreen(id, fromPop) {
@@ -2672,22 +2698,32 @@ function showHome() {
 
   const isManager = CURRENT_USER &&
     (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
+
+  // All Issues — visible to everyone now
   const allIssuesTile = document.getElementById("allIssuesTile");
-  if (allIssuesTile) allIssuesTile.classList.toggle("hidden", !isManager);
+  if (allIssuesTile) allIssuesTile.classList.remove("hidden");
 
-  const dashboardTile = document.getElementById("dashboardTile");
-  if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager);
+  // My Assignments — visible to everyone (badge hides itself if count is 0)
+  const myAssignmentsTile = document.getElementById("myAssignmentsTile");
+  if (myAssignmentsTile) myAssignmentsTile.classList.remove("hidden");
 
+  // Work Intimation — incharge and admin only
   const workTile = document.getElementById("workIntimationTile");
   if (workTile) workTile.classList.toggle("hidden", !isManager);
 
+  // Dashboard — incharge and admin only
+  const dashboardTile = document.getElementById("dashboardTile");
+  if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager);
+
+  // Admin Users — admin only
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
   const adminTile = document.getElementById("adminTile");
   if (adminTile) adminTile.classList.toggle("hidden", !isAdmin);
 
   showScreen("homeScreen");
   refreshTodayBadge();
-  if (isManager) refreshAllIssuesBadge();
+  refreshAllIssuesBadge();
+  refreshMyAssignmentsBadge();
 }
 
 function doLogout() {
@@ -2753,6 +2789,28 @@ function refreshAllIssuesBadge() {
         }).length;
         if (openCount > 0) {
           badge.textContent = openCount;
+          badge.classList.add("visible");
+        } else {
+          badge.classList.remove("visible");
+        }
+      }
+    }
+  );
+}
+
+function refreshMyAssignmentsBadge() {
+  if (!SESSION_TOKEN || !CURRENT_USER) return;
+  apiCall("getAllIssues",
+    { token: SESSION_TOKEN, filters: { scope: "assigned" } },
+    function (res) {
+      const badge = document.getElementById("myAssignmentsBadge");
+      if (!badge) return;
+      if (res && res.success) {
+        const activeCount = res.items.filter(function (it) {
+          return it.status !== "Resolved";
+        }).length;
+        if (activeCount > 0) {
+          badge.textContent = activeCount;
           badge.classList.add("visible");
         } else {
           badge.classList.remove("visible");
@@ -4712,6 +4770,97 @@ function adminConfirmToggle(userId, name, currentlyActive) {
 document.addEventListener("DOMContentLoaded", function () {
   initTranslations();
 });
+
+/* ============================================================
+   MY ASSIGNMENTS SCREEN
+   ============================================================ */
+let MY_ASSIGNMENTS_TAB = "active";
+
+function openMyAssignments() {
+  showScreen("myAssignmentsScreen");
+  myAssignmentsSetTab(MY_ASSIGNMENTS_TAB);
+}
+
+function myAssignmentsSetTab(tab) {
+  MY_ASSIGNMENTS_TAB = tab;
+  ["active", "resolved", "all"].forEach(function (t) {
+    const el = document.getElementById("maTab-" + t);
+    if (el) el.classList.toggle("active", t === tab);
+  });
+  myAssignmentsLoad();
+}
+
+function myAssignmentsLoad() {
+  if (!SESSION_TOKEN) return;
+  const list = document.getElementById("myAssignmentsList");
+  list.innerHTML = "<div class='loading'>Loading…</div>";
+
+  // Fetch all issues assigned to me
+  apiCall("getAllIssues",
+    { token: SESSION_TOKEN, filters: { scope: "assigned" } },
+    function (res) {
+      if (!res || !res.success) {
+        list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+          (res && res.message ? res.message : "Failed to load.") + "</div>";
+        return;
+      }
+
+      let items = res.items || [];
+
+      // Apply tab filter
+      if (MY_ASSIGNMENTS_TAB === "active") {
+        items = items.filter(function (it) {
+          return it.status !== "Resolved";
+        });
+      } else if (MY_ASSIGNMENTS_TAB === "resolved") {
+        items = items.filter(function (it) {
+          return it.status === "Resolved";
+        });
+      }
+      // "all" → no filter
+
+      myAssignmentsRender_(items);
+    },
+    function (err) {
+      list.innerHTML = "<div class='empty'><div class='icon'>⚠️</div>" +
+        (err && err.message ? err.message : "Failed to load.") + "</div>";
+    }
+  );
+}
+
+function myAssignmentsRender_(items) {
+  const list = document.getElementById("myAssignmentsList");
+  if (!items || !items.length) {
+    const msg = MY_ASSIGNMENTS_TAB === "active"
+      ? "Nothing assigned to you right now. 👍"
+      : (MY_ASSIGNMENTS_TAB === "resolved"
+          ? "No resolved assignments yet."
+          : "Nothing assigned to you.");
+    list.innerHTML = "<div class='empty'><div class='icon'>📭</div>" + msg + "</div>";
+    return;
+  }
+
+  list.innerHTML = items.map(function (it) {
+    const prio = String(it.priority || "").toLowerCase();
+    const statusClass = String(it.status || "").toLowerCase().replace(/\s+/g, "");
+    const statusPill = "<span class='pill " + statusClass + "'>" + allIssuesEsc_(it.status) + "</span>";
+    const prioPill = "<span class='pill " + allIssuesEsc_(prio) + "'>" + allIssuesEsc_(it.priority) + "</span>";
+
+    return (
+      "<div class='card clickable issue-" + allIssuesEsc_(prio) + "' onclick='openIssueDetail(" + it.rowNumber + ")'>" +
+        "<div class='card-head'>" +
+          "<div class='card-title issue'>" + allIssuesEsc_(it.issueType) + " — " + allIssuesEsc_(it.equipment) + "</div>" +
+          "<div class='card-date'>" + allIssuesEsc_(it.dateLabel) + "</div>" +
+        "</div>" +
+        "<div>" + prioPill + statusPill + "</div>" +
+        "<div class='card-row'><span class='lbl'>Location</span><span class='val'>" + allIssuesEsc_(it.location) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Reported By</span><span class='val'>" + allIssuesEsc_(it.reportedBy) + "</span></div>" +
+        "<div class='card-row'><span class='lbl'>Assigned</span><span class='val'>" + allIssuesEsc_(it.assignedAt || "—") + "</span></div>" +
+      "</div>"
+    );
+  }).join("");
+}
+
 </script>
 
 </body>
