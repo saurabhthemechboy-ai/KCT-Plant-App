@@ -2858,9 +2858,10 @@ function showHome() {
   const workTile = document.getElementById("workIntimationTile");
   if (workTile) workTile.classList.toggle("hidden", !isManager);
 
-  // Dashboard — incharge and admin only
+  // Dashboard — incharge, admin, and visitor
+  const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
   const dashboardTile = document.getElementById("dashboardTile");
-  if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager);
+  if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager && !isVisitor);
 
   // Admin Users — admin only
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
