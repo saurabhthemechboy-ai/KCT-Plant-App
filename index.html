@@ -2854,19 +2854,19 @@ function showHome() {
   const myAssignmentsTile = document.getElementById("myAssignmentsTile");
   if (myAssignmentsTile) myAssignmentsTile.classList.remove("hidden");
 
-  // Work Intimation — incharge and admin only
+  // Work Intimation — incharge, admin, and visitor (read-only for visitor)
   const workTile = document.getElementById("workIntimationTile");
-  if (workTile) workTile.classList.toggle("hidden", !isManager);
+  if (workTile) workTile.classList.toggle("hidden", !isManager && !isVisitor);
 
   // Dashboard — incharge, admin, and visitor
   const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
   const dashboardTile = document.getElementById("dashboardTile");
   if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager && !isVisitor);
 
-  // Admin Users — admin only
+  // Admin Users — admin and visitor (read-only for visitor)
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
   const adminTile = document.getElementById("adminTile");
-  if (adminTile) adminTile.classList.toggle("hidden", !isAdmin);
+  if (adminTile) adminTile.classList.toggle("hidden", !isAdmin && !isVisitor);
 
   showScreen("homeScreen");
   refreshTodayBadge();
@@ -2972,6 +2972,10 @@ function refreshMyAssignmentsBadge() {
    WORK INTIMATION
    ============================================================ */
 function openWorkForm() {
+  if (CURRENT_USER && CURRENT_USER.role === "visitor") {
+    alert("Viewers cannot submit work intimations.");
+    return;
+  }
   if (!CURRENT_USER ||
       (CURRENT_USER.role !== "incharge" && CURRENT_USER.role !== "admin")) {
     alert("Work Intimation is only available for Shift In-charges and Admins.");
@@ -3625,7 +3629,14 @@ let capturedPhotoMime = "image/jpeg";
 let capturedPhotoName = "photo.jpg";
 let capturedPhotoRawDataUrl = null;
 
-function openIssuesScreen() { resetIssueForm(); showScreen("issuesScreen"); }
+function openIssuesScreen() {
+  if (CURRENT_USER && CURRENT_USER.role === "visitor") {
+    alert("Viewers cannot report issues.");
+    return;
+  }
+  resetIssueForm();
+  showScreen("issuesScreen");
+}
 
 function resetIssueForm() {
   capturedPhotoBase64 = null;
@@ -4832,7 +4843,12 @@ function _renderPriorityAccuracy_(containerId, items) {
    ADMIN USERS
    ============================================================ */
 function openAdminPanel() {
-  if (!CURRENT_USER || CURRENT_USER.role !== "admin") { alert("Admin access required."); return; }
+  if (!CURRENT_USER) return;
+  const role = CURRENT_USER.role;
+  if (role !== "admin" && role !== "visitor") {
+    alert("Admin access required.");
+    return;
+  }
   showScreen("adminScreen");
   loadAdminUsers();
 }
