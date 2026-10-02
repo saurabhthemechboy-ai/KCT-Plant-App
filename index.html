@@ -1847,7 +1847,6 @@ const TRANSLATIONS = {
     logout: "లాగ్ అవుట్",
     refresh_app: "🔄 యాప్ రిఫ్రెష్ చేయండి",
     refresh_confirm: "యాప్ రిఫ్రెష్ చేయాలా?\n\nఇది కాష్ చేసిన డేటాను క్లియర్ చేసి తాజా వెర్షన్‌ను లోడ్ చేస్తుంది.",
-    // Piece 4 additions
     issue_detail_log_start: "▶ పని ప్రారంభించండి",
     issue_detail_log_finish: "✓ పని పూర్తి చేయండి",
     log_start_title: "పని ప్రారంభాన్ని నమోదు చేయండి",
@@ -2845,25 +2844,20 @@ function showHome() {
 
   const isManager = CURRENT_USER &&
     (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
+  const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
 
-  // All Issues — visible to everyone now
   const allIssuesTile = document.getElementById("allIssuesTile");
   if (allIssuesTile) allIssuesTile.classList.remove("hidden");
 
-  // My Assignments — visible to everyone (badge hides itself if count is 0)
   const myAssignmentsTile = document.getElementById("myAssignmentsTile");
   if (myAssignmentsTile) myAssignmentsTile.classList.remove("hidden");
 
-  // Work Intimation — incharge, admin, and visitor (read-only for visitor)
   const workTile = document.getElementById("workIntimationTile");
   if (workTile) workTile.classList.toggle("hidden", !isManager && !isVisitor);
 
-  // Dashboard — incharge, admin, and visitor
-  const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
   const dashboardTile = document.getElementById("dashboardTile");
   if (dashboardTile) dashboardTile.classList.toggle("hidden", !isManager && !isVisitor);
 
-  // Admin Users — admin and visitor (read-only for visitor)
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
   const adminTile = document.getElementById("adminTile");
   if (adminTile) adminTile.classList.toggle("hidden", !isAdmin && !isVisitor);
@@ -3319,36 +3313,30 @@ function renderIssueDetail_() {
     html += "  <div class='card-row'><span class='lbl'>Work Finished</span><span class='val'>" + allIssuesEsc_(it.workFinishedAt) + " by " + allIssuesEsc_(it.workFinishedBy) + "</span></div>";
   html += "</div>";
 
-  // Description
   if (it.description) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Description</div>";
     html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.description) + "</div></div>";
   }
 
-  // Reported photo
   if (it.photoUrl) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Reported Photo</div>";
     html += "<a href='" + allIssuesEsc_(it.photoUrl) + "' target='_blank' rel='noopener'>";
     html += "<img class='card-photo' src='" + allIssuesEsc_(it.photoUrl) + "' alt='issue photo'></a></div>";
   }
 
-  // Resolved photo
   if (it.resolvedPhotoUrl) {
     html += "<div class='card' style='border-left-color:#0288d1;'><div class='section-heading' style='margin-top:0;'>Resolved Photo</div>";
     html += "<a href='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' target='_blank' rel='noopener'>";
     html += "<img class='card-photo' src='" + allIssuesEsc_(it.resolvedPhotoUrl) + "' alt='resolution photo'></a></div>";
   }
 
-  // Notes
   if (it.resolutionNotes) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Resolution Notes</div>";
     html += "<div style='font-size:14px;color:#444;line-height:1.4;'>" + allIssuesEsc_(it.resolutionNotes) + "</div></div>";
   }
 
-  // Time Metrics card — only if we have at least reported + one other
   html += renderTimeMetrics_(it);
 
-  // Timeline
   if (it.statusHistory && it.statusHistory.length) {
     html += "<div class='card'><div class='section-heading' style='margin-top:0;'>Timeline</div><div class='timeline'>";
     it.statusHistory.forEach(function (h) {
@@ -3379,12 +3367,10 @@ function renderIssueDetail_() {
 
   body.innerHTML = html;
 
-  // Show/hide action buttons based on status + role
   const actionsEl = document.getElementById("issueDetailActions");
   const isResolved = it.status === "Resolved";
   const isInProgress = it.status === "In Progress";
 
-  // Legacy compat: if In Progress but workStartedAt is empty, treat as startable (from old data)
   const canStart = !isResolved && !it.workStartedAt;
   const canFinish = !isResolved && (it.workStartedAt || isInProgress);
 
@@ -3393,10 +3379,11 @@ function renderIssueDetail_() {
   const assignBtn = document.getElementById("assignBtn");
   const delBtn = document.getElementById("deleteBtn");
 
-  if (logStartBtn) logStartBtn.style.display = canStart ? "block" : "none";
-  if (logFinishBtn) logFinishBtn.style.display = canFinish ? "block" : "none";
+  const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
 
-  // Assign button: incharge/admin only, and only when not resolved
+  if (logStartBtn) logStartBtn.style.display = (canStart && !isVisitor) ? "block" : "none";
+  if (logFinishBtn) logFinishBtn.style.display = (canFinish && !isVisitor) ? "block" : "none";
+
   const isPrivileged = CURRENT_USER &&
     (CURRENT_USER.role === "incharge" || CURRENT_USER.role === "admin");
   if (assignBtn) {
@@ -3407,12 +3394,10 @@ function renderIssueDetail_() {
     }
   }
 
-  // Delete: admin only
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
   if (delBtn) delBtn.style.display = isAdmin ? "block" : "none";
 
-  // Show actions container if any button is visible
-  const anyVisible = (canStart || canFinish || (isPrivileged && !isResolved) || isAdmin);
+  const anyVisible = ((canStart && !isVisitor) || (canFinish && !isVisitor) || (isPrivileged && !isResolved) || isAdmin);
   if (anyVisible) {
     actionsEl.classList.remove("hidden");
   } else {
@@ -3437,7 +3422,6 @@ function renderTimeMetrics_(it) {
     return mins + "m";
   };
 
-  // Format is "dd-MM-yyyy HH:mm" (from backend) — parse accordingly
   function parseSheetDateTime_(s) {
     if (!s) return null;
     const m = String(s).match(/^(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})$/);
@@ -3450,7 +3434,6 @@ function renderTimeMetrics_(it) {
   const hasStarted = !!it.workStartedAt;
   const hasFinished = !!it.workFinishedAt;
 
-  // Readable timestamps already rendered elsewhere; here we show gaps
   let html = "<div class='card'><div class='section-heading' style='margin-top:0;'>Time Metrics</div>";
   html += "<table class='dash-table'>";
   html += "<thead><tr><th>Stage</th><th>Timestamp</th><th class='num'>Duration</th></tr></thead><tbody>";
@@ -3774,7 +3757,6 @@ function submitIssueForm() {
       hideBusy();
       btn.disabled = false;
 
-      // Duplicate warning — show the modal, don't mark as error
       if (result && result.duplicateWarning) {
         PENDING_ISSUE_PAYLOAD = payload;
         showDuplicateWarning(result.existing || {});
@@ -4885,6 +4867,8 @@ function renderAdminUsers_(users) {
   const list = document.getElementById("adminUserList");
   if (!users || !users.length) { list.innerHTML = "<div class='empty'><div class='icon'>📭</div>No users.</div>"; return; }
 
+  const isVisitor = CURRENT_USER && CURRENT_USER.role === "visitor";
+
   list.innerHTML = users.map(function (u) {
     const roleClass = u.role === "admin" ? "critical" : u.role === "incharge" ? "high" :
                       u.role === "technician" ? "medium" : "low";
@@ -4901,7 +4885,7 @@ function renderAdminUsers_(users) {
       "<div class='card-row'><span class='lbl'>Email</span><span class='val'>" +
         (u.email ? adminEsc_(u.email) : "<i>—</i>") + "</span></div>" +
       "<div class='card-row'><span class='lbl'>Last Login</span><span class='val'>" + adminEsc_(u.lastLogin) + "</span></div>" +
-      (isMe ? "" :
+      ((isMe || isVisitor) ? "" :
         "<div style='margin-top:12px;display:flex;gap:8px;'>" +
           "<button class='secondary-btn' style='margin-top:0;flex:1;padding:10px;font-size:13px;' " +
             "onclick=\"adminConfirmReset('" + adminEsc_(u.userId) + "', '" + adminEsc_(u.name) + "')\">🔑 Reset Password</button>" +
@@ -4988,7 +4972,6 @@ function myAssignmentsLoad() {
   const list = document.getElementById("myAssignmentsList");
   list.innerHTML = "<div class='loading'>Loading…</div>";
 
-  // Fetch all issues assigned to me
   apiCall("getAllIssues",
     { token: SESSION_TOKEN, filters: { scope: "assigned" } },
     function (res) {
@@ -5000,7 +4983,6 @@ function myAssignmentsLoad() {
 
       let items = res.items || [];
 
-      // Apply tab filter
       if (MY_ASSIGNMENTS_TAB === "active") {
         items = items.filter(function (it) {
           return it.status !== "Resolved";
@@ -5010,7 +4992,6 @@ function myAssignmentsLoad() {
           return it.status === "Resolved";
         });
       }
-      // "all" → no filter
 
       myAssignmentsRender_(items);
     },
@@ -5061,7 +5042,6 @@ function myAssignmentsRender_(items) {
 function logWorkStartPrompt() {
   if (!CURRENT_ISSUE) return;
   document.getElementById("logStartError").classList.remove("visible");
-  // Default the time input to now
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, "0");
   const mm = String(now.getMinutes()).padStart(2, "0");
@@ -5101,8 +5081,6 @@ function submitLogStart() {
   );
 }
 
-/* --- Log Finish modal --- */
-
 let LF_PHOTO_B64 = null;
 let LF_PHOTO_MIME = "image/jpeg";
 
@@ -5114,7 +5092,6 @@ function openLogFinishModal() {
   document.getElementById("lfPhotoPicker").classList.remove("hidden");
   document.getElementById("lfPhotoPreview").src = "";
   document.getElementById("lfError").classList.remove("visible");
-  // Default finish time to now
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, "0");
   const mm = String(now.getMinutes()).padStart(2, "0");
