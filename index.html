@@ -1467,6 +1467,23 @@
   </div>
 </div>
 
+<div id="duplicateWarningModal" class="modal-backdrop hidden">
+  <div class="modal-card">
+    <h3 data-i18n="dup_warning_title">⚠️ Possible Duplicate</h3>
+    <p style="font-size:14px;color:#555;line-height:1.5;margin-top:0;"
+       data-i18n="dup_warning_intro">
+      An open issue already exists for this equipment. Please check if this is the same problem.
+    </p>
+    <div id="dupWarningExisting" style="background:#fff8e1;border-left:3px solid #f57c00;padding:10px 12px;border-radius:6px;font-size:13px;color:#333;margin-top:8px;line-height:1.5;">
+    </div>
+    <div class="error-box" id="dupWarningError"></div>
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeDuplicateWarning()" data-i18n="cancel">Cancel</button>
+      <button class="primary-btn" style="margin-top:0;" onclick="submitIssueAnyway()" id="dupWarningSubmitBtn" data-i18n="dup_warning_submit_anyway">Submit Anyway</button>
+    </div>
+  </div>
+</div>
+
 <div id="assignModal" class="modal-backdrop hidden">
   <div class="modal-card">
     <h3 data-i18n="assign_title">Assign Issue</h3>
@@ -1814,6 +1831,9 @@ const TRANSLATIONS = {
     lang_telugu: "తెలుగు",
     lang_hindi: "हिन्दी",
     lang_odia: "ଓଡ଼ିଆ"
+    dup_warning_title: "⚠️ Possible Duplicate",
+    dup_warning_intro: "An open issue already exists for this equipment. Please check if this is the same problem.",
+    dup_warning_submit_anyway: "Submit Anyway",
   },
   te: {
     login_title: "KCT ప్లాంట్ యాప్",
@@ -2057,6 +2077,9 @@ const TRANSLATIONS = {
     lang_telugu: "తెలుగు",
     lang_hindi: "हिन्दी",
     lang_odia: "ଓଡ଼ିଆ"
+    dup_warning_title: "⚠️ సాధ్యమైన నకిలీ",
+    dup_warning_intro: "ఈ పరికరంపై ఇప్పటికే ఓపెన్ సమస్య ఉంది. ఇది అదే సమస్యేనా అని తనిఖీ చేయండి.",
+    dup_warning_submit_anyway: "అయినా సమర్పించండి",
   },
   hi: {
     login_title: "KCT प्लांट ऐप",
@@ -2299,6 +2322,9 @@ const TRANSLATIONS = {
     lang_telugu: "తెలుగు",
     lang_hindi: "हिन्दी",
     lang_odia: "ଓଡ଼ିଆ"
+    dup_warning_title: "⚠️ संभावित डुप्लिकेट",
+    dup_warning_intro: "इस उपकरण पर पहले से एक खुली समस्या मौजूद है। कृपया जाँचें कि यह वही समस्या है या नहीं।",
+    dup_warning_submit_anyway: "फिर भी जमा करें",
   },
   od: {
     login_title: "KCT ପ୍ଲାଣ୍ଟ ଆପ୍",
@@ -2541,6 +2567,9 @@ const TRANSLATIONS = {
     lang_telugu: "తెలుగు",
     lang_hindi: "हिन्दी",
     lang_odia: "ଓଡ଼ିଆ"
+    dup_warning_title: "⚠️ ସମ୍ଭାବ୍ୟ ନକଲ",
+    dup_warning_intro: "ଏହି ସରଞ୍ଜାମ ଉପରେ ଏକ ଖୋଲା ସମସ୍ୟା ପୂର୍ବରୁ ଅଛି। ଦୟାକରି ଯାଞ୍ଚ କରନ୍ତୁ ଏହା ସେହି ସମସ୍ୟା କି ନୁହେଁ।",
+    dup_warning_submit_anyway: "ତଥାପି ଦାଖଲ କରନ୍ତୁ",
   }
 };
 
@@ -3732,6 +3761,14 @@ function submitIssueForm() {
     function (result) {
       hideBusy();
       btn.disabled = false;
+
+      // Duplicate warning — show the modal, don't mark as error
+      if (result && result.duplicateWarning) {
+        PENDING_ISSUE_PAYLOAD = payload;
+        showDuplicateWarning(result.existing || {});
+        return;
+      }
+
       if (!result || !result.success) {
         isShowError(result && result.message ? result.message : "Submission failed.");
         return;
@@ -3744,8 +3781,7 @@ function submitIssueForm() {
       isShowError(err && err.message ? err.message : "Submission failed.");
     }
   );
-}
-
+  
 function showIssueSuccess(result, data) {
   const message =
 `🔴 *NEW PLANT ISSUE REPORTED*
@@ -5132,6 +5168,69 @@ function submitLogFinish() {
     function (err) {
       hideBusy();
       btn.disabled = false; btn.textContent = "Finish Work";
+      errBox.textContent = err && err.message ? err.message : "Failed.";
+      errBox.classList.add("visible");
+    }
+  );
+}
+
+/* ============================================================
+   DUPLICATE WARNING
+   ============================================================ */
+let PENDING_ISSUE_PAYLOAD = null;
+
+function showDuplicateWarning(existing) {
+  const box = document.getElementById("dupWarningExisting");
+  const eq = allIssuesEsc_(existing.equipment || "");
+  const loc = allIssuesEsc_(existing.location || "");
+  const desc = allIssuesEsc_(existing.description || "");
+  const by = allIssuesEsc_(existing.reportedBy || "");
+  const at = allIssuesEsc_(existing.reportedAt || "");
+  const st = allIssuesEsc_(existing.status || "");
+  const as = existing.assignedTo ? "Assigned to " + allIssuesEsc_(existing.assignedTo) : "Unassigned";
+
+  box.innerHTML =
+    "<div><b>" + eq + "</b> — " + loc + "</div>" +
+    "<div style='margin-top:4px;'>" + desc + "</div>" +
+    "<div style='margin-top:6px;font-size:12px;color:#666;'>" +
+      "Reported by " + by + " on " + at + "<br>" +
+      "Status: " + st + " · " + as +
+    "</div>";
+
+  document.getElementById("dupWarningError").classList.remove("visible");
+  document.getElementById("duplicateWarningModal").classList.remove("hidden");
+}
+
+function closeDuplicateWarning() {
+  document.getElementById("duplicateWarningModal").classList.add("hidden");
+  PENDING_ISSUE_PAYLOAD = null;
+}
+
+function submitIssueAnyway() {
+  if (!PENDING_ISSUE_PAYLOAD) { closeDuplicateWarning(); return; }
+  const payload = Object.assign({}, PENDING_ISSUE_PAYLOAD);
+  payload.allowDuplicate = true;
+
+  const btn = document.getElementById("dupWarningSubmitBtn");
+  const errBox = document.getElementById("dupWarningError");
+  btn.disabled = true; btn.textContent = "Submitting…";
+  errBox.classList.remove("visible");
+
+  apiCall("submitIssue",
+    { token: SESSION_TOKEN, payload: payload },
+    function (result) {
+      btn.disabled = false; btn.textContent = "Submit Anyway";
+      if (!result || !result.success) {
+        errBox.textContent = result && result.message ? result.message : "Failed.";
+        errBox.classList.add("visible");
+        return;
+      }
+      document.getElementById("duplicateWarningModal").classList.add("hidden");
+      PENDING_ISSUE_PAYLOAD = null;
+      showIssueSuccess(result, payload);
+    },
+    function (err) {
+      btn.disabled = false; btn.textContent = "Submit Anyway";
       errBox.textContent = err && err.message ? err.message : "Failed.";
       errBox.classList.add("visible");
     }
