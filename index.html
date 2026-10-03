@@ -24,6 +24,28 @@
   <link rel="manifest" href="https://kct-plant-app.web.app/manifest.json">
 
   <style>
+
+    /* ============================================================
+   CSS INDEX
+   ------------------------------------------------------------
+    1. Base / reset
+    2. Login screen
+    3. Home screen (header, tiles, footer)
+    4. Page layout (page-header, page-body)
+    5. Forms (labels, inputs, buttons)
+    6. Cards / lists / pills
+    7. Filters / tabs
+    8. Photo capture UI
+    9. Busy overlay
+   10. Modals (assign, resolve, log work, duplicate warning)
+   11. Timeline
+   12. Dashboard KPIs
+   13. Dashboard charts (bars, pills, SVG line, tables, heatmaps)
+   14. Empty / loading states
+   15. Annotate canvas
+   16. Language picker
+   ============================================================ */
+
     * { box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -32,6 +54,8 @@
       -webkit-tap-highlight-color: transparent;
     }
     .hidden { display: none !important; }
+
+    /* ---- 2. Login screen ---- */
 
     .login-wrap {
       min-height: 100vh;
@@ -86,6 +110,8 @@
       display: none;
     }
     .login-error.visible { display: block; }
+
+    /* ---- 3. Home screen ---- */
 
     .home-header {
       background: #0288d1; color: white;
@@ -147,6 +173,8 @@
       font-size: 13px; cursor: pointer;
     }
 
+    /* ---- 4. Page layout ---- */
+
     .page-header {
       background: #0288d1; color: white;
       padding: 18px 20px;
@@ -165,6 +193,8 @@
 
     .page-body { padding: 20px; padding-bottom: 40px; }
 
+    /* ---- 5. Forms ---- */
+
     .form-label {
       display: block; margin-top: 15px;
       font-weight: bold; font-size: 14px;
@@ -182,6 +212,9 @@
       background-position: right 12px center;
       padding-right: 34px;
     }
+
+    /* ---- 6. Cards / lists / pills ---- */
+
     .section-title {
       margin-top: 22px; padding: 8px 10px;
       background: #e1f5fe;
@@ -227,6 +260,8 @@
       text-decoration: none; font-size: 18px;
       font-weight: bold; border-radius: 10px;
     }
+
+    /* ---- 7. Filters / tabs ---- */
 
     .filters {
       background: white; border-radius: 12px;
@@ -373,6 +408,8 @@
       letter-spacing: 0.5px; margin: 16px 4px 8px;
     }
 
+    /* ---- 8. Photo capture UI ---- */
+
     .photo-area {
       background: white;
       border: 2px dashed #bbb;
@@ -423,6 +460,8 @@
     .retake-btn { background: #eee; color: #333; }
     .remove-btn { background: #fdecea; color: #842029; }
 
+    /* ---- 9. Busy overlay ---- */
+
     .busy-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.6);
@@ -443,6 +482,8 @@
       animation: spin 0.9s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- 10. Modals ---- */
 
     .modal-backdrop {
       position: fixed; inset: 0;
@@ -467,6 +508,8 @@
     }
     .modal-card .modal-actions button { flex: 1; }
 
+    /* ---- 11. Timeline ---- */
+
     .timeline { margin-top: 8px; padding-left: 4px; }
     .timeline-item {
       position: relative;
@@ -483,6 +526,8 @@
       background: #0288d1;
     }
     .timeline-item .when { color: #888; font-size: 11px; }
+
+    /* ---- 12. Dashboard KPIs ---- */
 
     .kpi-grid {
       display: grid; grid-template-columns: 1fr 1fr;
@@ -504,6 +549,8 @@
       letter-spacing: 0.4px;
     }
     .kpi-sub { font-size: 10px; color: #999; margin-top: 2px; }
+
+    /* ---- 13. Dashboard charts ---- */
 
     .chart-card {
       background: white; border-radius: 12px;
@@ -579,10 +626,14 @@
     .dash-table tr:last-child td { border-bottom: 0; }
     .dash-table .num { text-align: right; font-weight: 600; }
 
+    /* ---- 14. Empty / loading states ---- */
+
     .no-data {
       text-align: center; padding: 20px;
       color: #999; font-size: 13px;
     }
+
+    /* ---- 15. Annotate canvas ---- */
 
     .annotate-modal {
       position: fixed; inset: 0;
@@ -652,6 +703,8 @@
       background: #262626; color: white; cursor: pointer;
     }
     .ann-btn:active { background: #333; }
+
+    /* ---- 16. Language picker ---- */
 
     .lang-float-btn {
       position: fixed;
@@ -742,6 +795,36 @@
 </head>
 
 <body>
+
+<!--
+  ============================================================
+  SCREEN INDEX
+  ------------------------------------------------------------
+  Search hint: press Ctrl+F and type any of the IDs below.
+  ------------------------------------------------------------
+   1.  Login screen              id="loginScreen"
+   2.  Home screen               id="homeScreen"
+   3.  Work Intimation           id="workScreen"
+   4.  Success screen            id="successScreen"
+   5.  All Issues                id="allIssuesScreen"
+   6.  Issue Detail              id="issueDetailScreen"
+   7.  My Assignments            id="myAssignmentsScreen"
+   8.  Dashboard                 id="dashboardScreen"
+   9.  Admin                     id="adminScreen"
+  10.  Report Issue              id="issuesScreen"
+  11.  Issue Success             id="issueSuccessScreen"
+  12.  History                   id="historyScreen"
+  13.  Today                     id="todayScreen"
+  14.  Annotate modal            id="annotateModal"
+  15.  Log Work Start modal      id="logStartModal"
+  16.  Log Work Finish modal     id="logFinishModal"
+  17.  Duplicate Warning modal   id="duplicateWarningModal"
+  18.  Assign modal              id="assignModal"
+  19.  Resolve modal             id="resolveModal"
+  20.  Busy overlay              id="busyOverlay"
+  21.  Language picker modal     id="langPickerModal"
+   ============================================================
+-->
 
 <div id="loginScreen" class="login-wrap">
   <div class="login-card">
@@ -840,23 +923,23 @@
 </div>
 
 <div id="myAssignmentsScreen" class="hidden">
-    <div class="page-header">
-      <div class="back" onclick="goHome()">←</div>
-      <div class="title" data-i18n="my_assignments_title">My Assignments</div>
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title" data-i18n="my_assignments_title">My Assignments</div>
+  </div>
+
+  <div class="page-body">
+    <div class="tabs">
+      <div id="maTab-active"   class="tab active" onclick="myAssignmentsSetTab('active')"   data-i18n="my_assignments_tab_active">Active</div>
+      <div id="maTab-resolved" class="tab"        onclick="myAssignmentsSetTab('resolved')" data-i18n="my_assignments_tab_resolved">Resolved</div>
+      <div id="maTab-all"      class="tab"        onclick="myAssignmentsSetTab('all')"      data-i18n="my_assignments_tab_all">All</div>
     </div>
 
-    <div class="page-body">
-      <div class="tabs">
-        <div id="maTab-active"   class="tab active" onclick="myAssignmentsSetTab('active')"   data-i18n="my_assignments_tab_active">Active</div>
-        <div id="maTab-resolved" class="tab"        onclick="myAssignmentsSetTab('resolved')" data-i18n="my_assignments_tab_resolved">Resolved</div>
-        <div id="maTab-all"      class="tab"        onclick="myAssignmentsSetTab('all')"      data-i18n="my_assignments_tab_all">All</div>
-      </div>
-
-      <div id="myAssignmentsList" class="list">
-        <div class="loading" data-i18n="loading">Loading…</div>
-      </div>
+    <div id="myAssignmentsList" class="list">
+      <div class="loading" data-i18n="loading">Loading…</div>
     </div>
   </div>
+</div>
 
 <!-- ===== WORK INTIMATION ===== -->
 <div id="workScreen" class="hidden">
@@ -1598,6 +1681,35 @@
 /* ============================================================
    KCT PLANT APP — SINGLE SCRIPT BLOCK
    (Translations + API + All App Logic)
+   ============================================================ */
+
+/* ============================================================
+   KCT PLANT APP — FRONTEND SCRIPT
+   ------------------------------------------------------------
+   TABLE OF CONTENTS — search hint: Ctrl+F any title below.
+   ------------------------------------------------------------
+    Global state
+    TRANSLATIONS
+    API CALL
+    SCREEN NAVIGATION
+    LOGIN / LOGOUT
+    WORK INTIMATION
+    ALL ISSUES
+    ISSUE DETAIL
+    ASSIGN
+    DELETE ISSUE (ADMIN ONLY)
+    BUSY OVERLAY
+    SESSION RESTORE
+    ISSUE REPORTING
+    HISTORY
+    TODAY
+    ANNOTATE
+    DASHBOARD
+    ADMIN USERS
+    BOOT
+    MY ASSIGNMENTS SCREEN
+    LOG WORK START / FINISH
+    DUPLICATE WARNING
    ============================================================ */
 
 /* ---------- Global state ---------- */
@@ -5149,7 +5261,7 @@ function submitLogStart() {
   errBox.classList.remove("visible");
 
   apiCall("logWorkStart",
-    { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, startTime: t },
+    { token: SESSION_TOKEN, rowNumber: CURRENT_ISSUE.rowNumber, startDate: d, startTime: t },
     function (res) {
       btn.disabled = false; btn.textContent = "Start Work";
       if (!res || !res.success) {
