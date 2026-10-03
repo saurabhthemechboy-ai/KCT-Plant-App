@@ -536,6 +536,36 @@ Language skill: English + some Hindi; app supports EN/TE/HI/OD because operators
 
 The user is doing this project on the side to improve plant operations. Prioritize stability and clarity over clever code.
 
+## 17. RELIABILITY WORK (Oct 2026)
+
+### Done
+- **Piece 1 — Automated daily backups.**
+  - File: `Backups.gs`
+  - Daily trigger at 02:00 IST → full sheet copy + CSV export to Drive
+  - Folder: `KCT Plant Backups/` (in saurabhthemechboy@gmail.com's Drive)
+  - Retention: 30 daily + 12 monthly
+  - Health check: 03:00 IST daily, emails saurabhthemechboy@gmail.com if stale
+  - Log tab: `_Backups`
+
+- **Piece 2 — Sheet-backed sessions.**
+  - File: `Sessions.gs`
+  - Tab: `Sessions` (token, userId, name, role, createdAt, lastSeenAt, expiresAt, revoked)
+  - Timing: 8h idle + 24h absolute
+  - Feature flag: script property `USE_SHEET_SESSIONS` ("true" = sheet, "false" = CacheService fallback)
+  - Old CacheService helpers renamed to `*Cache_` in Code.gs and used as fallback
+  - New route: `renewSession` (not yet called by frontend)
+  - Opportunistic cleanup on every 20th login
+  - Rollback: run `uninstallSessions` in Apps Script editor — no redeploy needed
+
+### Fixed in the same deploy
+- `adminResetPassword` / `adminSetUserActive`: `id` was referenced before declaration → ReferenceError on every call. Now fixed. Also now revokes the target user's active sessions.
+- `getHistory`: `ROLE_AVISITOR` typo → ReferenceError for incharge/admin/visitor. Now fixed with a string comparison.
+
+### Next
+- Piece 2.5 — "Remember me" trusted device tokens (30-day, per-device, revocable)
+- Piece 2.6 — Admin session diagnostics card
+- Piece 3 — Submission outbox (IndexedDB queue + `clientId` dedupe column)
+
 END OF CONTEXT
 
 text
@@ -603,3 +633,8 @@ markdown
     - All respect existing dateRange / equipment filters
     - New translations: dashboard_kpi_unassigned, dashboard_kpi_response, 
       dashboard_stale_title
+
+- Last deploy: 03-Oct-2026
+- Backups: live (Backups.gs, daily 02:00 IST)
+- Sessions: live (Sessions.gs, 8h idle / 24h cap)
+- Pending ideas: remember-me device tokens, outbox, session diagnostics card
