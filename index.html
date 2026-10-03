@@ -774,6 +774,25 @@
     <div class="role" id="homeUserRole">—</div>
   </div>
 
+  <div id="myAssignmentsScreen" class="hidden">
+    <div class="page-header">
+      <div class="back" onclick="goHome()">←</div>
+      <div class="title" data-i18n="my_assignments_title">My Assignments</div>
+    </div>
+
+    <div class="page-body">
+      <div class="tabs">
+        <div id="maTab-active"   class="tab active" onclick="myAssignmentsSetTab('active')"   data-i18n="my_assignments_tab_active">Active</div>
+        <div id="maTab-resolved" class="tab"        onclick="myAssignmentsSetTab('resolved')" data-i18n="my_assignments_tab_resolved">Resolved</div>
+        <div id="maTab-all"      class="tab"        onclick="myAssignmentsSetTab('all')"      data-i18n="my_assignments_tab_all">All</div>
+      </div>
+
+      <div id="myAssignmentsList" class="list">
+        <div class="loading" data-i18n="loading">Loading…</div>
+      </div>
+    </div>
+  </div>
+
   <div class="home-grid">
     <div class="home-tile" id="workIntimationTile" onclick="openWorkForm()">
       <div class="icon">🔧</div>
@@ -812,25 +831,6 @@
       <div class="label" data-i18n-html="tile_all_issues">ALL<br>ISSUES</div>
       <div class="badge" id="allIssuesBadge">0</div>
       <div class="sublabel" data-i18n="tile_all_issues_sub">Manage &amp; resolve</div>
-    </div>
-
-    <div id="myAssignmentsScreen" class="hidden">
-      <div class="page-header">
-        <div class="back" onclick="goHome()">←</div>
-        <div class="title" data-i18n="my_assignments_title">My Assignments</div>
-      </div>
-
-      <div class="page-body">
-        <div class="tabs">
-          <div id="maTab-active"   class="tab active" onclick="myAssignmentsSetTab('active')"   data-i18n="my_assignments_tab_active">Active</div>
-          <div id="maTab-resolved" class="tab"        onclick="myAssignmentsSetTab('resolved')" data-i18n="my_assignments_tab_resolved">Resolved</div>
-          <div id="maTab-all"      class="tab"        onclick="myAssignmentsSetTab('all')"      data-i18n="my_assignments_tab_all">All</div>
-        </div>
-
-        <div id="myAssignmentsList" class="list">
-          <div class="loading" data-i18n="loading">Loading…</div>
-        </div>
-      </div>
     </div>
 
     <div class="home-tile hidden" id="dashboardTile" onclick="openDashboard()">
