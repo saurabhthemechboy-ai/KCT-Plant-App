@@ -1118,6 +1118,15 @@
         <div class="kpi-value" id="kpiPending">—</div>
         <div class="kpi-label" data-i18n="dashboard_kpi_pending">Pending Work</div>
       </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiUnassigned">—</div>
+        <div class="kpi-label" data-i18n="dashboard_kpi_unassigned">Unassigned Open</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-value" id="kpiResponse">—</div>
+        <div class="kpi-label" data-i18n="dashboard_kpi_response">Avg Response Time</div>
+        <div class="kpi-sub" id="kpiResponseSub"></div>
+      </div>
     </div>
 
     <div class="chart-card"><div class="chart-title">📈 Issues Trend (Last 30 Days)</div><div id="trendChart" class="chart-body"></div></div>
@@ -1139,6 +1148,10 @@
     <div class="chart-card"><div class="chart-title">🏆 Responsible Person Leaderboard</div><div id="leaderboardChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">♻️ Recurring Issues Heatmap</div><div id="recurringHeatmapChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">⚠️ Priority Accuracy</div><div id="priorityAccuracyChart" class="chart-body"></div></div>
+    <div class="chart-card">
+      <div class="chart-title" data-i18n="dashboard_stale_title">⏸️ Stale Assignments (&gt; 24h waiting)</div>
+      <div id="staleTable" class="chart-body"></div>
+    </div>
     <div class="chart-card"><div class="chart-title">⏰ Aging Issues (&gt; 3 days open)</div><div id="agingTable" class="chart-body"></div></div>
   </div>
 </div>
@@ -1416,8 +1429,13 @@
     <p style="font-size:13px;color:#555;margin-top:0;">
       <span data-i18n="log_start_hint">Starting work on this issue now.</span>
     </p>
+
+    <label class="form-label" for="logStartDate" data-i18n="log_start_date">Start Date</label>
+    <input type="date" id="logStartDate" class="form-input">
+
     <label class="form-label" for="logStartTime" data-i18n="log_start_time">Start Time</label>
     <input type="time" id="logStartTime" class="form-input">
+
     <div class="error-box" id="logStartError"></div>
     <div class="modal-actions">
       <button class="secondary-btn" onclick="closeLogStartModal()" data-i18n="cancel">Cancel</button>
@@ -1455,6 +1473,9 @@
     <textarea id="lfNotes" class="form-textarea"
               data-i18n-placeholder="resolve_notes_placeholder"
               placeholder="What was done to resolve the issue?"></textarea>
+
+    <label class="form-label" for="lfFinishDate" data-i18n="log_finish_date">Finish Date</label>
+    <input type="date" id="lfFinishDate" class="form-input">
 
     <label class="form-label" for="lfFinishTime" data-i18n="log_finish_time">Finish Time</label>
     <input type="time" id="lfFinishTime" class="form-input">
@@ -1600,7 +1621,12 @@ const TRANSLATIONS = {
     login_welcome: "Welcome back,",
     built_by: "Built by",
     logout: "Logout",
+    log_start_date: "Start Date",
+    log_finish_date: "Finish Date",
     refresh_app: "🔄 Refresh App",
+    dashboard_kpi_unassigned: "Unassigned Open",
+    dashboard_kpi_response: "Avg Response Time",
+    dashboard_stale_title: "⏸️ Stale Assignments (> 24h waiting)",
     refresh_confirm: "Refresh app?\n\nThis will clear cached data and reload the latest version.",
     my_assignments_title: "My Assignments",
     my_assignments_tab_active: "Active",
@@ -1845,7 +1871,12 @@ const TRANSLATIONS = {
     login_welcome: "తిరిగి స్వాగతం,",
     built_by: "నిర్మించినవారు",
     logout: "లాగ్ అవుట్",
+    log_start_date: "ప్రారంభ తేదీ",
+    log_finish_date: "పూర్తి తేదీ",
     refresh_app: "🔄 యాప్ రిఫ్రెష్ చేయండి",
+    dashboard_kpi_unassigned: "కేటాయించని ఓపెన్",
+    dashboard_kpi_response: "సగటు ప్రతిస్పందన సమయం",
+    dashboard_stale_title: "⏸️ ఆలస్యమైన కేటాయింపులు (> 24గం నిరీక్షణ)",
     refresh_confirm: "యాప్ రిఫ్రెష్ చేయాలా?\n\nఇది కాష్ చేసిన డేటాను క్లియర్ చేసి తాజా వెర్షన్‌ను లోడ్ చేస్తుంది.",
     issue_detail_log_start: "▶ పని ప్రారంభించండి",
     issue_detail_log_finish: "✓ పని పూర్తి చేయండి",
@@ -2090,7 +2121,12 @@ const TRANSLATIONS = {
     login_welcome: "वापसी पर स्वागत है,",
     built_by: "निर्माता",
     logout: "लॉग आउट",
+    log_start_date: "प्रारंभ तिथि",
+    log_finish_date: "पूर्णता तिथि",
     refresh_app: "🔄 ऐप रीफ़्रेश करें",
+    dashboard_kpi_unassigned: "असाइन नहीं (खुला)",
+    dashboard_kpi_response: "औसत प्रतिक्रिया समय",
+    dashboard_stale_title: "⏸️ लंबित असाइनमेंट (>24 घंटे)",
     refresh_confirm: "ऐप रीफ़्रेश करें?\n\nयह कैश्ड डेटा साफ़ करेगा और नवीनतम संस्करण लोड करेगा।",
     my_assignments_title: "मेरे कार्य",
     my_assignments_tab_active: "सक्रिय",
@@ -2335,7 +2371,12 @@ const TRANSLATIONS = {
     login_welcome: "ପୁନର୍ବାର ସ୍ୱାଗତ,",
     built_by: "ନିର୍ମାତା",
     logout: "ଲଗ ଆଉଟ୍",
+    log_start_date: "ଆରମ୍ଭ ତାରିଖ",
+    log_finish_date: "ସମାପ୍ତି ତାରିଖ",
     refresh_app: "🔄 ଆପ୍ ରିଫ୍ରେସ୍ କରନ୍ତୁ",
+    dashboard_kpi_unassigned: "ନ୍ୟସ୍ତ ନଥିବା ଖୋଲା",
+    dashboard_kpi_response: "ହାରାହାରି ପ୍ରତିକ୍ରିୟା ସମୟ",
+    dashboard_stale_title: "⏸️ ବିଳମ୍ବିତ ନ୍ୟସ୍ତ (>24 ଘଣ୍ଟା)",
     refresh_confirm: "ଆପ୍ ରିଫ୍ରେସ୍ କରିବେ?\n\nଏହା କ୍ୟାଶେଡ୍ ଡାଟା ସଫା କରି ସର୍ବଶେଷ ସଂସ୍କରଣ ଲୋଡ୍ କରିବ।",
     my_assignments_title: "ମୋ ନ୍ୟସ୍ତ",
     my_assignments_tab_active: "ସକ୍ରିୟ",
@@ -4340,6 +4381,33 @@ function dashboardEsc_(s) {
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+function renderStaleTable_(rows) {
+  const el = document.getElementById("staleTable");
+  if (!el) return;
+  if (!rows || !rows.length) {
+    el.innerHTML = "<div class='no-data'>No stale assignments. 👍</div>";
+    return;
+  }
+  el.innerHTML = "<table class='dash-table'><thead><tr>" +
+    "<th>Waiting</th><th>Equipment</th><th>Type</th><th>Priority</th><th>Assigned To</th>" +
+    "</tr></thead><tbody>" +
+    rows.map(function (r) {
+      const hrs = r.hoursWaiting;
+      const label = hrs < 48
+        ? hrs + "h"
+        : Math.floor(hrs / 24) + "d";
+      const color = hrs >= 72 ? "#d32f2f"
+                  : hrs >= 48 ? "#f57c00"
+                  : "#333";
+      return "<tr onclick='openIssueDetail(" + r.rowNumber + ")' style='cursor:pointer;'>" +
+        "<td style='color:" + color + ";font-weight:bold;'>" + label + "</td>" +
+        "<td>" + dashboardEsc_(r.equipment) + "</td>" +
+        "<td>" + dashboardEsc_(r.issueType) + "</td>" +
+        "<td>" + dashboardEsc_(r.priority) + "</td>" +
+        "<td>" + dashboardEsc_(r.assignedTo) + "</td></tr>";
+    }).join("") + "</tbody></table>";
+}
+
 function renderBarChart_(containerId, items) {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -5057,8 +5125,12 @@ function logWorkStartPrompt() {
   if (!CURRENT_ISSUE) return;
   document.getElementById("logStartError").classList.remove("visible");
   const now = new Date();
+  const yyyy = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
   const hh = String(now.getHours()).padStart(2, "0");
   const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("logStartDate").value = yyyy + "-" + mo + "-" + dd;
   document.getElementById("logStartTime").value = hh + ":" + mm;
   document.getElementById("logStartModal").classList.remove("hidden");
 }
@@ -5069,6 +5141,7 @@ function closeLogStartModal() {
 
 function submitLogStart() {
   if (!CURRENT_ISSUE) return;
+  const d = document.getElementById("logStartDate").value || "";
   const t = document.getElementById("logStartTime").value || "";
   const btn = document.getElementById("logStartSubmitBtn");
   const errBox = document.getElementById("logStartError");
@@ -5107,8 +5180,12 @@ function openLogFinishModal() {
   document.getElementById("lfPhotoPreview").src = "";
   document.getElementById("lfError").classList.remove("visible");
   const now = new Date();
+  const yyyy = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
   const hh = String(now.getHours()).padStart(2, "0");
   const mm = String(now.getMinutes()).padStart(2, "0");
+  document.getElementById("lfFinishDate").value = yyyy + "-" + mo + "-" + dd;
   document.getElementById("lfFinishTime").value = hh + ":" + mm;
   document.getElementById("logFinishModal").classList.remove("hidden");
 }
@@ -5140,6 +5217,7 @@ function onLfPhotoChosen(evt) {
 function submitLogFinish() {
   if (!CURRENT_ISSUE) return;
   const notes = document.getElementById("lfNotes").value.trim();
+  const d = document.getElementById("lfFinishDate").value || "";
   const t = document.getElementById("lfFinishTime").value || "";
   const errBox = document.getElementById("lfError");
 
@@ -5159,6 +5237,7 @@ function submitLogFinish() {
   apiCall("logWorkFinish",
     { token: SESSION_TOKEN,
       rowNumber: CURRENT_ISSUE.rowNumber,
+      finishDate: d,
       finishTime: t,
       notes: notes,
       resolvedPhotoBase64: LF_PHOTO_B64,
