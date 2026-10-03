@@ -27,35 +27,6 @@ An Android app (TWA) for Kakinada Coal Terminal (KCT), a coal terminal in India.
 ---
 
 ## 2. ARCHITECTURE
-# KCT Plant App — Full Project Context
-
-**Last updated:** 03-Oct-2026
-**Owner:** Saurab Upadhyay (saurabhthemechboy@gmail.com)
-**GitHub repo:** https://github.com/saurabhthemechboy-ai/KCT-Plant-App
-**Live web app:** https://kct-plant-app.web.app
-**Backend API:** https://script.google.com/macros/s/AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg/exec
-**Firebase project:** kct-plant-app
-**Google Sheet ID:** 1GsBUhLFbfWdRrk44jGl274gUp68_xDRC8TCVnt3l7pc
-
----
-
-## 1. WHAT THE APP DOES
-
-An Android app (TWA) for Kakinada Coal Terminal (KCT), a coal terminal in India. Used by shift workers and management to:
-
-- **Work Intimation** — workers log when they start / complete maintenance work
-- **Issue Reporting** — anyone reports a plant issue with photo (from camera or gallery), with annotation tools
-- **History** — view past work records and reported issues
-- **Today** — live dashboard of today's work and issues
-- **All Issues** — full issues list with Open / In Progress / Resolved tabs (visible to all roles)
-- **My Assignments** — issues assigned to the logged-in user
-- **Dashboard** — 18 analytics charts (KPIs, trends, MTTR, MTBF, heatmaps, Pareto, etc.)
-- **Admin Users** — manage user accounts (admin only)
-- **Email notifications** — auto-email incharges and electrical team on issue reports
-
----
-
-## 2. ARCHITECTURE
 Android APK (TWA — Trusted Web Activity)
 ↓ opens
 https://kct-plant-app.web.app (Firebase Hosting)
@@ -169,7 +140,7 @@ Columns:
 ]
 Photo storage: Drive folder "Running Plant Issues" → subfolders by yyyy-MM → files named <stamp>_<equipment>_<type>.jpg or RESOLVED_<stamp>_<equipment>_<type>.jpg. Files shared as ANYONE_WITH_LINK/VIEW.
 
-5. THE FOUR-TIMESTAMP WORKFLOW
+**5. THE FOUR-TIMESTAMP WORKFLOW**
 The core lifecycle of an issue:
 
 text
@@ -194,7 +165,7 @@ Reassignment does NOT wipe the start log (was originally wiped, but that caused 
 
 Log Work Finish allows "In Progress" issues even if workStartedAt is empty (legacy compat).
 
-6. APPS SCRIPT FILES (Code.gs)
+**6. APPS SCRIPT FILES (Code.gs)**
 Location: Apps Script project KCT Plant App
 Deployment ID: AKfycby_eHVk3fAsjTiKyIk6RHDeOCJP3YCiLrBrYibw2QT_fsXUyQjIsQ9l7mOkltaYphhrOg
 
@@ -246,7 +217,7 @@ ISSUES_COL_COUNT = 22
 
 ISSUES_COL object maps names to 1-based column indices
 
-7. FRONT-END FILES (index.html)
+**7. FRONT-END FILES (index.html)**
 Locations (must be kept in sync):
 
 GitHub repo: public/index.html (or root — currently at root)
@@ -313,7 +284,7 @@ Translations: 4 languages — en, te (Telugu), hi (Hindi), od (Odia). Object TRA
 
 IMPORTANT: TRANSLATIONS object is very sensitive to syntax errors — a single missing comma or a broken string will crash the entire script block, causing "doLogin is not defined" errors and making the login button do nothing.
 
-8. DEPLOYMENT WORKFLOW
+**8. DEPLOYMENT WORKFLOW**
 Backend (Apps Script)
 Edit Code.gs in Apps Script editor
 
@@ -352,7 +323,7 @@ Only rebuild if changing icons, app name, manifest.json, or TWA start URL. Norma
 
 Build workflow: .github/workflows/build-apk.yml. Uses Gradle + com.google.androidbrowserhelper:androidbrowserhelper:2.5.0. Requires GitHub secrets: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
 
-9. FIREBASE CONFIG
+**9. FIREBASE CONFIG**
 firebase.json:
 
 json
@@ -413,7 +384,8 @@ json
     "sha256_cert_fingerprints": ["<release keystore SHA-256>"]
   }
 }]
-10. DATA OPS & CONFIG VALUES
+
+**10. DATA OPS & CONFIG VALUES**
 Equipment list: C1, C2, C3, C4, C5, C6, C7, TH#1, TH#2, TH#3, SCR#1, SCR#2, RTL, TT1, TT2, TT3, TT4, TT5, TT6
 
 Work types: Idler Replacement, Chute Cleaning, Take-up Cleaning, Belt Inspection, Belt Cleaning, Scraper Cleaning / Adjustment, Steel Cord / Patch Cutting, Minor Hot Work, Skirt Rubber Adjustment
@@ -436,7 +408,7 @@ Electrical team (always for Electrical issues): ctelectrical@bothragroup.com, ma
 
 Admin alert on email failure: saurabh.upadhyay@bothragroup.com
 
-11. KNOWN QUIRKS & GOTCHAS
+**11. KNOWN QUIRKS & GOTCHAS**
 Session tokens last ~6 hours — Apps Script CacheService TTL limit. After that users must log in again.
 
 ContentService.createTextOutput().setHeaders() does not exist. Only HtmlOutput has setHeaders. For JSON CORS, rely on Apps Script's auto header (works for "Anyone" deployments).
@@ -459,7 +431,7 @@ Work Start wipe on reassign was REMOVED — originally reassignment wiped workSt
 
 Legacy compatibility: logWorkFinish allows finishing an "In Progress" issue even if workStartedAt is empty (old broken rows).
 
-12. RECENT FIXES / FEATURES (chronological)
+**12. RECENT FIXES / FEATURES (chronological)**
 Sep-Oct 2026:
 
 Removed the Google Apps Script banner — moved front-end to Firebase Hosting. Backend became JSON API called via fetch.
@@ -486,7 +458,7 @@ Multi-language support — English, Telugu, Hindi, Odia. Language picker floatin
 
 Fixed corrupted err_network line in en translations — a botched paste merged lang_odia string with err_network string, causing SyntaxError on entire script block. Login was broken. Fixed by replacing with err_network: "Network error: ",.
 
-13. WHAT'S NOT DONE / IDEAS FOR FUTURE
+**13. WHAT'S NOT DONE / IDEAS FOR FUTURE**
 Discussed but not implemented:
 
 Real-time push notifications — Kimi AI proposed a plan using TWA push + Deno Deploy relay + VAPID keys. Requires APK rebuild for Android 13+ (POST_NOTIFICATIONS permission). Deferred.
@@ -509,7 +481,7 @@ Sessions in a Sheet instead of CacheService for >6h sessions
 
 Service-account Node backend on Oracle Cloud Always Free (if Apps Script quotas bite)
 
-14. RULES FOR ANY AI WORKING ON THIS PROJECT
+**14. RULES FOR ANY AI WORKING ON THIS PROJECT**
 Never modify files without first seeing the current content. Ask for the file or relevant snippet before proposing edits.
 
 Design first, then code. For any non-trivial change, agree on the design with the user before writing code.
@@ -534,7 +506,7 @@ When something is broken, always ask for the exact error message from Chrome Dev
 
 The user does not use a credit card. Any infrastructure recommendation must be free-tier friendly (Deno Deploy, Cloudflare Workers, Oracle Cloud Always Free, Firebase free tier).
 
-15. KEY FILES TO REQUEST IF RESUMING SESSION
+**15. KEY FILES TO REQUEST IF RESUMING SESSION**
 If our chat breaks and you're continuing in a new session, ask the user to paste:
 
 Code.gs (full file) — if we need to work on the backend
@@ -549,7 +521,7 @@ view-source:https://kct-plant-app.web.app/index.html output — to confirm what'
 
 The user has pasted Code.gs and index.html in previous messages of this session. They are large (5000+ lines each). Do not ask for both at once unless necessary.
 
-16. CONTACT / OWNER NOTES
+**16. CONTACT / OWNER NOTES**
 Owner: Saurab Upadhyay
 
 Role: Mechanical Engineer at Kakinada Coal Terminal
@@ -604,3 +576,15 @@ markdown
 - Currently stable, no active issues
 - Pending ideas: push notifications, dashboard KPIs on new timestamps, sheet cleanup
 - Full context: see KCT_CONTEXT.md
+
+****CURRENT FIXES
+
+1. Fixed My Assignments screen showing blank — the `<div id="myAssignmentsScreen">` 
+    was nested inside `<div id="homeScreen">` (inside home-grid) instead of being a 
+    top-level sibling of the other screens. Because homeScreen is `display:none` 
+    on non-home screens, the child element was also invisible. Moved it out as a 
+    sibling of homeScreen.
+2. Fixed SESSION_EXPIRED handling in frontend apiCall — added a check in the 
+    `.then(data => ...)` block that detects `{success:false, message:"SESSION_EXPIRED"}` 
+    and forces a clean logout + re-login instead of leaving the current screen 
+    showing an error message.
