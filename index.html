@@ -2677,6 +2677,20 @@ function apiCall(action, payload, onSuccess, onFail) {
     })
     .then(function (data) {
       clearTimeout(timer);
+
+      // Some backend functions return {success:false, message:"SESSION_EXPIRED"}
+      // as a normal response. Detect that here and force re-login.
+      if (data && data.success === false &&
+          typeof data.message === "string" &&
+          data.message.indexOf("SESSION_EXPIRED") !== -1) {
+        try { localStorage.removeItem("kct_token"); } catch (e) {}
+        SESSION_TOKEN = null;
+        CURRENT_USER = null;
+        alert("Your session has expired. Please log in again.");
+        showScreen("loginScreen");
+        return;
+      }
+
       onSuccess(data);
     })
     .catch(function (err) {
