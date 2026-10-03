@@ -588,3 +588,18 @@ markdown
     `.then(data => ...)` block that detects `{success:false, message:"SESSION_EXPIRED"}` 
     and forces a clean logout + re-login instead of leaving the current screen 
     showing an error message.
+3. Added date picker to Log Work Start / Finish modals — previously only time 
+    was editable, so backfilling work done yesterday but logged today would 
+    record the wrong date. Both modals now have `<input type="date">` defaulting 
+    to today (max=today). Backend logWorkStart / logWorkFinish now accept 
+    startDate / finishDate parameters and combine them with the time. Route 
+    handler in routeApiAction_ updated. New translation keys: log_start_date, 
+    log_finish_date (EN/TE/HI/OD).
+4. Added 2 new dashboard KPI tiles + 1 new table:
+    - Unassigned Open (count of Open issues with no assignee)
+    - Avg Response Time (mean of workStartedAt - assignedAt in filtered period)
+    - Stale Assignments table (assigned > 24h ago, never started, sorted by 
+      hours waiting; amber at 48h, red at 72h)
+    - All respect existing dateRange / equipment filters
+    - New translations: dashboard_kpi_unassigned, dashboard_kpi_response, 
+      dashboard_stale_title
