@@ -638,3 +638,14 @@ markdown
 - Backups: live (Backups.gs, daily 02:00 IST)
 - Sessions: live (Sessions.gs, 8h idle / 24h cap)
 - Pending ideas: remember-me device tokens, outbox, session diagnostics card
+
+- Fixed leaderboard completion % — was always 50% because each completed job
+  was counted as two rows (START + COMPLETED). Now counts distinct START rows
+  and pairs them via workPairs.
+- Restored missing dashboard chart blocks (mttrTrend, downtime, startVsComplete)
+  that were accidentally dropped during an edit.
+- Peak Activity Heatmap now uses 6 buckets of 4h aligned to shifts:
+  06-10, 10-14, 14-18, 18-22, 22-02, 02-06.
+- Shift Comparison now uses A/B/C shifts (06-14, 14-22, 22-06) with per-shift
+  colours. Backend builds SHIFT_DEFS; frontend _renderShiftCompare_ handles
+  any number of shifts generically.
