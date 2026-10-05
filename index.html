@@ -1224,7 +1224,19 @@
     <div class="chart-card"><div class="chart-title">⏱️ MTTR Trend (Avg Resolve Time)</div><div id="mttrTrendChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">📊 Work Started vs Completed</div><div id="startVsCompleteChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">🛠️ Downtime by Equipment</div><div id="downtimeChart" class="chart-body"></div></div>
-    <div class="chart-card"><div class="chart-title">📉 Pareto — Issue Types</div><div id="paretoChart" class="chart-body"></div></div>
+    <div class="chart-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;">
+        <div class="chart-title" style="margin-bottom:0;">📉 Pareto</div>
+        <select id="paretoMode" class="filter-input"
+                style="width:auto;padding:6px 28px 6px 10px;font-size:12px;"
+                onchange="paretoModeChanged()">
+          <option value="byEquipment" selected>By Equipment</option>
+          <option value="byLocation">By Location</option>
+          <option value="byType">By Issue Type</option>
+        </select>
+      </div>
+      <div id="paretoChart" class="chart-body"></div>
+    </div>
     <div class="chart-card"><div class="chart-title">🔥 Peak Activity Heatmap</div><div id="heatmapChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">⚙️ Equipment Reliability (MTBF)</div><div id="mtbfChart" class="chart-body"></div></div>
     <div class="chart-card"><div class="chart-title">🌗 Shift Comparison (Day vs Night)</div><div id="shiftCompareChart" class="chart-body"></div></div>
@@ -4480,6 +4492,13 @@ function renderDashboard_(d) {
   renderLineChart_("trendChart", d.charts.trend);
   renderBarChart_("topReportersChart", d.topReporters);
 
+  // Stash the dashboard response so the Pareto dropdown can re-render
+  // without hitting the API again.
+  window.__lastDashboard = d;
+
+  window.__lastDashboard = d;
+  paretoModeChanged();
+
   renderShiftTable_(d.shiftTable);
   renderAgingTable_(d.aging);
 
@@ -4633,13 +4652,28 @@ function _renderExtraCharts_(charts) {
   _renderMTTRTrend_("mttrTrendChart", charts.mttrTrend || []);
   _renderStartVsComplete_("startVsCompleteChart", charts.startVsComplete || []);
   _renderDowntimeChart_("downtimeChart", charts.downtime || []);
-  _renderParetoChart_("paretoChart", charts.pareto || []);
   _renderHeatmap_("heatmapChart", charts.heatmap || null);
   _renderMTBF_("mtbfChart", charts.mtbf || []);
   _renderShiftCompare_("shiftCompareChart", charts.shiftComparison || null);
   _renderLeaderboard_("leaderboardChart", charts.leaderboard || []);
   _renderRecurringHeatmap_("recurringHeatmapChart", charts.recurringHeatmap || null);
   _renderPriorityAccuracy_("priorityAccuracyChart", charts.priorityAccuracy || []);
+}
+
+function paretoModeChanged() {
+  const mode = document.getElementById("paretoMode").value;
+  const d = window.__lastDashboard;
+  if (!d || !d.charts) return;
+
+  const pareto = d.charts.pareto || {};
+  let data;
+  if (Array.isArray(pareto)) {
+    // Backward compat if the server returned the old flat array
+    data = pareto;
+  } else {
+    data = pareto[mode] || [];
+  }
+  _renderParetoChart_("paretoChart", data);
 }
 
 function _extChartEsc_(s) {
