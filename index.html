@@ -4816,7 +4816,11 @@ function _renderHeatmap_(containerId, data) {
   if (!el || !data || !data.matrix) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
 
   const max = data.max || 1;
-  let html = "<div style='display:grid;grid-template-columns:60px repeat(4,1fr);gap:4px;font-size:11px;'>";
+  const bucketCount = data.buckets.length;
+  const cols = "60px repeat(" + bucketCount + ",1fr)";
+
+  let html = "<div style='display:grid;grid-template-columns:" + cols +
+             ";gap:4px;font-size:11px;'>";
   html += "<div></div>";
   data.buckets.forEach(function (b) {
     html += "<div style='text-align:center;color:#666;font-weight:bold;'>" + b + "</div>";
@@ -4866,32 +4870,49 @@ function _renderShiftCompare_(containerId, data) {
   const el = document.getElementById(containerId);
   if (!el || !data) { el.innerHTML = "<div class='no-data'>No data.</div>"; return; }
 
-  const labels = ["Jobs", "Manpower", "Duration (hr)"];
-  const dayVals = [data.jobs[0], data.manpower[0], data.durationHrs[0]];
-  const nightVals = [data.jobs[1], data.manpower[1], data.durationHrs[1]];
+  const shifts = data.shifts || [];
+  if (!shifts.length) { el.innerHTML = "<div class='no-data'>No shift data.</div>"; return; }
+
+  const metrics = [
+    { label: "Jobs",        values: data.jobs || [] },
+    { label: "Manpower",    values: data.manpower || [] },
+    { label: "Duration (hr)", values: data.durationHrs || [] }
+  ];
+
+  // Colour per shift — extend the array if you ever add D shift
+  const colours = [
+    { bg: "linear-gradient(90deg,#4fc3f7,#0288d1)", text: "#0288d1" },   // A - blue
+    { bg: "linear-gradient(90deg,#9575cd,#5e35b1)", text: "#5e35b1" },   // B - purple
+    { bg: "linear-gradient(90deg,#ffb74d,#e65100)", text: "#e65100" }    // C - orange
+  ];
 
   let html = "<div style='display:flex;flex-direction:column;gap:14px;'>";
-  labels.forEach(function (lbl, i) {
-    const max = Math.max(dayVals[i], nightVals[i], 1);
-    const dayPct = Math.round((dayVals[i] / max) * 100);
-    const nightPct = Math.round((nightVals[i] / max) * 100);
+
+  metrics.forEach(function (m) {
+    const values = m.values;
+    const max = Math.max.apply(null, values.concat([1]));
 
     html += "<div>" +
-      "<div style='font-size:12px;color:#666;font-weight:bold;margin-bottom:6px;'>" + lbl + "</div>" +
-      "<div class='bar-row' style='margin-bottom:4px;'>" +
-        "<div class='bar-label' style='color:#0288d1;font-size:11px;'>Day</div>" +
-        "<div class='bar-track'><div class='bar-fill' style='width:" + dayPct +
-          "%;background:linear-gradient(90deg,#4fc3f7,#0288d1);'></div></div>" +
-        "<div class='bar-value'>" + dayVals[i] + "</div>" +
-      "</div>" +
-      "<div class='bar-row'>" +
-        "<div class='bar-label' style='color:#5e35b1;font-size:11px;'>Night</div>" +
-        "<div class='bar-track'><div class='bar-fill' style='width:" + nightPct +
-          "%;background:linear-gradient(90deg,#9575cd,#5e35b1);'></div></div>" +
-        "<div class='bar-value' style='color:#5e35b1;'>" + nightVals[i] + "</div>" +
-      "</div>" +
-    "</div>";
+      "<div style='font-size:12px;color:#666;font-weight:bold;margin-bottom:6px;'>" +
+      m.label + "</div>";
+
+    shifts.forEach(function (shiftLabel, i) {
+      const v = Number(values[i]) || 0;
+      const pct = Math.round((v / max) * 100);
+      const colour = colours[i % colours.length];
+
+      html += "<div class='bar-row' style='margin-bottom:4px;'>" +
+        "<div class='bar-label' style='color:" + colour.text +
+          ";font-size:11px;min-width:88px;max-width:88px;'>" + shiftLabel + "</div>" +
+        "<div class='bar-track'><div class='bar-fill' style='width:" + pct +
+          "%;background:" + colour.bg + ";'></div></div>" +
+        "<div class='bar-value' style='color:" + colour.text + ";'>" + v + "</div>" +
+      "</div>";
+    });
+
+    html += "</div>";
   });
+
   html += "</div>";
   el.innerHTML = html;
 }
