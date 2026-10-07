@@ -7,8 +7,8 @@
    - Version pinned to 10.12.5 — do not bump without testing.
    ============================================================ */
 
-importScripts("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js");
+importScripts("/firebase-app-compat.js");
+importScripts("/firebase-messaging-compat.js");
 
 /* ---------- Firebase config ----------
    These values are PUBLIC. They ship in every Firebase web app.
