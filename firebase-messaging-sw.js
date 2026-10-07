@@ -14,21 +14,20 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-com
    These values are PUBLIC. They ship in every Firebase web app.
    Security is enforced by Firebase rules + the backend, not by hiding these. */
 firebase.initializeApp({
-  apiKey:            "AIzaSyC7m2YQ8QyYd5rLh5nXG7Z4kZq5Zb2Xr9A",
+  apiKey:            "AIzaSyAsYq0_XyijCaa_dbYYmLSaRSyK6Syylok",
   authDomain:        "kct-plant-app.firebaseapp.com",
   projectId:         "kct-plant-app",
-  storageBucket:     "kct-plant-app.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-  appId:             "REPLACE_WITH_YOUR_APP_ID"
+  storageBucket:     "kct-plant-app.firebasestorage.app",
+  messagingSenderId: "345997215926",
+  appId:             "1:345997215926:web:a0280a977ef264c1567e17"
 });
 
 const messaging = firebase.messaging();
 
 /* ---------- Background message handler ----------
    Fired when a push arrives while the app is closed or backgrounded.
-   The browser shows a notification ONLY if we call showNotification here
-   (or if the backend sends a "notification" payload, which we are NOT doing —
-   we send data-only payloads so we control the display exactly). */
+   We send data-only payloads from the backend, so this code builds the
+   notification ourselves — full control over title, body, vibration. */
 messaging.onBackgroundMessage(function (payload) {
   console.log("[SW] Background FCM received:", payload);
 
@@ -41,16 +40,13 @@ messaging.onBackgroundMessage(function (payload) {
   const description = data.description || "";
   const issueId     = data.issueId     || "";
 
-  /* Priority → emoji + vibration pattern.
-     Critical: three pulses — hard to miss on a plant floor.
-     High:     two pulses.
-     Medium/Low: single pulse. */
+  /* Priority → emoji + vibration pattern. */
   let emoji = "🟡";
   let vibrate = [200];
-  if (priority === "Critical") { emoji = "🔴"; vibrate = [300, 150, 300, 150, 300]; }
-  else if (priority === "High") { emoji = "🟠"; vibrate = [200, 100, 200]; }
-  else if (priority === "Medium") { emoji = "🟡"; vibrate = [200]; }
-  else if (priority === "Low") { emoji = "🟢"; vibrate = [200]; }
+  if (priority === "Critical")      { emoji = "🔴"; vibrate = [300, 150, 300, 150, 300]; }
+  else if (priority === "High")     { emoji = "🟠"; vibrate = [200, 100, 200]; }
+  else if (priority === "Medium")   { emoji = "🟡"; vibrate = [200]; }
+  else if (priority === "Low")      { emoji = "🟢"; vibrate = [200]; }
 
   const title = emoji + " " + priority + " — " + equipment;
 
@@ -83,7 +79,7 @@ messaging.onBackgroundMessage(function (payload) {
 
 /* ---------- Notification click handler ----------
    Opens the app and jumps to the issue detail screen.
-   If a tab is already open, focus it and navigate. Otherwise open a new one. */
+   If a tab is already open, focus it and send a navigate message. */
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
 
@@ -93,17 +89,14 @@ self.addEventListener("notificationclick", function (event) {
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (list) {
-      /* Try to find an existing app window and reuse it. */
       for (let i = 0; i < list.length; i++) {
         const client = list[i];
         if (client.url.indexOf("kct-plant-app.web.app") !== -1 &&
             "focus" in client) {
-          /* Ask the open page to navigate — see index.html handler for this message. */
           client.postMessage({ type: "NAVIGATE_ISSUE", url: url });
           return client.focus();
         }
       }
-      /* Otherwise open a fresh window. */
       if (clients.openWindow) {
         return clients.openWindow(url);
       }
@@ -111,9 +104,9 @@ self.addEventListener("notificationclick", function (event) {
   );
 });
 
-/* ---------- Force the SW to activate immediately ----------
-   Without this, a newly-updated SW sits in "waiting" until all tabs close. */
-self.addEventListener("install", function (event) {
+/* ---------- Force immediate activation ----------
+   Without this, a newly-updated SW waits until all tabs close. */
+self.addEventListener("install", function () {
   self.skipWaiting();
 });
 
