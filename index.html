@@ -791,6 +791,30 @@
       font-weight: bold;
       cursor: pointer;
     }
+
+    /* ---- 17. Notification tile + foreground toast ---- */
+
+    #notifTile { transition: background-color 0.3s, border-color 0.3s; }
+    #notifTile.notif-state-on     { background: #e8f5e9; border: 2px solid #4caf50; }
+    #notifTile.notif-state-denied { background: #fff3e0; border: 2px solid #ff9800; }
+    #notifTile.notif-state-loading { opacity: 0.6; pointer-events: none; }
+
+    #kctNotifToast {
+      position: fixed; top: 12px; left: 12px; right: 12px;
+      z-index: 99999; background: #0288d1; color: #fff;
+      border-radius: 10px; padding: 12px 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+      display: none; cursor: pointer;
+      font-size: 14px; line-height: 1.35;
+    }
+    #kctNotifToast.visible { display: block; animation: kctToastIn 0.25s ease-out; }
+    #kctNotifToast .kct-toast-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    #kctNotifToast .kct-toast-body  { opacity: 0.95; }
+    @keyframes kctToastIn {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+
   </style>
 </head>
 
@@ -895,6 +919,12 @@
       <div class="label" data-i18n-html="tile_all_issues">ALL<br>ISSUES</div>
       <div class="badge" id="allIssuesBadge">0</div>
       <div class="sublabel" data-i18n="tile_all_issues_sub">Manage &amp; resolve</div>
+    </div>
+
+    <div class="home-tile hidden" id="notifTile" onclick="enableNotifications()">
+      <div class="icon" id="notifTileIcon">🔔</div>
+      <div class="label" id="notifTileLabel">ENABLE<br>NOTIFICATIONS</div>
+      <div class="sublabel" id="notifTileSub" data-i18n="tile_notif_sub">Get push alerts</div>
     </div>
 
     <div class="home-tile hidden" id="dashboardTile" onclick="openDashboard()">
@@ -1687,6 +1717,305 @@
     </div>
     <button class="lang-close-btn" onclick="closeLanguagePicker()" data-i18n="close">Close</button>
   </div>
+</div>
+
+<!-- ============================================================
+     FCM — Firebase Cloud Messaging (compat SDK, matches the SW)
+     ============================================================ -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-messaging-compat.js"></script>
+<script>
+/* ============================================================
+   NOTIFICATIONS — client side
+   ------------------------------------------------------------
+   Loads after the SDK <script> tags above, runs before the main
+   app script. Exposes:
+     initNotifications_()       — call after login
+     enableNotifications()      — wired to the home tile
+     refreshNotifTileState_()   — refresh tile UI from current perm
+     dismissNotifToast_()       — clears the foreground toast
+   ============================================================ */
+
+const KCT_VAPID_KEY =
+  "BMS3Vk0fYXPsTvkhxshaQTEFVVN_C9cRnDx5TW9grREK5_r1P3JoOOTXy79Hc4-GWZp5PdmMeLSsgs06H2A5CNo";
+
+const KCT_FCM_TOPIC = "kct-issues";
+
+/* Same Firebase config as firebase-messaging-sw.js.
+   Keep these two in sync if the config ever changes. */
+const KCT_FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyAsYq0_XyijCaa_dbYYmLSaRSyK6Syylok",
+  authDomain:        "kct-plant-app.firebaseapp.com",
+  projectId:         "kct-plant-app",
+  storageBucket:     "kct-plant-app.firebasestorage.app",
+  messagingSenderId: "345997215926",
+  appId:             "1:345997215926:web:a0280a977ef264c1567e17"
+};
+
+let KCT_FB_APP = null;
+let KCT_FB_MESSAGING = null;
+let KCT_SW_REGISTRATION = null;
+
+/* ------------------------------------------------------------
+   Boot: initialize Firebase + register the SW.
+   Safe to call multiple times.
+   ------------------------------------------------------------ */
+function initNotifications_() {
+  if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+    console.log("[Notif] Service Worker or Notification API unavailable.");
+    return;
+  }
+
+  // Initialize Firebase app once
+  try {
+    if (!KCT_FB_APP) {
+      KCT_FB_APP = firebase.apps && firebase.apps.length
+        ? firebase.app()
+        : firebase.initializeApp(KCT_FIREBASE_CONFIG);
+    }
+    if (!KCT_FB_MESSAGING && firebase.messaging) {
+      KCT_FB_MESSAGING = firebase.messaging();
+      setupForegroundHandler_();
+    }
+  } catch (e) {
+    console.log("[Notif] Firebase init failed:", e.message);
+  }
+
+  // Register the SW once — reuse the same registration for FCM
+  if (!KCT_SW_REGISTRATION) {
+    navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/" })
+      .then(function (reg) {
+        KCT_SW_REGISTRATION = reg;
+        console.log("[Notif] SW registered:", reg.scope);
+        // If FCM messaging exists and the SW is ready, hook the token provider
+        if (KCT_FB_MESSAGING && firebase.messaging) {
+          try {
+            KCT_FB_MESSAGING.useServiceWorker(reg);
+          } catch (e) { /* older SDK versions don't need this */ }
+        }
+      })
+      .catch(function (err) {
+        console.log("[Notif] SW register failed:", err.message);
+      });
+  }
+
+  // Reflect current permission state on the tile (if it exists)
+  refreshNotifTileState_();
+}
+
+/* ------------------------------------------------------------
+   Called after a successful login. Does NOT request permission
+   (that happens only when the user taps the tile) — it just
+   refreshes the tile UI state and ensures Firebase is initialized.
+   ------------------------------------------------------------ */
+function initNotificationsAfterLogin_() {
+  initNotifications_();
+}
+
+/* ------------------------------------------------------------
+   Called when the user taps the tile.
+   Requests permission, gets FCM token, subscribes to topic.
+   ------------------------------------------------------------ */
+function enableNotifications() {
+  if (!CURRENT_USER || CURRENT_USER.role === "visitor") return;
+
+  if (!KCT_FB_MESSAGING) {
+    initNotifications_();
+    if (!KCT_FB_MESSAGING) {
+      alert("Notifications are not available on this device.");
+      return;
+    }
+  }
+
+  const tile = document.getElementById("notifTile");
+  if (tile) tile.classList.add("notif-state-loading");
+
+  // If already granted, go straight to subscribe
+  if (Notification.permission === "granted") {
+    subscribeToTopic_();
+    return;
+  }
+
+  Notification.requestPermission().then(function (perm) {
+    if (tile) tile.classList.remove("notif-state-loading");
+    if (perm === "granted") {
+      subscribeToTopic_();
+    } else {
+      // User said no (or dismissed)
+      try { localStorage.setItem("kct_notif_denied", "1"); } catch (e) {}
+      refreshNotifTileState_();
+      alert(
+        "Notifications are blocked.\n\n" +
+        "To enable them later: Android Settings → Apps → KCT Plant App → Notifications → Allow."
+      );
+    }
+  }).catch(function (err) {
+    if (tile) tile.classList.remove("notif-state-loading");
+    console.log("[Notif] Permission request failed:", err.message);
+  });
+}
+
+/* ------------------------------------------------------------
+   Get the FCM token and subscribe to the kct-issues topic.
+   FCM subscribeToTopic is available in compat SDK via REST fallback —
+   modern SDK removed JS-side subscribeToTopic, so we do it via our
+   Apps Script backend instead (see Code.gs: subscribeToTopic_).
+   ------------------------------------------------------------ */
+function subscribeToTopic_() {
+  if (!KCT_FB_MESSAGING) return;
+
+  KCT_FB_MESSAGING.getToken({ vapidKey: KCT_VAPID_KEY })
+    .then(function (token) {
+      if (!token) {
+        throw new Error("FCM returned an empty token.");
+      }
+      try { localStorage.setItem("kct_fcm_token", token); } catch (e) {}
+
+      // Ask the backend to subscribe this token to the kct-issues topic.
+      apiCall("subscribeFcm",
+        { token: SESSION_TOKEN, fcmToken: token },
+        function (res) {
+          if (res && res.success) {
+            try { localStorage.setItem("kct_notif_enabled", "1"); } catch (e) {}
+            refreshNotifTileState_();
+          } else {
+            console.log("[Notif] Subscribe failed:", res && res.message);
+            alert("Could not enable notifications: " +
+                  (res && res.message ? res.message : "unknown error"));
+          }
+        },
+        function (err) {
+          console.log("[Notif] Subscribe API error:", err && err.message);
+        }
+      );
+    })
+    .catch(function (err) {
+      console.log("[Notif] getToken failed:", err && err.message ? err.message : err);
+      alert("Could not get a push token.\n\n" + (err && err.message ? err.message : err));
+    });
+}
+
+/* ------------------------------------------------------------
+   Foreground message handler.
+   When the app is open, browser suppresses OS notification and
+   fires this instead. We show an in-app toast + short beep.
+   ------------------------------------------------------------ */
+function setupForegroundHandler_() {
+  if (!KCT_FB_MESSAGING || !KCT_FB_MESSAGING.onMessage) return;
+  KCT_FB_MESSAGING.onMessage(function (payload) {
+    console.log("[Notif] Foreground FCM:", payload);
+    const d = (payload && payload.data) ? payload.data : {};
+    showNotifToast_(d);
+  });
+}
+
+function showNotifToast_(d) {
+  const el = document.getElementById("kctNotifToast");
+  const titleEl = document.getElementById("kctNotifToastTitle");
+  const bodyEl = document.getElementById("kctNotifToastBody");
+  if (!el) return;
+
+  const priority = d.priority || "Medium";
+  const equipment = d.equipment || "—";
+  const issueType = d.issueType || "";
+  const location = d.location || "";
+  const description = d.description || "";
+
+  let emoji = "🟡";
+  if (priority === "Critical") emoji = "🔴";
+  else if (priority === "High") emoji = "🟠";
+  else if (priority === "Low") emoji = "🟢";
+
+  titleEl.textContent = emoji + " " + priority + " — " + equipment;
+  let body = issueType;
+  if (location) body += " · " + location;
+  if (description) body += "\n" + (description.length > 90
+    ? description.substring(0, 87) + "…" : description);
+  bodyEl.textContent = body;
+
+  // Stash the issue id so tapping the toast opens the issue
+  el.dataset.issueId = d.issueId || "";
+
+  el.classList.add("visible");
+  beep_();
+
+  // Auto-dismiss after 6 seconds
+  clearTimeout(showNotifToast_._timer);
+  showNotifToast_._timer = setTimeout(function () {
+    el.classList.remove("visible");
+  }, 6000);
+}
+
+function dismissNotifToast_() {
+  const el = document.getElementById("kctNotifToast");
+  if (!el) return;
+  const id = el.dataset.issueId;
+  el.classList.remove("visible");
+  if (id && typeof openIssueDetail === "function") {
+    openIssueDetail(Number(id));
+  }
+}
+
+/* Short beep using WebAudio — no asset needed. */
+function beep_() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880;
+    o.type = "sine";
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    o.start();
+    o.stop(ctx.currentTime + 0.4);
+  } catch (e) { /* silent */ }
+}
+
+/* ------------------------------------------------------------
+   Update the tile appearance based on current state:
+     - Not granted → "ENABLE NOTIFICATIONS"
+     - Granted + subscribed → "NOTIFICATIONS ON"
+     - Granted but denied before → "NOTIFICATIONS BLOCKED"
+   ------------------------------------------------------------ */
+function refreshNotifTileState_() {
+  const tile = document.getElementById("notifTile");
+  if (!tile) return;
+  if (!CURRENT_USER || CURRENT_USER.role === "visitor") return;
+
+  tile.classList.remove("notif-state-on", "notif-state-denied", "notif-state-loading");
+
+  const iconEl = document.getElementById("notifTileIcon");
+  const labelEl = document.getElementById("notifTileLabel");
+  const subEl = document.getElementById("notifTileSub");
+  if (!iconEl || !labelEl || !subEl) return;
+
+  const perm = (typeof Notification !== "undefined") ? Notification.permission : "denied";
+
+  if (perm === "granted") {
+    tile.classList.add("notif-state-on");
+    iconEl.textContent = "🔔";
+    labelEl.innerHTML = "NOTIFICATIONS<br>ON";
+    subEl.textContent = "You’ll be alerted";
+  } else if (perm === "denied") {
+    tile.classList.add("notif-state-denied");
+    iconEl.textContent = "🔕";
+    labelEl.innerHTML = "NOTIFICATIONS<br>BLOCKED";
+    subEl.textContent = "Enable in Android Settings";
+  } else {
+    iconEl.textContent = "🔔";
+    labelEl.innerHTML = "ENABLE<br>NOTIFICATIONS";
+    subEl.textContent = "Get push alerts";
+  }
+}
+
+</script>
+
+<div id="kctNotifToast" onclick="dismissNotifToast_()">
+  <div class="kct-toast-title" id="kctNotifToastTitle"></div>
+  <div class="kct-toast-body" id="kctNotifToastBody"></div>
 </div>
 
 <script>
