@@ -1,37 +1,29 @@
 /* ============================================================
    KCT Plant App — Firebase Cloud Messaging Service Worker
    ------------------------------------------------------------
-   - Runs in the background on every subscribed device.
-   - Receives FCM messages and shows a system notification.
-   - Tapping the notification opens the issue detail in the app.
-   - Version pinned to 10.12.5 — do not bump without testing.
+   Uses the raw Push API — no Firebase SDK inside the SW.
+   The page (index.html) obtains the FCM token via Firebase
+   and subscribes this device to the topic. The SW only
+   receives raw push events and shows notifications.
    ============================================================ */
 
-importScripts("/firebase-app-compat.js");
-importScripts("/firebase-messaging-compat.js");
+/* ---------- Push event handler ----------
+   Fired whenever the backend sends an FCM message to this device. */
+self.addEventListener("push", function (event) {
+  let payload = {};
+  try {
+    if (event.data) {
+      payload = event.data.json();
+    }
+  } catch (e) {
+    console.log("[SW] Push payload not JSON:", e.message);
+    payload = {};
+  }
 
-/* ---------- Firebase config ----------
-   These values are PUBLIC. They ship in every Firebase web app.
-   Security is enforced by Firebase rules + the backend, not by hiding these. */
-firebase.initializeApp({
-  apiKey:            "AIzaSyAsYq0_XyijCaa_dbYYmLSaRSyK6Syylok",
-  authDomain:        "kct-plant-app.firebaseapp.com",
-  projectId:         "kct-plant-app",
-  storageBucket:     "kct-plant-app.firebasestorage.app",
-  messagingSenderId: "345997215926",
-  appId:             "1:345997215926:web:a0280a977ef264c1567e17"
-});
+  console.log("[SW] Push received:", payload);
 
-const messaging = firebase.messaging();
-
-/* ---------- Background message handler ----------
-   Fired when a push arrives while the app is closed or backgrounded.
-   We send data-only payloads from the backend, so this code builds the
-   notification ourselves — full control over title, body, vibration. */
-messaging.onBackgroundMessage(function (payload) {
-  console.log("[SW] Background FCM received:", payload);
-
-  const data = (payload && payload.data) ? payload.data : {};
+  /* FCM wraps our data fields inside payload.data (data-only messages). */
+  const data = payload.data || payload || {};
 
   const priority    = data.priority    || "Medium";
   const equipment   = data.equipment   || "—";
@@ -50,7 +42,6 @@ messaging.onBackgroundMessage(function (payload) {
 
   const title = emoji + " " + priority + " — " + equipment;
 
-  /* Body: issue type + location on first line, truncated description on second. */
   let body = issueType;
   if (location) body += " · " + location;
   if (description) {
@@ -66,20 +57,19 @@ messaging.onBackgroundMessage(function (payload) {
     body: body,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: "kct_issue_" + issueId,   /* new push for same issue replaces old */
-    renotify: true,                /* re-vibrate even if tag matches */
-    requireInteraction: priority === "Critical",  /* Critical stays on screen */
+    tag: "kct_issue_" + issueId,
+    renotify: true,
+    requireInteraction: priority === "Critical",
     vibrate: vibrate,
     data: { url: clickUrl, issueId: issueId },
     silent: false
   };
 
-  return self.registration.showNotification(title, options);
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 /* ---------- Notification click handler ----------
-   Opens the app and jumps to the issue detail screen.
-   If a tab is already open, focus it and send a navigate message. */
+   Opens the app and jumps to the issue detail screen. */
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
 
@@ -104,8 +94,7 @@ self.addEventListener("notificationclick", function (event) {
   );
 });
 
-/* ---------- Force immediate activation ----------
-   Without this, a newly-updated SW waits until all tabs close. */
+/* ---------- Force immediate activation ---------- */
 self.addEventListener("install", function () {
   self.skipWaiting();
 });
