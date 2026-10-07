@@ -649,3 +649,24 @@ markdown
 - Shift Comparison now uses A/B/C shifts (06-14, 14-22, 22-06) with per-shift
   colours. Backend builds SHIFT_DEFS; frontend _renderShiftCompare_ handles
   any number of shifts generically.
+
+- Pareto chart now supports three modes via a dropdown on the dashboard card:
+  By Equipment (default), By Work Type, By Issue Type. Backend computes all
+  three in buildExtraChartData_ and returns them as
+  charts.pareto = { byEquipment, byWorkType, byType }. Each mode shows
+  Top 10 + "Other" bucket, with cumulative-% line.
+
+  Key insight surfaced by By Work Type: Idler Replacement accounts for ~76%
+  of all Work Log rows — worth operational investigation.
+
+  Frontend: paretoModeChanged() re-renders from
+  window.__lastDashboard.charts.pareto[mode] — no API call on dropdown change.
+
+  Note: By Work Type counts rows (start+complete = 2 rows). If we ever want
+  distinct jobs, use workPairs to dedupe.
+****
+- Last deploy: 05-Oct-2026
+- Added three-mode Pareto (Equipment / Work Type / Issue Type)
+- All dashboard charts working
+- Pending ideas: remember-me device tokens, submission outbox, Work Type Pareto dedupe
+****
