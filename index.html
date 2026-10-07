@@ -2111,6 +2111,7 @@ const TRANSLATIONS = {
     tile_dashboard_sub: "Analytics & Trends",
     tile_admin: "ADMIN<br>USERS",
     tile_admin_sub: "Manage Accounts",
+    tile_notif_sub: "Get push alerts",
     loading: "Loading…",
     no_data: "No Data.",
     cancel: "Cancel",
@@ -2357,6 +2358,7 @@ const TRANSLATIONS = {
     tile_dashboard_sub: "విశ్లేషణలు & ధోరణులు",
     tile_admin: "అడ్మిన్<br>వినియోగదారులు",
     tile_admin_sub: "ఖాతాలను నిర్వహించండి",
+    tile_notif_sub: "పుష్ హెచ్చరికలు పొందండి",
     loading: "లోడ్ అవుతోంది…",
     no_data: "డేటా లేదు.",
     cancel: "రద్దు",
@@ -2602,6 +2604,7 @@ const TRANSLATIONS = {
     tile_dashboard_sub: "विश्लेषण और रुझान",
     tile_admin: "एडमिन<br>उपयोगकर्ता",
     tile_admin_sub: "खाते प्रबंधित करें",
+    tile_notif_sub: "पुश अलर्ट प्राप्त करें",
     loading: "लोड हो रहा है…",
     no_data: "डेटा नहीं है।",
     cancel: "रद्द करें",
@@ -2852,6 +2855,7 @@ const TRANSLATIONS = {
     tile_dashboard_sub: "ବିଶ୍ଳେଷଣ ଓ ପ୍ରବୃତ୍ତି",
     tile_admin: "ଆଡମିନ<br>ବ୍ୟବହାରକାରୀ",
     tile_admin_sub: "ଖାତା ପରିଚାଳନା",
+    tile_notif_sub: "ପୁଶ୍ ଆଲର୍ଟ ପାଆନ୍ତୁ",
     loading: "ଲୋଡ୍ ହେଉଛି…",
     no_data: "ଡାଟା ନାହିଁ।",
     cancel: "ବାତିଲ୍",
@@ -3369,6 +3373,11 @@ function showHome() {
   const isAdmin = CURRENT_USER && CURRENT_USER.role === "admin";
   const adminTile = document.getElementById("adminTile");
   if (adminTile) adminTile.classList.toggle("hidden", !isAdmin && !isVisitor);
+
+  const notifTile = document.getElementById("notifTile");
+  if (notifTile) notifTile.classList.toggle("hidden", isVisitor);
+
+  if (typeof initNotificationsAfterLogin_ === "function") initNotificationsAfterLogin_();
 
   showScreen("homeScreen");
   refreshTodayBadge();
