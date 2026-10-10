@@ -815,6 +815,43 @@
       to   { transform: translateY(0);     opacity: 1; }
     }
 
+    /* ---- 18. Autocomplete suggestion lists ---- */
+
+    .suggestion-list {
+      position: relative;
+      margin-top: 4px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+    }
+    .suggestion-item {
+      padding: 12px 14px;
+      font-size: 15px;
+      color: #333;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      line-height: 1.3;
+    }
+    .suggestion-item:last-child { border-bottom: 0; }
+    .suggestion-item:hover,
+    .suggestion-item:active {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+    .suggestion-item .suggestion-label {
+      font-weight: 500;
+    }
+    .suggestion-item .suggestion-hint {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
   </style>
 </head>
 
@@ -990,7 +1027,7 @@
 
       <div id="wfCommon" class="hidden">
         <label class="form-label" for="wfEquipment" data-i18n="work_equipment">Equipment / Conveyor *</label>
-        <select id="wfEquipment" class="form-select" required>
+        <select id="wfEquipment" class="form-select" required onchange="refreshWorkFormSuggestions()">
           <option value="" data-i18n="work_equipment_select">Select Equipment</option>
           <option>C1</option><option>C2</option><option>C3</option>
           <option>C4</option><option>C5</option><option>C6</option>
@@ -1017,7 +1054,11 @@
         </select>
 
         <label class="form-label" for="wfLocation" data-i18n="work_location">Exact Work Location *</label>
-        <input type="text" id="wfLocation" class="form-input" required>
+        <input type="text" id="wfLocation" class="form-input" required
+               autocomplete="off" oninput="onSuggestionInput('location')"
+               onfocus="onSuggestionInput('location')"
+               onblur="hideSuggestionsDelayed('location')">
+        <div id="wfLocationSuggestions" class="suggestion-list hidden"></div>
 
         <label class="form-label" for="wfShiftIncharge" data-i18n="work_shift_incharge">Shift In-charge *</label>
         <select id="wfShiftIncharge" class="form-select" required>
@@ -1032,7 +1073,11 @@
         </select>
 
         <label class="form-label" for="wfResponsible" data-i18n="work_responsible">Responsible Person *</label>
-        <input type="text" id="wfResponsible" class="form-input" required>
+        <input type="text" id="wfResponsible" class="form-input" required
+               autocomplete="off" oninput="onSuggestionInput('responsible')"
+               onfocus="onSuggestionInput('responsible')"
+               onblur="hideSuggestionsDelayed('responsible')">
+        <div id="wfResponsibleSuggestions" class="suggestion-list hidden"></div>
       </div>
 
       <div id="wfStartFields" class="hidden">
@@ -3497,7 +3542,186 @@ function openWorkForm() {
   document.getElementById("wfCommon").classList.add("hidden");
   document.getElementById("wfStartFields").classList.add("hidden");
   document.getElementById("wfCompletionFields").classList.add("hidden");
+  WF_SUGGESTIONS.location = [];
+  WF_SUGGESTIONS.responsible = [];
+  WF_SUGGESTIONS.loadedFor = "";
+  hideSuggestions("location");
+  hideSuggestions("responsible");
   showScreen("workScreen");
+}
+
+/* ============================================================
+   WORK INTIMATION — Autocomplete suggestions
+   ============================================================
+   - Fetched once when equipment is selected
+   - Filtered client-side as the user types
+   - Visible after 1 character
+   - Location: only when status = WORK COMPLETED
+   - Responsible: in both WORK STARTING and WORK COMPLETED
+   ============================================================ */
+
+var WF_SUGGESTIONS = {
+  location: [],
+  responsible: [],
+  loadedFor: ""   // the equipment the current suggestions belong to
+};
+
+var SUGGESTION_BLUR_TIMERS = {
+  location: null,
+  responsible: null
+};
+
+function refreshWorkFormSuggestions() {
+  var equip = "";
+  try {
+    equip = document.getElementById("wfEquipment").value || "";
+  } catch (e) {}
+
+  if (!equip) {
+    WF_SUGGESTIONS.location = [];
+    WF_SUGGESTIONS.responsible = [];
+    WF_SUGGESTIONS.loadedFor = "";
+    return;
+  }
+
+  // Same equipment — already loaded, skip
+  if (WF_SUGGESTIONS.loadedFor === equip) return;
+
+  WF_SUGGESTIONS.loadedFor = equip;
+  WF_SUGGESTIONS.location = [];
+  WF_SUGGESTIONS.responsible = [];
+
+  if (!SESSION_TOKEN) return;
+
+  apiCall("getFieldSuggestions",
+    { token: SESSION_TOKEN, equipment: equip, field: "location" },
+    function (res) {
+      if (res && res.success && WF_SUGGESTIONS.loadedFor === equip) {
+        WF_SUGGESTIONS.location = res.suggestions || [];
+      }
+    }
+  );
+
+  apiCall("getFieldSuggestions",
+    { token: SESSION_TOKEN, equipment: equip, field: "responsible" },
+    function (res) {
+      if (res && res.success && WF_SUGGESTIONS.loadedFor === equip) {
+        WF_SUGGESTIONS.responsible = res.suggestions || [];
+      }
+    }
+  );
+}
+
+function onSuggestionInput(field) {
+  // "location" only when status is WORK COMPLETED
+  var status = "";
+  try {
+    status = document.getElementById("wfStatus").value || "";
+  } catch (e) {}
+
+  if (field === "location" && status !== "WORK COMPLETED") {
+    hideSuggestions(field);
+    return;
+  }
+
+  var inputId = (field === "location") ? "wfLocation" : "wfResponsible";
+  var input = document.getElementById(inputId);
+  if (!input) return;
+
+  var query = (input.value || "").trim();
+  if (query.length < 1) {
+    hideSuggestions(field);
+    return;
+  }
+
+  var pool = WF_SUGGESTIONS[field] || [];
+  if (!pool.length) {
+    hideSuggestions(field);
+    return;
+  }
+
+  var q = query.toLowerCase();
+  // Suggestions that contain the typed text, but not exactly equal to it
+  var matches = pool.filter(function (s) {
+    return s.toLowerCase().indexOf(q) !== -1 &&
+           s.toLowerCase() !== q;
+  });
+
+  if (!matches.length) {
+    hideSuggestions(field);
+    return;
+  }
+
+  showSuggestions(field, matches.slice(0, 5), inputId);
+}
+
+function showSuggestions(field, matches, inputId) {
+  var listId = (field === "location")
+    ? "wfLocationSuggestions"
+    : "wfResponsibleSuggestions";
+  var el = document.getElementById(listId);
+  if (!el) return;
+
+  el.innerHTML = matches.map(function (s) {
+    var safe = escapeSuggestionText_(s);
+    return "<div class='suggestion-item' " +
+           "onmousedown=\"pickSuggestion('" + field + "', '" +
+           escapeSuggestionAttr_(s) + "')\">" +
+           "<span class='suggestion-label'>" + safe + "</span>" +
+           "</div>";
+  }).join("");
+
+  el.classList.remove("hidden");
+}
+
+function hideSuggestions(field) {
+  var listId = (field === "location")
+    ? "wfLocationSuggestions"
+    : "wfResponsibleSuggestions";
+  var el = document.getElementById(listId);
+  if (el) el.classList.add("hidden");
+}
+
+function hideSuggestionsDelayed(field) {
+  // Small delay so a tap on a suggestion fires before the list hides
+  if (SUGGESTION_BLUR_TIMERS[field]) {
+    clearTimeout(SUGGESTION_BLUR_TIMERS[field]);
+  }
+  SUGGESTION_BLUR_TIMERS[field] = setTimeout(function () {
+    hideSuggestions(field);
+  }, 250);
+}
+
+function pickSuggestion(field, value) {
+  var inputId = (field === "location") ? "wfLocation" : "wfResponsible";
+  var input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.value = value;
+  hideSuggestions(field);
+
+  // Move focus to the next field so the operator can keep going
+  if (field === "location") {
+    var next = document.getElementById("wfShiftIncharge");
+    if (next) next.focus();
+  } else if (field === "responsible") {
+    var btn = document.getElementById("wfSubmitBtn");
+    if (btn) btn.focus();
+  }
+}
+
+function escapeSuggestionText_(s) {
+  return String(s || "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeSuggestionAttr_(s) {
+  // For the onmousedown attribute value — escape quotes and backslashes
+  return String(s || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
 }
 
 function changeWorkStatus() {
@@ -3514,6 +3738,9 @@ function changeWorkStatus() {
     document.getElementById("wfCommon").classList.remove("hidden");
     document.getElementById("wfCompletionFields").classList.remove("hidden");
   }
+  hideSuggestions("location");
+  hideSuggestions("responsible");
+  refreshWorkFormSuggestions();
 }
 
 function showWorkError(msg) {
