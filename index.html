@@ -4337,7 +4337,6 @@ window.addEventListener("pageshow", function (e) {
               " | CURRENT_USER=" + (CURRENT_USER ? CURRENT_USER.userId : "null") +
               " | ls_token=" + (localStorage.getItem("kct_token") ? "SET" : "null"));
 
-  // If a session is already established in memory, skip re-validation
   if (SESSION_TOKEN && CURRENT_USER) {
     console.log("[DIAG] Session in memory, skipping validation.");
     return;
@@ -4354,8 +4353,12 @@ window.addEventListener("pageshow", function (e) {
 
   var attemptsLeft = 2;
   function tryValidate() {
+    console.log("[DIAG] Calling validateSession...");
+    
     apiCall("validateSession", { token: saved },
       function (res) {
+        console.log("[DIAG] validateSession returned:", res);
+        
         if (res && res.success) {
           console.log("[DIAG] Validation success.");
           SESSION_TOKEN = saved;
@@ -4363,7 +4366,8 @@ window.addEventListener("pageshow", function (e) {
           showHome();
           return;
         }
-        console.log("[DIAG] Validation failed from server. Logging out.", res);
+        
+        console.log("[DIAG] Validation failed from server. Logging out.");
         try { localStorage.removeItem("kct_token"); } catch (e) {}
         SESSION_TOKEN = null;
         CURRENT_USER = null;
