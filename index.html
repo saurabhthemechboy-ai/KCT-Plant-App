@@ -3440,7 +3440,14 @@ function doLogout() {
   SESSION_TOKEN = null;
   CURRENT_USER = null;
   try { localStorage.removeItem("kct_token"); } catch (e) {}
-  try { sessionStorage.removeItem("kct_last_screen"); } catch (e) {} // <--- ADD THIS
+  
+  // Clear session state
+  try { 
+    sessionStorage.removeItem("kct_last_screen"); 
+    sessionStorage.removeItem("kct_ai_tab");
+    sessionStorage.removeItem("kct_ma_tab");
+    sessionStorage.removeItem("kct_hist_tab");
+  } catch (e) {}
   
   document.getElementById("loginUserId").value = "";
   document.getElementById("loginPassword").value = "";
@@ -3931,6 +3938,7 @@ function allIssuesSetTab(tab) {
     const el = document.getElementById("aiTab-" + t);
     if (el) el.classList.toggle("active", t === tab);
   });
+  try { sessionStorage.setItem("kct_ai_tab", tab); } catch (e) {}
   allIssuesLoad();
 }
 
@@ -4362,10 +4370,20 @@ window.addEventListener("pageshow", function (e) {
                showHome();
              } else {
                showScreen(lastScreen);
-               // Note: some screens need data loaded
-               if (lastScreen === "allIssuesScreen") allIssuesLoad();
-               if (lastScreen === "myAssignmentsScreen") myAssignmentsLoad();
-               if (lastScreen === "historyScreen") historyReload();
+               
+               // Restore states before loading data
+               if (lastScreen === "allIssuesScreen") {
+                 var savedTab = sessionStorage.getItem("kct_ai_tab") || "open";
+                 allIssuesSetTab(savedTab);
+               }
+               if (lastScreen === "myAssignmentsScreen") {
+                 var savedMaTab = sessionStorage.getItem("kct_ma_tab") || "active";
+                 myAssignmentsSetTab(savedMaTab);
+               }
+               if (lastScreen === "historyScreen") {
+                 var savedHistTab = sessionStorage.getItem("kct_hist_tab") || "work";
+                 historyShowTab(savedHistTab);
+               }
                if (lastScreen === "todayScreen") todayLoad();
                if (lastScreen === "dashboardScreen") dashboardLoad();
                if (lastScreen === "adminScreen") loadAdminUsers();
@@ -4643,6 +4661,7 @@ function historyShowTab(name) {
   if (workRow) workRow.style.display = (name === "work") ? "" : "none";
   if (issueRow) issueRow.style.display = (name === "issues") ? "" : "none";
 
+  try { sessionStorage.setItem("kct_hist_tab", name); } catch (e) {}
   historyReload();
 }
 
@@ -5839,6 +5858,7 @@ function myAssignmentsSetTab(tab) {
     const el = document.getElementById("maTab-" + t);
     if (el) el.classList.toggle("active", t === tab);
   });
+  try { sessionStorage.setItem("kct_ma_tab", tab); } catch (e) {}
   myAssignmentsLoad();
 }
 
