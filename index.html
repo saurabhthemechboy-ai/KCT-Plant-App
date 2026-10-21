@@ -4127,6 +4127,9 @@ function submitWorkForm(e) {
     function (result) {
       btn.disabled = false;
       btn.textContent = "SUBMIT";
+      // --- ADD THIS ALERT ---
+      alert("SERVER RESPONSE:\n" + JSON.stringify(result));
+      // ----------------------
       showWorkSuccess(result, data, safetyItems);
     },
     function (err) {
