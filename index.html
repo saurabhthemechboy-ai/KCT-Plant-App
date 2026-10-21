@@ -4329,23 +4329,55 @@ function hideBusy() { document.getElementById("busyOverlay").classList.add("hidd
    SESSION RESTORE
    ============================================================ */
 window.addEventListener("pageshow", function () {
+  // If a session is already established in memory (e.g. the SPA
+  // navigated internally without a real page reload), don't
+  // re-validate — just go back to whatever screen was active.
+  if (SESSION_TOKEN && CURRENT_USER) {
+    return;
+  }
+
   let saved = null;
   try { saved = localStorage.getItem("kct_token"); } catch (e) {}
   if (!saved) { showScreen("loginScreen"); return; }
 
-  apiCall("validateSession", { token: saved },
-    function (res) {
-      if (res && res.success) {
-        SESSION_TOKEN = saved;
-        CURRENT_USER = res.user;
-        showHome();
-      } else {
+  // Show a "restoring session" hint so the user doesn't stare at a blank page
+  var hintEl = document.getElementById("busyText");
+  if (hintEl) { /* don't force showBusy — that would cover the screen */ }
+
+  var attemptsLeft = 2;
+  function tryValidate() {
+    apiCall("validateSession", { token: saved },
+      function (res) {
+        if (res && res.success) {
+          SESSION_TOKEN = saved;
+          CURRENT_USER = res.user;
+          showHome();
+          return;
+        }
+
+        // Backend explicitly said the session is invalid → real logout
         try { localStorage.removeItem("kct_token"); } catch (e) {}
+        SESSION_TOKEN = null;
+        CURRENT_USER = null;
         showScreen("loginScreen");
+      },
+      function (err) {
+        // Network / timeout — DO NOT log out on the first failure
+        attemptsLeft--;
+        if (attemptsLeft > 0) {
+          setTimeout(tryValidate, 800);
+          return;
+        }
+        // Failed twice — keep the token in localStorage so a manual
+        // refresh or better network will retry. Show the login
+        // screen only as a last resort, and keep localStorage.
+        showScreen("loginScreen");
+        showLoginError("Couldn't reach the server. Tap LOGIN to try again.");
       }
-    },
-    function () { showScreen("loginScreen"); }
-  );
+    );
+  }
+
+  tryValidate();
 });
 
 /* ============================================================
