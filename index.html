@@ -975,6 +975,12 @@
       <div class="label" data-i18n-html="tile_admin">ADMIN<br>USERS</div>
       <div class="sublabel" data-i18n="tile_admin_sub">Manage accounts</div>
     </div>
+
+    <div class="home-tile hidden" id="exportTile" onclick="openExportScreen()">
+      <div class="icon">📥</div>
+      <div class="label">EXPORT<br>DATA</div>
+      <div class="sublabel">Download CSV</div>
+    </div>
   </div>
 
   <div class="home-footer">
@@ -1338,7 +1344,70 @@
     </div>
     <div class="error-box" id="adminError"></div>
   </div>
-</div>  
+</div>
+
+<div id="exportScreen" class="hidden">
+  <div class="page-header">
+    <div class="back" onclick="goHome()">←</div>
+    <div class="title">Export Data</div>
+  </div>
+
+  <div class="page-body">
+    <div class="filters">
+      <div class="filter-row">
+        <div>
+          <label class="filter-label">What to export</label>
+          <select id="exDataset" class="filter-input" onchange="exportCountRefresh()">
+            <option value="issues">Issues</option>
+            <option value="work">Work</option>
+          </select>
+        </div>
+        <div>
+          <label class="filter-label">Equipment</label>
+          <select id="exEquipment" class="filter-input" onchange="exportCountRefresh()">
+            <option value="">All Equipment</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-row" style="margin-top:10px;">
+        <div>
+          <label class="filter-label">Date Range</label>
+          <select id="exRange" class="filter-input" onchange="exportOnRangeChange()">
+            <option value="today">Today</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d" selected>Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="all">All Time</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div></div>
+      </div>
+      <div class="filter-row" id="exCustomRow" style="margin-top:10px; display:none;">
+        <div>
+          <label class="filter-label">From</label>
+          <input type="date" id="exFromDate" class="filter-input" onchange="exportCountRefresh()">
+        </div>
+        <div>
+          <label class="filter-label">To</label>
+          <input type="date" id="exToDate" class="filter-input" onchange="exportCountRefresh()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="text-align:center; padding:20px;">
+      <div style="font-size:13px; color:#666; margin-bottom:4px;">Rows matched</div>
+      <div id="exRowCount" style="font-size:32px; font-weight:bold; color:#0288d1;">—</div>
+      <div id="exRowHint" style="font-size:12px; color:#999; margin-top:4px;">Change any filter above to refresh</div>
+    </div>
+
+    <button class="primary-btn" id="exDownloadBtn" onclick="exportDownload()" style="margin-top:20px;">
+      📥 DOWNLOAD CSV
+    </button>
+
+    <div class="error-box" id="exError"></div>
+  </div>
+</div>
 
 <div id="issuesScreen" class="hidden">
   <div class="page-header">
@@ -1855,6 +1924,154 @@ function initNotifications_() {
    ------------------------------------------------------------ */
 function initNotificationsAfterLogin_() {
   initNotifications_();
+}
+
+/* ============================================================
+   EXPORT SCREEN (admin + incharge only)
+   ============================================================ */
+
+function openExportScreen() {
+  if (!CURRENT_USER) return;
+  var role = String(CURRENT_USER.role || "").toLowerCase();
+  if (role !== "admin" && role !== "incharge") {
+    alert("Export is only available for incharges and admins.");
+    return;
+  }
+
+  showScreen("exportScreen");
+
+  // Populate equipment dropdown once
+  var sel = document.getElementById("exEquipment");
+  if (sel && !sel.dataset.loaded) {
+    apiCall("getEquipmentList", {},
+      function (list) {
+        (list || []).forEach(function (eq) {
+          var o = document.createElement("option");
+          o.value = eq; o.textContent = eq;
+          sel.appendChild(o);
+        });
+        sel.dataset.loaded = "1";
+      }
+    );
+  }
+
+  // Reset error + row count
+  document.getElementById("exError").classList.remove("visible");
+  document.getElementById("exRowCount").textContent = "—";
+  document.getElementById("exRowHint").textContent = "Change any filter above to refresh";
+
+  // Load initial count
+  exportCountRefresh();
+}
+
+function exportOnRangeChange() {
+  var range = document.getElementById("exRange").value;
+  var customRow = document.getElementById("exCustomRow");
+  if (customRow) {
+    customRow.style.display = (range === "custom") ? "" : "none";
+  }
+  if (range === "custom") {
+    var fromInput = document.getElementById("exFromDate");
+    var toInput = document.getElementById("exToDate");
+    if (fromInput && !fromInput.value) {
+      var d = new Date(); d.setDate(d.getDate() - 29);
+      fromInput.value = d.toISOString().slice(0, 10);
+    }
+    if (toInput && !toInput.value) {
+      toInput.value = new Date().toISOString().slice(0, 10);
+    }
+  }
+  exportCountRefresh();
+}
+
+function exportBuildFilters() {
+  var range = document.getElementById("exRange").value;
+  var f = {
+    dataset: document.getElementById("exDataset").value,
+    range: range,
+    equipment: document.getElementById("exEquipment").value || ""
+  };
+  if (range === "custom") {
+    f.fromDate = document.getElementById("exFromDate").value || "";
+    f.toDate = document.getElementById("exToDate").value || "";
+  }
+  return f;
+}
+
+function exportCountRefresh() {
+  if (!SESSION_TOKEN) return;
+  var countEl = document.getElementById("exRowCount");
+  var hintEl = document.getElementById("exRowHint");
+  if (countEl) countEl.textContent = "…";
+  if (hintEl) hintEl.textContent = "Counting…";
+
+  apiCall("countExportRows",
+    { token: SESSION_TOKEN, filters: exportBuildFilters() },
+    function (res) {
+      if (res && res.success) {
+        if (countEl) countEl.textContent = res.count;
+        if (hintEl) hintEl.textContent = res.count === 1 ? "row will be exported" : "rows will be exported";
+      } else {
+        if (countEl) countEl.textContent = "—";
+        if (hintEl) hintEl.textContent = res && res.message ? res.message : "Could not count";
+      }
+    },
+    function (err) {
+      if (countEl) countEl.textContent = "—";
+      if (hintEl) hintEl.textContent = "Network error";
+    }
+  );
+}
+
+function exportDownload() {
+  if (!SESSION_TOKEN) return;
+  var btn = document.getElementById("exDownloadBtn");
+  var errBox = document.getElementById("exError");
+  errBox.classList.remove("visible");
+  btn.disabled = true;
+  btn.textContent = "GENERATING…";
+
+  apiCall("exportCsv",
+    { token: SESSION_TOKEN, filters: exportBuildFilters() },
+    function (res) {
+      btn.disabled = false;
+      btn.textContent = "📥 DOWNLOAD CSV";
+
+      if (!res || !res.success) {
+        errBox.textContent = res && res.message ? res.message : "Export failed.";
+        errBox.classList.add("visible");
+        return;
+      }
+
+      if (res.rowCount === 0) {
+        errBox.textContent = "No rows matched these filters. Nothing to download.";
+        errBox.classList.add("visible");
+        return;
+      }
+
+      // Trigger browser download from the returned CSV text
+      try {
+        var blob = new Blob(["\uFEFF" + res.csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = res.filename || "kct-export.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      } catch (e) {
+        errBox.textContent = "Download failed: " + e.message;
+        errBox.classList.add("visible");
+      }
+    },
+    function (err) {
+      btn.disabled = false;
+      btn.textContent = "📥 DOWNLOAD CSV";
+      errBox.textContent = err && err.message ? err.message : "Export failed.";
+      errBox.classList.add("visible");
+    }
+  );
 }
 
 /* ------------------------------------------------------------
@@ -3260,7 +3477,8 @@ function apiCall(action, payload, onSuccess, onFail) {
 const SCREENS = [
   "loginScreen", "homeScreen", "workScreen", "successScreen",
   "historyScreen", "todayScreen", "issuesScreen", "issueSuccessScreen",
-  "allIssuesScreen", "myAssignmentsScreen", "issueDetailScreen", "adminScreen", "dashboardScreen"
+  "allIssuesScreen", "myAssignmentsScreen", "issueDetailScreen", "adminScreen", "dashboardScreen",
+  "exportScreen"
 ];
 
 function showScreen(id, fromPop) {
@@ -3426,6 +3644,9 @@ function showHome() {
 
   const notifTile = document.getElementById("notifTile");
   if (notifTile) notifTile.classList.toggle("hidden", isVisitor);
+
+  const exportTile = document.getElementById("exportTile");
+  if (exportTile) exportTile.classList.toggle("hidden", !isManager);
 
   if (typeof initNotificationsAfterLogin_ === "function") initNotificationsAfterLogin_();
 
