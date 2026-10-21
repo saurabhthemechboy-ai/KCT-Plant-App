@@ -3223,7 +3223,10 @@ function apiCall(action, payload, onSuccess, onFail) {
 
       // Some backend functions return {success:false, message:"SESSION_EXPIRED"}
       // as a normal response. Detect that here and force re-login.
-      if (data && data.success === false &&
+      // Do NOT auto-logout if we are just validating the session.
+      // Our pageshow handler takes care of retries and proper logout.
+      if (action !== "validateSession" && 
+          data && data.success === false &&
           typeof data.message === "string" &&
           data.message.indexOf("SESSION_EXPIRED") !== -1) {
         try { localStorage.removeItem("kct_token"); } catch (e) {}
@@ -3239,7 +3242,7 @@ function apiCall(action, payload, onSuccess, onFail) {
     .catch(function (err) {
       clearTimeout(timer);
       const msg = err && err.message ? err.message : String(err);
-      if (msg === "SESSION_EXPIRED" || msg.indexOf("SESSION_EXPIRED") !== -1) {
+      if (action !== "validateSession" && (msg === "SESSION_EXPIRED" || msg.indexOf("SESSION_EXPIRED") !== -1)) {
         try { localStorage.removeItem("kct_token"); } catch (e) {}
         SESSION_TOKEN = null;
         CURRENT_USER = null;
