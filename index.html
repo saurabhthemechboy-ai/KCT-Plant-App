@@ -4328,57 +4328,70 @@ function hideBusy() { document.getElementById("busyOverlay").classList.add("hidd
 /* ============================================================
    SESSION RESTORE
    ============================================================ */
-window.addEventListener("pageshow", function () {
-  // If a session is already established in memory (e.g. the SPA
-  // navigated internally without a real page reload), don't
-  // re-validate — just go back to whatever screen was active.
+window.addEventListener("pageshow", function (e) {
+  console.log("[DIAG] pageshow fired. persisted=" + e.persisted +
+              " | SESSION_TOKEN=" + (SESSION_TOKEN ? "SET" : "null") +
+              " | CURRENT_USER=" + (CURRENT_USER ? CURRENT_USER.userId : "null") +
+              " | ls_token=" + (localStorage.getItem("kct_token") ? "SET" : "null"));
+
+  // If a session is already established in memory, skip re-validation
   if (SESSION_TOKEN && CURRENT_USER) {
+    console.log("[DIAG] Session in memory, skipping validation.");
     return;
   }
 
   let saved = null;
   try { saved = localStorage.getItem("kct_token"); } catch (e) {}
-  if (!saved) { showScreen("loginScreen"); return; }
-
-  // Show a "restoring session" hint so the user doesn't stare at a blank page
-  var hintEl = document.getElementById("busyText");
-  if (hintEl) { /* don't force showBusy — that would cover the screen */ }
+  
+  if (!saved) { 
+    console.log("[DIAG] No token in localStorage. Going to login.");
+    showScreen("loginScreen"); 
+    return; 
+  }
 
   var attemptsLeft = 2;
   function tryValidate() {
     apiCall("validateSession", { token: saved },
       function (res) {
         if (res && res.success) {
+          console.log("[DIAG] Validation success.");
           SESSION_TOKEN = saved;
           CURRENT_USER = res.user;
           showHome();
           return;
         }
-
-        // Backend explicitly said the session is invalid → real logout
+        console.log("[DIAG] Validation failed from server. Logging out.", res);
         try { localStorage.removeItem("kct_token"); } catch (e) {}
         SESSION_TOKEN = null;
         CURRENT_USER = null;
         showScreen("loginScreen");
       },
       function (err) {
-        // Network / timeout — DO NOT log out on the first failure
         attemptsLeft--;
+        console.log("[DIAG] Validation network error. Attempts left: " + attemptsLeft, err);
         if (attemptsLeft > 0) {
           setTimeout(tryValidate, 800);
           return;
         }
-        // Failed twice — keep the token in localStorage so a manual
-        // refresh or better network will retry. Show the login
-        // screen only as a last resort, and keep localStorage.
+        console.log("[DIAG] Out of retries. Going to login.");
         showScreen("loginScreen");
         showLoginError("Couldn't reach the server. Tap LOGIN to try again.");
       }
     );
   }
-
   tryValidate();
 });
+
+// --- DIAGNOSTIC OVERRIDE ---
+// This catches ANY call that tries to go to login and prints the stack.
+var _origShowScreen = window.showScreen;
+window.showScreen = function(id, fromPop) {
+  if (id === "loginScreen") {
+    console.log("[DIAG] showScreen('loginScreen') CALLED");
+    console.log("[DIAG] stack:", new Error().stack);
+  }
+  return _origShowScreen.apply(this, arguments);
+};
 
 /* ============================================================
    ISSUE REPORTING
