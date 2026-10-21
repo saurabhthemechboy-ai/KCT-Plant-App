@@ -1101,7 +1101,7 @@
         </select>
 
         <label class="form-label" for="wfStartTime" data-i18n="work_start_time">Actual Work Start Time *</label>
-        <input type="time" id="wfStartTime" class="form-input">
+        <input type="time" id="wfStartTime" class="form-input" onchange="updateDelayHint()">
 
         <label class="form-label" data-i18n="work_safety">Safety Confirmation</label>
 
@@ -1128,6 +1128,17 @@
 
         <label class="form-label" for="wfCompletionTime" data-i18n="work_completion_time">Actual Work Completion Time *</label>
         <input type="time" id="wfCompletionTime" class="form-input">
+
+        <!-- NEW: Repair timing -->
+        <label class="form-label" for="wfRepairStartTime">Repair Start Time (actual work began) *</label>
+        <input type="time" id="wfRepairStartTime" class="form-input" onchange="updateDelayHint()">
+
+        <label class="form-label" for="wfRepairFinishTime">Repair Finish Time *</label>
+        <input type="time" id="wfRepairFinishTime" class="form-input" onchange="updateDelayHint()">
+
+        <label class="form-label" for="wfDelayReason">Reason for Delay (if delay &gt; 15 mins)</label>
+        <textarea id="wfDelayReason" class="form-textarea" placeholder="e.g. Waiting for crane, spare parts, tools"></textarea>
+        <!-- END NEW -->
 
         <label class="form-label" for="wfCompletionStatus" data-i18n="work_completion_status">Completion Status *</label>
         <select id="wfCompletionStatus" class="form-select">
@@ -3781,6 +3792,14 @@ function openWorkForm() {
   document.getElementById("wfCommon").classList.add("hidden");
   document.getElementById("wfStartFields").classList.add("hidden");
   document.getElementById("wfCompletionFields").classList.add("hidden");
+
+  // Reset new repair fields
+  var rStart = document.getElementById("wfRepairStartTime");
+  var rFinish = document.getElementById("wfRepairFinishTime");
+  var dReason = document.getElementById("wfDelayReason");
+  if (rStart) rStart.value = "";
+  if (rFinish) rFinish.value = "";
+  if (dReason) { dReason.value = ""; dReason.style.borderColor = ""; }
   WF_SUGGESTIONS.location = [];
   WF_SUGGESTIONS.responsible = [];
   WF_SUGGESTIONS.loadedFor = "";
@@ -3989,6 +4008,34 @@ function showWorkError(msg) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
+function updateDelayHint() {
+  var startInput = document.getElementById("wfStartTime");
+  var repairStartInput = document.getElementById("wfRepairStartTime");
+  var delayField = document.getElementById("wfDelayReason");
+  if (!startInput || !repairStartInput || !delayField) return;
+
+  var b = startInput.value;
+  var r = repairStartInput.value;
+  if (!b || !r) return;
+
+  var bm = b.split(":");
+  var rm = r.split(":");
+  if (bm.length < 2 || rm.length < 2) return;
+
+  var bmins = Number(bm[0]) * 60 + Number(bm[1]);
+  var rmins = Number(rm[0]) * 60 + Number(rm[1]);
+  var diff = rmins - bmins;
+  if (diff < 0) diff += 1440;
+
+  if (diff > 15) {
+    delayField.placeholder = "Delay of " + diff + " mins — please explain why (required)";
+    delayField.style.borderColor = "#f57c00";
+  } else {
+    delayField.placeholder = "Not needed (delay ≤ 15 mins)";
+    delayField.style.borderColor = "";
+  }
+}
+
 function submitWorkForm(e) {
   e.preventDefault();
   document.getElementById("wfError").classList.remove("visible");
@@ -4020,9 +4067,30 @@ function submitWorkForm(e) {
     if (!document.getElementById("wfStartTime").value) { alert("Please enter Actual Work Start Time."); return; }
   }
 
-  if (status === "WORK COMPLETED") {
+    if (status === "WORK COMPLETED") {
     if (!document.getElementById("wfCompletionTime").value) { alert("Please enter Actual Work Completion Time."); return; }
+    if (!document.getElementById("wfRepairStartTime").value) { alert("Please enter Repair Start Time."); return; }
+    if (!document.getElementById("wfRepairFinishTime").value) { alert("Please enter Repair Finish Time."); return; }
     if (!document.getElementById("wfCompletionStatus").value) { alert("Please select Completion Status."); return; }
+
+    // If delay > 15 mins, require a reason
+    var bs = document.getElementById("wfStartTime").value;
+    var rs = document.getElementById("wfRepairStartTime").value;
+    var dr = document.getElementById("wfDelayReason").value.trim();
+    if (bs && rs) {
+      var bm = bs.split(":");
+      var rm = rs.split(":");
+      if (bm.length >= 2 && rm.length >= 2) {
+        var bmins = Number(bm[0]) * 60 + Number(bm[1]);
+        var rmins = Number(rm[0]) * 60 + Number(rm[1]);
+        var diff = rmins - bmins;
+        if (diff < 0) diff += 1440;
+        if (diff > 15 && !dr) {
+          alert("Please provide a Reason for Delay (" + diff + " mins).");
+          return;
+        }
+      }
+    }
   }
 
   btn.disabled = true;
@@ -4048,7 +4116,10 @@ function submitWorkForm(e) {
     completionTime: cleanTime(document.getElementById("wfCompletionTime").value),
     safety: safetyItems.join(", "),
     completionStatus: document.getElementById("wfCompletionStatus").value,
-    remarks: document.getElementById("wfRemarks").value
+    remarks: document.getElementById("wfRemarks").value,
+    repairStartTime: cleanTime(document.getElementById("wfRepairStartTime").value),
+    repairFinishTime: cleanTime(document.getElementById("wfRepairFinishTime").value),
+    delayReason: document.getElementById("wfDelayReason").value.trim()
   };
 
   apiCall("submitWork",
@@ -4093,17 +4164,37 @@ function showWorkSuccess(result, data, safetyItems) {
 ${safetyText}
 
 ✅ *STATUS: WORK STARTED*`;
-  } else {
+    } else {
+    var repairBlock = "";
+    if (result.repairStartTime && result.repairFinishTime) {
+      repairBlock =
+        "🛠️ *Repair Start:* " + result.repairStartTime + "\n" +
+        "🏁 *Repair Finish:* " + result.repairFinishTime + "\n";
+    }
+
+    var delayBlock = "";
+    if (result.delayMinutes !== null && result.delayMinutes !== undefined && result.delayMinutes > 0) {
+      delayBlock = "\n⏸️ *Delay (Breakdown → Repair):* " + result.delayMinutes + " mins";
+      if (result.delayReason) {
+        delayBlock += "\n📝 *Reason:* " + result.delayReason;
+      }
+      delayBlock += "\n";
+    }
+
+    var repairDurationBlock = result.repairDuration
+      ? "🔧 *Actual Working Time:* " + result.repairDuration + "\n"
+      : "";
+
     message =
 `🔵 *RUNNING PLANT WORK COMPLETION*
 🔵 *STATUS: WORK COMPLETED*
 
 🗓️ *Date:* ${result.date}
-⏰ *Start Time:* ${result.startTime || "Not available"}
-⏰ *Completion Time:* ${result.completionTime}
-
-⏳ *Total Work Duration:* ${result.duration}
-
+🔻 *Breakdown Start:* ${result.startTime || "Not available"}
+${repairBlock}🏁 *Work End:* ${result.completionTime}
+${delayBlock}
+⏳ *Total Breakdown Duration:* ${result.duration}
+${repairDurationBlock}
 🔧 *Work:* ${data.workType}
 🔩 *Equipment:* ${data.equipment}
 📍 *Location:* ${data.location}
