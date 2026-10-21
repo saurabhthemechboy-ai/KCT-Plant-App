@@ -621,6 +621,28 @@ Filters: Equipment, Date Range (Today, 7d, 30d, 90d, All, Custom).
 
 Generates CSV with UTF-8 BOM.
 
+### 21-Oct-2026 — Work Starting / Completed blocks un-mixed
+
+- **Bug:** During the addition of Repair Start/Finish/Delay Reason fields,
+  the `STATUS_START` branch of `submitWork` was accidentally overwritten
+  with `STATUS_COMPLETE` logic. Every WORK STARTING submit crashed with a
+  ReferenceError on undefined variables (`completionTime`, `matchedDuration`,
+  `matchedStartDateTime`). Nothing saved, no error surfaced in the frontend,
+  no error appeared in Apps Script Executions (it was caught by the outer
+  try/catch and returned `{success:false}` with no message).
+
+- **Fix:** Restored the correct `STATUS_START` block. Also fixed a variable
+  typo in `getWorkRecords_()` (`r` should have been `row`) that would have
+  crashed the read on every submit.
+
+- **Lesson:** When adding fields to a `submitWork`-style function with two
+  branches (START vs COMPLETE), always re-verify that each branch only
+  references variables defined within that branch. A crash in one branch
+  silently kills the whole function because the outer catch returns a
+  `{success:false}` object — and the frontend doesn't always check that
+  shape before rendering success. Consider adding a `console.warn` when
+  `apiCall` receives a response with `success:false` but no `message`.
+
 Backend: countExportRows(), exportCsv().
 
 Photo URLs exported as plain text.
