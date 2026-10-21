@@ -3275,6 +3275,8 @@ function showScreen(id, fromPop) {
   if (!fromPop && FIRST_SCREEN_SHOWN && ROOT_SCREENS.indexOf(id) === -1) {
     try { history.pushState({ screen: id }, "", "#" + id); } catch (e) {}
   }
+  // Remember the screen so we can restore it after pull-to-refresh
+  try { sessionStorage.setItem("kct_last_screen", id); } catch (e) {}
   FIRST_SCREEN_SHOWN = true;
 }
 
@@ -3438,6 +3440,8 @@ function doLogout() {
   SESSION_TOKEN = null;
   CURRENT_USER = null;
   try { localStorage.removeItem("kct_token"); } catch (e) {}
+  try { sessionStorage.removeItem("kct_last_screen"); } catch (e) {} // <--- ADD THIS
+  
   document.getElementById("loginUserId").value = "";
   document.getElementById("loginPassword").value = "";
   clearLoginError();
@@ -4332,55 +4336,60 @@ function hideBusy() { document.getElementById("busyOverlay").classList.add("hidd
    SESSION RESTORE
    ============================================================ */
 window.addEventListener("pageshow", function (e) {
-  console.log("[DIAG] pageshow fired. persisted=" + e.persisted +
-              " | SESSION_TOKEN=" + (SESSION_TOKEN ? "SET" : "null") +
-              " | CURRENT_USER=" + (CURRENT_USER ? CURRENT_USER.userId : "null") +
-              " | ls_token=" + (localStorage.getItem("kct_token") ? "SET" : "null"));
-
+  // Skip re-validation if a session is already established in memory
   if (SESSION_TOKEN && CURRENT_USER) {
-    console.log("[DIAG] Session in memory, skipping validation.");
     return;
   }
 
   let saved = null;
   try { saved = localStorage.getItem("kct_token"); } catch (e) {}
-  
-  if (!saved) { 
-    console.log("[DIAG] No token in localStorage. Going to login.");
-    showScreen("loginScreen"); 
-    return; 
-  }
+  if (!saved) { showScreen("loginScreen"); return; }
 
   var attemptsLeft = 2;
   function tryValidate() {
-    console.log("[DIAG] Calling validateSession...");
-    
     apiCall("validateSession", { token: saved },
       function (res) {
-        console.log("[DIAG] validateSession returned:", res);
-        
         if (res && res.success) {
-          console.log("[DIAG] Validation success.");
           SESSION_TOKEN = saved;
           CURRENT_USER = res.user;
-          showHome();
+          
+          // Restore the screen they were on before refresh
+          var lastScreen = null;
+          try { lastScreen = sessionStorage.getItem("kct_last_screen"); } catch (e) {}
+          
+          if (lastScreen && SCREENS.indexOf(lastScreen) !== -1 && lastScreen !== "loginScreen") {
+             if (lastScreen === "homeScreen") {
+               showHome();
+             } else {
+               showScreen(lastScreen);
+               // Note: some screens need data loaded
+               if (lastScreen === "allIssuesScreen") allIssuesLoad();
+               if (lastScreen === "myAssignmentsScreen") myAssignmentsLoad();
+               if (lastScreen === "historyScreen") historyReload();
+               if (lastScreen === "todayScreen") todayLoad();
+               if (lastScreen === "dashboardScreen") dashboardLoad();
+               if (lastScreen === "adminScreen") loadAdminUsers();
+             }
+          } else {
+             showHome();
+          }
           return;
         }
         
-        console.log("[DIAG] Validation failed from server. Logging out.");
+        // Backend explicitly rejected the token -> real logout
         try { localStorage.removeItem("kct_token"); } catch (e) {}
+        try { sessionStorage.removeItem("kct_last_screen"); } catch (e) {}
         SESSION_TOKEN = null;
         CURRENT_USER = null;
         showScreen("loginScreen");
       },
       function (err) {
+        // Network failure -> retry once
         attemptsLeft--;
-        console.log("[DIAG] Validation network error. Attempts left: " + attemptsLeft, err);
         if (attemptsLeft > 0) {
           setTimeout(tryValidate, 800);
           return;
         }
-        console.log("[DIAG] Out of retries. Going to login.");
         showScreen("loginScreen");
         showLoginError("Couldn't reach the server. Tap LOGIN to try again.");
       }
