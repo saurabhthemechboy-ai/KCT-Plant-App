@@ -1940,19 +1940,23 @@ function openExportScreen() {
 
   showScreen("exportScreen");
 
-  // Populate equipment dropdown once
+  // Always rebuild the equipment dropdown to guarantee it's complete
   var sel = document.getElementById("exEquipment");
-  if (sel && !sel.dataset.loaded) {
-    apiCall("getEquipmentList", {},
-      function (list) {
-        (list || []).forEach(function (eq) {
-          var o = document.createElement("option");
-          o.value = eq; o.textContent = eq;
-          sel.appendChild(o);
-        });
-        sel.dataset.loaded = "1";
-      }
-    );
+  if (sel) {
+    sel.innerHTML = '<option value="">All Equipment</option>';
+    var EQUIPMENT_LIST = [
+      "C1", "C2", "C3", "C4", "C5", "C6", "C7",
+      "TH#1", "TH#2", "TH#3",
+      "SCR#1", "SCR#2",
+      "RTL",
+      "TT1", "TT2", "TT3", "TT4", "TT5", "TT6"
+    ];
+    EQUIPMENT_LIST.forEach(function (eq) {
+      var o = document.createElement("option");
+      o.value = eq;
+      o.textContent = eq;
+      sel.appendChild(o);
+    });
   }
 
   // Reset error + row count
