@@ -4353,6 +4353,12 @@ window.addEventListener("pageshow", function (e) {
   try { saved = localStorage.getItem("kct_token"); } catch (e) {}
   if (!saved) { showScreen("loginScreen"); return; }
 
+  // Hide all screens and show a loading state instead of flashing the login screen
+  SCREENS.forEach(function(s) {
+    var el = document.getElementById(s);
+    if (el) el.classList.add("hidden");
+  });
+
   var attemptsLeft = 2;
   function tryValidate() {
     apiCall("validateSession", { token: saved },
@@ -4366,9 +4372,13 @@ window.addEventListener("pageshow", function (e) {
           try { lastScreen = sessionStorage.getItem("kct_last_screen"); } catch (e) {}
           
           if (lastScreen && SCREENS.indexOf(lastScreen) !== -1 && lastScreen !== "loginScreen") {
-             if (lastScreen === "homeScreen") {
-               showHome();
-             } else {
+             
+             // 1. Always render the Home Screen first in the background
+             // This sets up the user name, admin tiles, and notification state.
+             showHome();
+             
+             // 2. If we were on a different screen, immediately navigate there
+             if (lastScreen !== "homeScreen") {
                showScreen(lastScreen);
                
                // Restore states before loading data
