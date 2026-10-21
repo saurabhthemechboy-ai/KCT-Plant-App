@@ -4144,6 +4144,7 @@ function showWorkSuccess(result, data, safetyItems) {
     const safetyText = safetyItems.length
       ? safetyItems.map(function (x) { return "✅ " + x; }).join("\n")
       : "✅ Not specified";
+      
     message =
 `🔴 *RUNNING PLANT WORK INTIMATION*
 ✅ *STATUS: WORK STARTED*
@@ -4164,7 +4165,7 @@ function showWorkSuccess(result, data, safetyItems) {
 ${safetyText}
 
 ✅ *STATUS: WORK STARTED*`;
-    } else {
+  } else {
     var repairBlock = "";
     if (result.repairStartTime && result.repairFinishTime) {
       repairBlock =
